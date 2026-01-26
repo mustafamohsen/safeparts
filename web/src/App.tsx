@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import logoUrl from "./assets/logo.svg";
+
 import { CombineForm } from "./components/CombineForm";
 import { SplitForm } from "./components/SplitForm";
 import { EncryptedText } from "./components/ui/encrypted-text";
@@ -101,7 +103,14 @@ export function App() {
         <header className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 shrink-0 rounded-2xl bg-gradient-to-br from-emerald-500 via-green-400 to-emerald-300 shadow-lg shadow-emerald-500/20" />
+              <img
+                src={logoUrl}
+                alt="Safeparts"
+                className="h-10 w-10 shrink-0"
+                width={40}
+                height={40}
+                decoding="async"
+              />
               <div className="text-start">
                 <h1 className="text-xl font-semibold tracking-tight text-emerald-100">
                   {strings.appName}

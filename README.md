@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="web/src/assets/logo.svg" width="120" alt="Safeparts logo" />
+</p>
+
 # Safeparts
 
 Safeparts helps you **split a sensitive secret into multiple “recovery parts”** so no single person, device, or location holds the whole thing.
