@@ -88,7 +88,7 @@ export const STRINGS = {
     passphraseLabel: "عبارة مرور (اختياري)",
 
     splitCta: "قسم",
-    combineCta: "استعد",
+    combineCta: "استعادة",
     working: "جار العمل…",
 
     sharesTitle: "الحصص",
