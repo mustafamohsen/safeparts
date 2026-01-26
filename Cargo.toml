@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/ssss_mnemo_core",
+  "crates/ssss_mnemo_cli",
+]
+
+[workspace.package]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = ""
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+# Keep clippy strict in CI by running with `-- -D warnings`,
+# but avoid enabling `pedantic` repo-wide until APIs stabilize.
