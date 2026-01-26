@@ -12,7 +12,7 @@ pub fn split_secret(
 ) -> Result<Array, JsValue> {
     let passphrase_bytes = passphrase.as_deref().map(str::as_bytes);
 
-    let packets = ssss_mnemo_core::split_secret(secret, k, n, passphrase_bytes)
+    let packets = safeparts_core::split_secret(secret, k, n, passphrase_bytes)
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
 
     let out = Array::new();
@@ -41,49 +41,48 @@ pub fn combine_shares(
         packets.push(packet);
     }
 
-    let secret = ssss_mnemo_core::combine_shares(&packets, passphrase_bytes)
+    let secret = safeparts_core::combine_shares(&packets, passphrase_bytes)
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
 
     Ok(Uint8Array::from(secret.as_slice()))
 }
 
 fn encode_packet(
-    packet: &ssss_mnemo_core::packet::SharePacket,
+    packet: &safeparts_core::packet::SharePacket,
     encoding: &str,
 ) -> Result<String, String> {
     match encoding {
-        "base58check" => ssss_mnemo_core::ascii::encode_packet(
+        "base58check" => safeparts_core::ascii::encode_packet(
             packet,
-            ssss_mnemo_core::ascii::Encoding::Base58check,
+            safeparts_core::ascii::Encoding::Base58check,
         )
         .map_err(|e| e.to_string()),
-        "base64url" => ssss_mnemo_core::ascii::encode_packet(
-            packet,
-            ssss_mnemo_core::ascii::Encoding::Base64url,
-        )
-        .map_err(|e| e.to_string()),
+        "base64url" => {
+            safeparts_core::ascii::encode_packet(packet, safeparts_core::ascii::Encoding::Base64url)
+                .map_err(|e| e.to_string())
+        }
         "mnemo-words" => {
-            ssss_mnemo_core::mnemo_words::encode_packet(packet).map_err(|e| e.to_string())
+            safeparts_core::mnemo_words::encode_packet(packet).map_err(|e| e.to_string())
         }
         "mnemo-bip39" => {
-            ssss_mnemo_core::mnemo_bip39::encode_packet(packet).map_err(|e| e.to_string())
+            safeparts_core::mnemo_bip39::encode_packet(packet).map_err(|e| e.to_string())
         }
         _ => Err(format!("unknown encoding: {encoding}")),
     }
 }
 
-fn decode_packet(s: &str, encoding: &str) -> Result<ssss_mnemo_core::packet::SharePacket, String> {
+fn decode_packet(s: &str, encoding: &str) -> Result<safeparts_core::packet::SharePacket, String> {
     match encoding {
         "base58check" => {
-            ssss_mnemo_core::ascii::decode_packet(s, ssss_mnemo_core::ascii::Encoding::Base58check)
+            safeparts_core::ascii::decode_packet(s, safeparts_core::ascii::Encoding::Base58check)
                 .map_err(|e| e.to_string())
         }
         "base64url" => {
-            ssss_mnemo_core::ascii::decode_packet(s, ssss_mnemo_core::ascii::Encoding::Base64url)
+            safeparts_core::ascii::decode_packet(s, safeparts_core::ascii::Encoding::Base64url)
                 .map_err(|e| e.to_string())
         }
-        "mnemo-words" => ssss_mnemo_core::mnemo_words::decode_packet(s).map_err(|e| e.to_string()),
-        "mnemo-bip39" => ssss_mnemo_core::mnemo_bip39::decode_packet(s).map_err(|e| e.to_string()),
+        "mnemo-words" => safeparts_core::mnemo_words::decode_packet(s).map_err(|e| e.to_string()),
+        "mnemo-bip39" => safeparts_core::mnemo_bip39::decode_packet(s).map_err(|e| e.to_string()),
         _ => Err(format!("unknown encoding: {encoding}")),
     }
 }
@@ -94,8 +93,8 @@ mod tests {
 
     #[test]
     fn unknown_encoding_is_error() {
-        let pkt = ssss_mnemo_core::packet::SharePacket {
-            set_id: ssss_mnemo_core::sss::SetId([0u8; 16]),
+        let pkt = safeparts_core::packet::SharePacket {
+            set_id: safeparts_core::sss::SetId([0u8; 16]),
             k: 2,
             n: 3,
             x: 1,

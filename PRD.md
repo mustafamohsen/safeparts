@@ -2,7 +2,7 @@
 
 ## Title
 
-**SSSS-Mnemo Tool** — Arbitrary String ⇄ SSSS Secret Shares ⇄ Human-Friendly Mnemonics
+**Safeparts** — Arbitrary String ⇄ Threshold Secret Shares ⇄ Human-Friendly Mnemonics
 
 ---
 
@@ -64,8 +64,8 @@ This project delivers a cross-platform tool and library for **splitting arbitrar
 ### 2.5 CLI UX
 
 ```bash
-ssss-mnemo split --k 3 --n 5 --encoding mnemo-bip39 --in-stdin --out-stdout
-ssss-mnemo combine --from mnemo-bip39 --in-stdin --out recovered.bin
+safeparts split --k 3 --n 5 --encoding mnemo-bip39 --in-stdin --out-stdout
+safeparts combine --from mnemo-bip39 --in-stdin --out recovered.bin
 ```
 
 * `split`: produce shares in selected encoding.
@@ -121,7 +121,7 @@ ssss-mnemo combine --from mnemo-bip39 --in-stdin --out recovered.bin
 
 ## 4. Technical Design (Rust)
 
-* **Core crate (`ssss_mnemo_core`):**
+* **Core crate (`safeparts_core`):**
 
   * `gf256.rs`: field arithmetic.
   * `sss.rs`: split/combine algorithms.
@@ -129,7 +129,7 @@ ssss-mnemo combine --from mnemo-bip39 --in-stdin --out recovered.bin
   * `ascii.rs`: Base58/Base64 encoders.
   * `mnemo.rs`: mnemonic encoding/decoding.
   * `crypto.rs`: BLAKE3, Argon2id, ChaCha20-Poly1305, zeroization.
-* **CLI crate (`ssss_mnemo_cli`):**
+* **CLI crate (`safeparts`):**
 
   * Uses `clap` for commands.
   * Split/combine subcommands.

@@ -10,7 +10,7 @@ export function App() {
   return (
     <div className="container">
       <header className="header">
-        <h1>ssss-mnemo</h1>
+        <h1>Safeparts</h1>
         <nav className="tabs">
           <button type="button" className={tab === 'split' ? 'tab active' : 'tab'} onClick={() => setTab('split')}>
             Split

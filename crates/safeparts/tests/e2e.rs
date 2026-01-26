@@ -2,7 +2,7 @@ use assert_cmd::Command;
 use predicates::prelude::*;
 
 fn run_split(encoding: &str, k: u8, n: u8, input: &[u8], passphrase: Option<&str>) -> Vec<String> {
-    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("ssss_mnemo_cli"));
+    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
 
     cmd.args([
         "split",
@@ -34,7 +34,7 @@ fn run_split(encoding: &str, k: u8, n: u8, input: &[u8], passphrase: Option<&str
 fn run_combine(from: &str, shares: &[String], passphrase: Option<&str>) -> Vec<u8> {
     let stdin = shares.join("\n") + "\n";
 
-    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("ssss_mnemo_cli"));
+    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
     cmd.args(["combine", "--from", from, "--in-stdin", "--out-stdout"]);
 
     if let Some(passphrase) = passphrase {
@@ -91,7 +91,7 @@ fn encrypted_without_passphrase_fails() {
     let shares = run_split("base64url", 2, 3, input, Some("pw"));
 
     let stdin = format!("{}\n{}\n", shares[0], shares[1]);
-    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("ssss_mnemo_cli"));
+    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
     cmd.args([
         "combine",
         "--from",
@@ -111,7 +111,7 @@ fn wrong_passphrase_fails() {
     let shares = run_split("base64url", 2, 3, input, Some("pw"));
 
     let stdin = format!("{}\n{}\n", shares[0], shares[1]);
-    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("ssss_mnemo_cli"));
+    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
     cmd.args([
         "combine",
         "--from",
@@ -132,7 +132,7 @@ fn combine_with_insufficient_shares_fails() {
     let shares = run_split("base64url", 2, 3, input, None);
 
     let stdin = format!("{}\n", shares[0]);
-    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("ssss_mnemo_cli"));
+    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
     cmd.args([
         "combine",
         "--from",

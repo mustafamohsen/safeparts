@@ -3,9 +3,9 @@
 ## Current Repo State (important)
 
 - This repo is a Rust Cargo workspace with crates:
-  - `crates/ssss_mnemo_core/` (core algorithms + encodings + optional encryption)
-  - `crates/ssss_mnemo_cli/` (CLI wrapper)
-  - `crates/ssss_mnemo_wasm/` (wasm-bindgen exports for the web UI)
+  - `crates/safeparts_core/` (core algorithms + encodings + optional encryption)
+  - `crates/safeparts/` (CLI wrapper)
+  - `crates/safeparts_wasm/` (wasm-bindgen exports for the web UI)
 - There is a minimal web scaffold under `web/` (Vite + React) which expects a WASM build step.
 - CI exists at `.github/workflows/ci.yml` and runs `cargo fmt`, `cargo clippy`, and `cargo test`.
 
@@ -23,8 +23,8 @@ The goal is a cross-platform tool/library that:
 
 The PRD proposes:
 
-- `crates/ssss_mnemo_core/` — core algorithms and formats
-- `crates/ssss_mnemo_cli/` — CLI wrapper around the core
+- `crates/safeparts_core/` — core algorithms and formats
+- `crates/safeparts/` — CLI wrapper around the core
 - `web/` — React + TypeScript frontend, with WASM bindings
 
 If the repo ends up structured differently, prefer the actual layout over this.
@@ -63,9 +63,9 @@ If the repo ends up structured differently, prefer the actual layout over this.
 - By test name substring: `cargo test <test_name_substring>`
 - Exact module path: `cargo test gf256::tests::mul_properties`
 - Single test with output: `cargo test <pattern> -- --nocapture`
-- Single crate (workspace): `cargo test -p ssss_mnemo_core <pattern>`
-- Single file/module (common approach): `cargo test -p ssss_mnemo_core gf256::`
-- Single e2e test (CLI): `cargo test -p ssss_mnemo_cli --test e2e <pattern>`
+- Single crate (workspace): `cargo test -p safeparts_core <pattern>`
+- Single file/module (common approach): `cargo test -p safeparts_core gf256::`
+- Single e2e test (CLI): `cargo test -p safeparts --test e2e <pattern>`
 
 **Benchmarks (only if added)**
 
@@ -157,6 +157,7 @@ If the repo ends up structured differently, prefer the actual layout over this.
 - Prefer `clap` derive APIs (per PRD) and consistent flags:
   - `--k`, `--n`, `--encoding`, `--in-stdin`, `--out-stdout`, `--in <file>`, `--out <file>`.
   - For encryption: `--passphrase <text>` or `--passphrase-file <path>`.
+  - Binary name: `safeparts`.
 - Ensure commands are script-friendly:
   - deterministic output where possible
   - no interactive prompts unless explicitly requested (passphrase flows)

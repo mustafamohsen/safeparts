@@ -1,12 +1,12 @@
-# ssss-mnemo
+# Safeparts
 
-`ssss-mnemo` splits a secret into multiple “shares” so you can store them in different places/with different people. Later, you can recover the original secret using any `k` out of `n` shares (a threshold scheme).
+Safeparts splits a secret into multiple “shares” so you can store them in different places/with different people. Later, you can recover the original secret using any `k` out of `n` shares (a threshold scheme).
 
 This project provides:
 
-- A Rust library (`crates/ssss_mnemo_core`) for splitting/combining secrets.
-- A CLI (`crates/ssss_mnemo_cli`) for scripting and terminal usage.
-- Optional WASM bindings (`crates/ssss_mnemo_wasm`) and a minimal web UI (`web/`).
+- A Rust library (`crates/safeparts_core`) for splitting/combining secrets.
+- A CLI (`crates/safeparts`) for scripting and terminal usage.
+- Optional WASM bindings (`crates/safeparts_wasm`) and a minimal web UI (`web/`).
 
 ## Why this exists (in plain terms)
 
@@ -57,27 +57,27 @@ Format:
 
 ## CLI usage
 
-The CLI binary is `ssss-mnemo` (crate: `ssss_mnemo_cli`).
+The CLI binary is `safeparts` (crate: `safeparts`).
 
 ### Split a secret
 
 Read secret from stdin and output shares to stdout:
 
-- `echo -n "my secret" | cargo run -q -p ssss_mnemo_cli -- split --k 2 --n 3 --encoding base64url --in-stdin --out-stdout`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split --k 2 --n 3 --encoding base64url --in-stdin --out-stdout`
 
 Mnemonic output (more human-friendly):
 
-- `echo -n "my secret" | cargo run -q -p ssss_mnemo_cli -- split --k 2 --n 3 --encoding mnemo-words --in-stdin --out-stdout`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split --k 2 --n 3 --encoding mnemo-words --in-stdin --out-stdout`
 
 BIP-39 chunked mnemonics:
 
-- `echo -n "my secret" | cargo run -q -p ssss_mnemo_cli -- split --k 2 --n 3 --encoding mnemo-bip39 --in-stdin --out-stdout`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split --k 2 --n 3 --encoding mnemo-bip39 --in-stdin --out-stdout`
 
 ### Combine shares
 
 Provide at least `k` shares on stdin:
 
-- `printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p ssss_mnemo_cli -- combine --from base64url --in-stdin --out-stdout`
+- `printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine --from base64url --in-stdin --out-stdout`
 
 For `mnemo-words` and `mnemo-bip39`, each share is typically a full line (because the share contains spaces).
 
@@ -85,11 +85,11 @@ For `mnemo-words` and `mnemo-bip39`, each share is typically a full line (becaus
 
 Split with a passphrase:
 
-- `echo -n "my secret" | cargo run -q -p ssss_mnemo_cli -- split --k 2 --n 3 --encoding base64url --passphrase "correct horse" --in-stdin --out-stdout`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split --k 2 --n 3 --encoding base64url --passphrase "correct horse" --in-stdin --out-stdout`
 
 Combine with a passphrase:
 
-- `printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p ssss_mnemo_cli -- combine --from base64url --passphrase "correct horse" --in-stdin --out-stdout`
+- `printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine --from base64url --passphrase "correct horse" --in-stdin --out-stdout`
 
 You can also use a file:
 
@@ -126,9 +126,9 @@ Generated WASM output goes to `web/src/wasm_pkg/` (gitignored).
 
 ## Project layout
 
-- `crates/ssss_mnemo_core/`: core algorithms, packets, encodings, encryption
-- `crates/ssss_mnemo_cli/`: CLI wrapper
-- `crates/ssss_mnemo_wasm/`: wasm-bindgen exports
+- `crates/safeparts_core/`: core algorithms, packets, encodings, encryption
+- `crates/safeparts/`: CLI wrapper
+- `crates/safeparts_wasm/`: wasm-bindgen exports
 - `web/`: minimal Vite + React UI
 
 ## Development and testing
@@ -139,11 +139,11 @@ Run a single unit test by name:
 
 Run a single module:
 
-- `cargo test -p ssss_mnemo_core gf256::`
+- `cargo test -p safeparts_core gf256::`
 
 Run a single CLI e2e test:
 
-- `cargo test -p ssss_mnemo_cli --test e2e <substring>`
+- `cargo test -p safeparts --test e2e <substring>`
 
 ## License
 

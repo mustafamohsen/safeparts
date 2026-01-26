@@ -4,11 +4,11 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result, anyhow};
 use clap::{Parser, Subcommand};
-use ssss_mnemo_core::{ascii, mnemo_bip39, mnemo_words};
+use safeparts_core::{ascii, mnemo_bip39, mnemo_words};
 
 #[derive(Debug, Parser)]
-#[command(name = "ssss-mnemo")]
-#[command(about = "Split/combine secrets into SSSS shares", long_about = None)]
+#[command(name = "safeparts")]
+#[command(about = "Split/combine secrets into threshold shares", long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -95,7 +95,7 @@ fn main() -> Result<()> {
             let input = read_input(r#in, in_stdin)?;
             let passphrase = read_passphrase(passphrase, passphrase_file)?;
 
-            let packets = ssss_mnemo_core::split_secret(&input, k, n, passphrase.as_deref())
+            let packets = safeparts_core::split_secret(&input, k, n, passphrase.as_deref())
                 .with_context(|| format!("split failed (k={k}, n={n})"))?;
 
             let encoded: Vec<String> = packets
@@ -181,7 +181,7 @@ fn main() -> Result<()> {
                 }
             };
 
-            let secret = ssss_mnemo_core::combine_shares(&packets, passphrase.as_deref())
+            let secret = safeparts_core::combine_shares(&packets, passphrase.as_deref())
                 .map_err(|e| anyhow!(e))
                 .context("combine failed")?;
 

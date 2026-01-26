@@ -1,9 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
-  "crates/ssss_mnemo_core",
-  "crates/ssss_mnemo_cli",
-  "crates/ssss_mnemo_wasm",
+  "crates/safeparts_core",
+  "crates/safeparts",
+  "crates/safeparts_wasm",
 ]
 
 [workspace.package]
