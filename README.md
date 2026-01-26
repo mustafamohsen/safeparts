@@ -1,36 +1,37 @@
 # Safeparts
 
-Safeparts splits a secret into multiple “shares” so you can store them in different places/with different people. Later, you can recover the original secret using any `k` out of `n` shares (a threshold scheme).
+Safeparts helps you **split a sensitive secret into multiple “recovery parts”** so no single person, device, or location holds the whole thing.
 
-This project provides:
+You choose a threshold (`k` of `n`):
 
-- A Rust library (`crates/safeparts_core`) for splitting/combining secrets.
-- A CLI (`crates/safeparts`) for scripting and terminal usage.
-- Optional WASM bindings (`crates/safeparts_wasm`) and a minimal web UI (`web/`).
+- With fewer than `k` parts, an attacker learns nothing useful about the secret.
+- With any `k` parts, you can reconstruct the original secret.
 
-## Why this exists (in plain terms)
+## Example use cases
 
-If you keep one copy of an important secret (API key, recovery key, encryption key), losing it is catastrophic. If you make many copies, the chance of theft increases.
+- Back up a password manager recovery key across family/friends (“social recovery”).
+- Split an infrastructure API key so ops + security must collaborate to use it.
+- Store an encryption key in multiple physical locations (home, office, safe deposit box).
+- Reduce single-point-of-failure risk for a small business “break glass” secret.
 
-Threshold secret sharing gives a practical middle ground:
+## Significant features
 
-- Fewer than `k` shares reveal nothing useful about the secret.
-- Any `k` shares can reconstruct the secret.
+- **Threshold secret sharing** (Shamir-style over GF(256), byte-wise).
+- **Integrity-checked reconstruction** via a BLAKE3 tag (detects wrong/corrupted shares).
+- **Multiple human-/machine-friendly encodings** for the same share packet:
+  - `base58check`
+  - `base64url`
+  - `mnemo-words` (BIP-39 words + CRC16 for error detection)
+  - `mnemo-bip39` (chunked, valid BIP-39 mnemonics)
+- **Optional passphrase protection** (encrypt-before-split): Argon2id → ChaCha20-Poly1305.
+- **Scriptable CLI** (`safeparts`) and a **Rust core library** (`safeparts_core`).
+- **Optional WASM bindings** (`safeparts_wasm`) for embedding in web contexts.
 
-## Security model (important)
+## Security notes (important)
 
-- This uses Shamir-style secret sharing over GF(256) (byte-wise).
-- After splitting, reconstruction verifies integrity using a BLAKE3 tag.
-- Optional passphrase protection encrypts the secret before splitting:
-  - Argon2id key derivation
-  - ChaCha20-Poly1305 authenticated encryption
-- Treat shares as sensitive. Even though `<k` shares should not reveal the secret, shares still contain metadata and should not be logged or posted.
-
-### About the mnemonic formats
-
-The mnemonic encodings use the BIP-39 English word list for readability and error detection.
-
-They are **not** wallet seeds and should not be imported into a wallet.
+- Share packets include metadata; treat shares as sensitive and avoid logging or posting them.
+- Mnemonic formats use the BIP-39 English word list for readability and error detection.
+  They are **not wallet seeds** and should not be imported into a wallet.
 
 ## Install / Build (Rust)
 
@@ -57,7 +58,7 @@ Format:
 
 ## CLI usage
 
-The CLI binary is `safeparts` (crate: `safeparts`).
+The CLI binary is `safeparts` (crate: `crates/safeparts`).
 
 ### Split a secret
 
@@ -97,54 +98,25 @@ You can also use a file:
 
 Note: `--passphrase <text>` may leak into shell history. Prefer `--passphrase-file` in many environments.
 
-## Encodings
-
-All encodings represent the same underlying share packet.
-
-- `base58check`: Base58Check string (checksum protected)
-- `base64url`: URL-safe Base64 without padding
-- `mnemo-words`: One line of BIP-39 words with CRC16
-- `mnemo-bip39`: One share encoded as one or more valid BIP-39 mnemonics (frames separated by ` / `)
-
-## Web UI (optional)
-
-A minimal React UI exists under `web/`. It calls the WASM bindings.
-
-Prereqs:
-
-- Node.js
-- `wasm-pack` installed
-
-Run:
-
-- `cd web`
-- `npm install`
-- `npm run build:wasm`
-- `npm run dev`
-
-Generated WASM output goes to `web/src/wasm_pkg/` (gitignored).
-
 ## Project layout
 
 - `crates/safeparts_core/`: core algorithms, packets, encodings, encryption
 - `crates/safeparts/`: CLI wrapper
 - `crates/safeparts_wasm/`: wasm-bindgen exports
-- `web/`: minimal Vite + React UI
+- `web/`: minimal Vite + React scaffold (optional)
 
-## Development and testing
+## Contributing
 
-Run a single unit test by name:
+Contributions are welcome — bug reports, feature requests, docs fixes, and PRs.
 
-- `cargo test <substring>`
+- Please avoid including real secrets (or real-looking shares) in issues, logs, or screenshots.
+- For code changes, try to keep PRs focused and run:
+  - `cargo fmt --all`
+  - `cargo clippy --all-targets --all-features -- -D warnings`
+  - `cargo test --all-features`
 
-Run a single module:
-
-- `cargo test -p safeparts_core gf256::`
-
-Run a single CLI e2e test:
-
-- `cargo test -p safeparts --test e2e <substring>`
+If you’re planning a larger change (packet format changes, new encodings, crypto changes), open an issue first so we can align on approach.
 
 ## License
 
-MIT OR Apache-2.0
+MIT. See `LICENSE`.
