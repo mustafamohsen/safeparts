@@ -75,8 +75,8 @@ export function App() {
                   <EncryptedText
                     className="mt-0.5 block text-xs"
                     text={strings.tagline}
-                    revealDelayMs={22}
-                    flipDelayMs={18}
+                    revealDelayMs={40}
+                    flipDelayMs={28}
                     encryptedClassName="text-emerald-300/40"
                     revealedClassName="text-slate-300"
                   />

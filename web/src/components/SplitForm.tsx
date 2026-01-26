@@ -173,8 +173,8 @@ export function SplitForm({ strings }: SplitFormProps) {
                 <div dir="ltr" className="input mt-2 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
                   <EncryptedText
                     text={s}
-                    revealDelayMs={Math.max(1, Math.min(12, Math.floor(600 / Math.max(1, s.length))))}
-                    flipDelayMs={18}
+                    revealDelayMs={Math.max(4, Math.min(24, Math.floor(1100 / Math.max(1, s.length))))}
+                    flipDelayMs={35}
                     encryptedClassName="text-emerald-300/45"
                     revealedClassName="text-slate-200"
                   />
