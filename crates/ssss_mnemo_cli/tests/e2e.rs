@@ -66,6 +66,14 @@ fn e2e_round_trip_mnemo_words() {
 }
 
 #[test]
+fn e2e_round_trip_mnemo_bip39() {
+    let input = b"hello e2e mnemo bip39";
+    let shares = run_split("mnemo-bip39", 2, 3, input);
+    let recovered = run_combine("mnemo-bip39", &shares[..2]);
+    assert_eq!(recovered, input);
+}
+
+#[test]
 fn combine_with_insufficient_shares_fails() {
     let input = b"insufficient";
     let shares = run_split("base64url", 2, 3, input);

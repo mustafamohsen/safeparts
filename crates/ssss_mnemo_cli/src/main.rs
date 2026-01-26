@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result, anyhow};
 use clap::{Parser, Subcommand};
-use ssss_mnemo_core::{ascii, mnemo_words};
+use ssss_mnemo_core::{ascii, mnemo_bip39, mnemo_words};
 
 #[derive(Debug, Parser)]
 #[command(name = "ssss-mnemo")]
@@ -62,6 +62,7 @@ enum CliEncoding {
     Base58check,
     Base64url,
     MnemoWords,
+    MnemoBip39,
 }
 
 fn main() -> Result<()> {
@@ -93,6 +94,9 @@ fn main() -> Result<()> {
                     CliEncoding::MnemoWords => {
                         mnemo_words::encode_packet(p).map_err(|e| anyhow!(e))
                     }
+                    CliEncoding::MnemoBip39 => {
+                        mnemo_bip39::encode_packet(p).map_err(|e| anyhow!(e))
+                    }
                 })
                 .collect::<Result<Vec<_>>>()?;
 
@@ -111,7 +115,7 @@ fn main() -> Result<()> {
             let input_str = String::from_utf8(input).context("shares input must be UTF-8")?;
 
             let packets = match from {
-                CliEncoding::MnemoWords => {
+                CliEncoding::MnemoWords | CliEncoding::MnemoBip39 => {
                     let lines: Vec<&str> = input_str
                         .lines()
                         .map(str::trim)
@@ -123,7 +127,17 @@ fn main() -> Result<()> {
 
                     lines
                         .into_iter()
-                        .map(|line| mnemo_words::decode_packet(line).map_err(|e| anyhow!(e)))
+                        .map(|line| match from {
+                            CliEncoding::MnemoWords => {
+                                mnemo_words::decode_packet(line).map_err(|e| anyhow!(e))
+                            }
+                            CliEncoding::MnemoBip39 => {
+                                mnemo_bip39::decode_packet(line).map_err(|e| anyhow!(e))
+                            }
+                            CliEncoding::Base58check | CliEncoding::Base64url => {
+                                unreachable!("handled in other match arm")
+                            }
+                        })
                         .collect::<Result<Vec<_>>>()?
                 }
                 CliEncoding::Base58check | CliEncoding::Base64url => {
@@ -135,7 +149,9 @@ fn main() -> Result<()> {
                     let encoding = match from {
                         CliEncoding::Base58check => ascii::Encoding::Base58check,
                         CliEncoding::Base64url => ascii::Encoding::Base64url,
-                        CliEncoding::MnemoWords => unreachable!("handled above"),
+                        CliEncoding::MnemoWords | CliEncoding::MnemoBip39 => {
+                            unreachable!("handled above")
+                        }
                     };
 
                     tokens

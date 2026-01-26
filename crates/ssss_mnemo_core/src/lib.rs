@@ -1,6 +1,7 @@
 pub mod ascii;
 pub mod error;
 pub mod gf256;
+pub mod mnemo_bip39;
 pub mod mnemo_words;
 pub mod packet;
 pub mod sss;
