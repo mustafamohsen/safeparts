@@ -1,21 +1,21 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from "react";
 
-import type { Strings } from '../i18n'
-import { ensureWasm } from '../wasm'
+import type { Strings } from "../i18n";
+import { ensureWasm } from "../wasm";
 
-import { CopyButton } from './CopyButton'
-import { EncryptedText } from './ui/encrypted-text'
+import { CopyButton } from "./CopyButton";
+import { EncryptedText } from "./ui/encrypted-text";
 
-type Encoding = 'base64url' | 'mnemo-words'
+type Encoding = "base64url" | "mnemo-words";
 
 type CombineFormProps = {
-  strings: Strings
-}
+  strings: Strings;
+};
 
 type ShareBox = {
-  id: string
-  value: string
-}
+  id: string;
+  value: string;
+};
 
 function TrashIcon() {
   return (
@@ -35,91 +35,109 @@ function TrashIcon() {
         strokeLinejoin="round"
       />
     </svg>
-  )
+  );
 }
 
 function toErrorMessage(err: unknown, strings: Strings): string {
-  const message = err instanceof Error ? err.message : String(err)
-  if (/wasm_pkg|safeparts_wasm|Cannot find module/i.test(message)) return strings.errorWasmMissing
-  return message
+  const message = err instanceof Error ? err.message : String(err);
+  if (/wasm_pkg|safeparts_wasm|Cannot find module/i.test(message))
+    return strings.errorWasmMissing;
+  return message;
 }
 
 function parseSharesFromBox(text: string): string[] {
   return text
     .split(/\n\s*\n/g)
     .map((s) => s.trim())
-    .filter(Boolean)
+    .filter(Boolean);
 }
 
 function createId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
+    return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function createShareBox(): ShareBox {
-  return { id: createId(), value: '' }
+  return { id: createId(), value: "" };
 }
 
 export function CombineForm({ strings }: CombineFormProps) {
-  const [encoding, setEncoding] = useState<Encoding>('mnemo-words')
-  const [passphrase, setPassphrase] = useState('')
-  const [shareBoxes, setShareBoxes] = useState<ShareBox[]>(() => [createShareBox(), createShareBox()])
-  const [invalidShareBoxIds, setInvalidShareBoxIds] = useState<string[]>([])
-  const [secret, setSecret] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [encoding, setEncoding] = useState<Encoding>("mnemo-words");
+  const [passphrase, setPassphrase] = useState("");
+  const [shareBoxes, setShareBoxes] = useState<ShareBox[]>(() => [
+    createShareBox(),
+    createShareBox(),
+  ]);
+  const [invalidShareBoxIds, setInvalidShareBoxIds] = useState<string[]>([]);
+  const [secret, setSecret] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const shares = useMemo(() => shareBoxes.flatMap((b) => parseSharesFromBox(b.value)), [shareBoxes])
+  const shares = useMemo(
+    () => shareBoxes.flatMap((b) => parseSharesFromBox(b.value)),
+    [shareBoxes],
+  );
 
   function setShareBoxValue(id: string, value: string) {
-    setShareBoxes((prev) => prev.map((b) => (b.id === id ? { ...b, value } : b)))
+    setShareBoxes((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, value } : b)),
+    );
 
     if (invalidShareBoxIds.includes(id) && value.trim().length > 0) {
-      setInvalidShareBoxIds((prev) => prev.filter((v) => v !== id))
+      setInvalidShareBoxIds((prev) => prev.filter((v) => v !== id));
     }
   }
 
   function addShareBox() {
-    setShareBoxes((prev) => [...prev, createShareBox()])
+    setShareBoxes((prev) => [...prev, createShareBox()]);
   }
 
   function removeShareBox(id: string) {
     setShareBoxes((prev) => {
-      if (prev.length <= 2) return prev
-      return prev.filter((b) => b.id !== id)
-    })
-    setInvalidShareBoxIds((prev) => prev.filter((v) => v !== id))
+      if (prev.length <= 2) return prev;
+      return prev.filter((b) => b.id !== id);
+    });
+    setInvalidShareBoxIds((prev) => prev.filter((v) => v !== id));
   }
 
   async function onCombine() {
-    const emptyIds = shareBoxes.filter((b) => b.value.trim().length === 0).map((b) => b.id)
-    if (emptyIds.length > 0) setInvalidShareBoxIds(emptyIds)
+    const emptyIds = shareBoxes
+      .filter((b) => b.value.trim().length === 0)
+      .map((b) => b.id);
+    if (emptyIds.length > 0) setInvalidShareBoxIds(emptyIds);
 
-    setBusy(true)
-    setError(null)
-    setSecret('')
+    setBusy(true);
+    setError(null);
+    setSecret("");
 
     try {
-      const wasm = await ensureWasm()
-      const out = wasm.combine_shares(shares as any, encoding, passphrase ? passphrase : undefined)
-      const bytes = new Uint8Array(out)
-      setSecret(new TextDecoder().decode(bytes))
-      setInvalidShareBoxIds([])
+      const wasm = await ensureWasm();
+      const out = wasm.combine_shares(
+        shares as any,
+        encoding,
+        passphrase ? passphrase : undefined,
+      );
+      const bytes = new Uint8Array(out);
+      setSecret(new TextDecoder().decode(bytes));
+      setInvalidShareBoxIds([]);
     } catch (e) {
-      setError(toErrorMessage(e, strings))
+      setError(toErrorMessage(e, strings));
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
 
-  const canCombine = shares.length > 0
+  const canCombine = shares.length > 0;
 
   return (
     <section className="glass p-4 sm:p-6">
       <div className="dir-row items-start justify-between gap-4">
         <div className="text-start">
           <h2 className="text-lg font-semibold">{strings.combineTitle}</h2>
-          <p className="mt-1 text-sm text-slate-300">{strings.combineSubtitle}</p>
+          <p className="mt-1 text-sm text-slate-300">
+            {strings.combineSubtitle}
+          </p>
         </div>
       </div>
 
@@ -132,7 +150,7 @@ export function CombineForm({ strings }: CombineFormProps) {
               onChange={(e) => setEncoding(e.target.value as Encoding)}
               className="input mt-2"
             >
-              <option value="base64url">Base64 URL (base64url)</option>
+              <option value="base64url">Letters (base64url)</option>
               <option value="mnemo-words">Words (mnemo-words)</option>
             </select>
           </label>
@@ -158,7 +176,7 @@ export function CombineForm({ strings }: CombineFormProps) {
 
           <div className="mt-3 divide-y divide-emerald-500/10">
             {shareBoxes.map((box, i) => {
-              const isInvalid = invalidShareBoxIds.includes(box.id)
+              const isInvalid = invalidShareBoxIds.includes(box.id);
 
               return (
                 <div key={box.id} className="py-4 first:pt-0 last:pb-0">
@@ -186,17 +204,23 @@ export function CombineForm({ strings }: CombineFormProps) {
                     onChange={(e) => setShareBoxValue(box.id, e.target.value)}
                     rows={3}
                     placeholder={strings.sharePlaceholder}
-                     className={`input mt-2 resize-y font-mono text-xs leading-relaxed ${
-                       isInvalid ? 'border-rose-400 focus:border-rose-400 focus:ring-rose-500/15' : ''
-                     }`}
-                   />
+                    className={`input mt-2 resize-y font-mono text-xs leading-relaxed ${
+                      isInvalid
+                        ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
+                        : ""
+                    }`}
+                  />
                 </div>
-              )
+              );
             })}
           </div>
 
           <div className="dir-row mt-3 justify-start">
-            <button type="button" className="btn-secondary w-full px-3 py-2 text-xs sm:w-auto" onClick={addShareBox}>
+            <button
+              type="button"
+              className="btn-secondary w-full px-3 py-2 text-xs sm:w-auto"
+              onClick={addShareBox}
+            >
               {strings.addShare}
             </button>
           </div>
@@ -220,17 +244,32 @@ export function CombineForm({ strings }: CombineFormProps) {
         <div className="mt-6 rounded-2xl border border-emerald-500/15 bg-black/35 p-3">
           <div className="dir-row items-start justify-between gap-3">
             <div className="text-start">
-              <h3 className="text-sm font-semibold text-slate-200">{strings.recoveredTitle}</h3>
-              <p className="mt-1 text-xs text-slate-400">{strings.recoveredHint}</p>
+              <h3 className="text-sm font-semibold text-slate-200">
+                {strings.recoveredTitle}
+              </h3>
+              <p className="mt-1 text-xs text-slate-400">
+                {strings.recoveredHint}
+              </p>
             </div>
 
-            <CopyButton value={secret} copyLabel={strings.copy} copiedLabel={strings.copied} className="shrink-0" />
+            <CopyButton
+              value={secret}
+              copyLabel={strings.copy}
+              copiedLabel={strings.copied}
+              className="shrink-0"
+            />
           </div>
 
-          <div dir="auto" className="input mt-3 min-h-[120px] resize-y font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
+          <div
+            dir="auto"
+            className="input mt-3 min-h-[120px] resize-y font-mono text-xs leading-relaxed whitespace-pre-wrap break-words"
+          >
             <EncryptedText
               text={secret}
-              revealDelayMs={Math.max(4, Math.min(24, Math.floor(1100 / Math.max(1, secret.length))))}
+              revealDelayMs={Math.max(
+                4,
+                Math.min(24, Math.floor(1100 / Math.max(1, secret.length))),
+              )}
               flipDelayMs={35}
               encryptedClassName="text-emerald-300/45"
               revealedClassName="text-slate-200"
@@ -239,5 +278,5 @@ export function CombineForm({ strings }: CombineFormProps) {
         </div>
       ) : null}
     </section>
-  )
+  );
 }
