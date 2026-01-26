@@ -100,6 +100,19 @@ You can also use a file:
 
 Note: `--passphrase <text>` may leak into shell history. Prefer `--passphrase-file` in many environments.
 
+## Web interface (optional)
+
+A minimal web UI exists under `web/` and uses `crates/safeparts_wasm` (WASM) to run the split/combine logic locally.
+
+Run locally:
+
+- `cd web`
+- `npm install`
+- `npm run build:wasm`
+- `npm run dev`
+
+Generated WASM output goes to `web/src/wasm_pkg/` (gitignored).
+
 ## Project layout
 
 - `crates/safeparts_core/`: core algorithms, packets, encodings, encryption
