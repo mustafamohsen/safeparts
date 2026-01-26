@@ -1,64 +1,74 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from "react";
 
-import type { Strings } from '../i18n'
-import { ensureWasm } from '../wasm'
+import type { Strings } from "../i18n";
+import { ensureWasm } from "../wasm";
 
-import { CopyButton } from './CopyButton'
-import { EncryptedText } from './ui/encrypted-text'
+import { CopyButton } from "./CopyButton";
+import { EncryptedText } from "./ui/encrypted-text";
 
-type Encoding = 'base58check' | 'base64url' | 'mnemo-words' | 'mnemo-bip39'
+type Encoding = "base58check" | "base64url" | "mnemo-words" | "mnemo-bip39";
 
 type SplitFormProps = {
-  strings: Strings
-}
+  strings: Strings;
+};
 
 function toErrorMessage(err: unknown, strings: Strings): string {
-  const message = err instanceof Error ? err.message : String(err)
-  if (/wasm_pkg|safeparts_wasm|Cannot find module/i.test(message)) return strings.errorWasmMissing
-  return message
+  const message = err instanceof Error ? err.message : String(err);
+  if (/wasm_pkg|safeparts_wasm|Cannot find module/i.test(message))
+    return strings.errorWasmMissing;
+  return message;
 }
 
 export function SplitForm({ strings }: SplitFormProps) {
-  const [secret, setSecret] = useState('')
-  const [k, setK] = useState(2)
-  const [n, setN] = useState(3)
+  const [secret, setSecret] = useState("");
+  const [k, setK] = useState(2);
+  const [n, setN] = useState(3);
 
   function clampK(nextK: number, nextN: number): number {
-    if (!Number.isFinite(nextK)) return 1
-    if (!Number.isFinite(nextN)) return 1
+    if (!Number.isFinite(nextK)) return 1;
+    if (!Number.isFinite(nextN)) return 1;
 
-    const safeN = Math.min(255, Math.max(1, Math.floor(nextN)))
-    const safeK = Math.floor(nextK)
-    return Math.min(safeN, Math.max(1, safeK))
+    const safeN = Math.min(255, Math.max(1, Math.floor(nextN)));
+    const safeK = Math.floor(nextK);
+    return Math.min(safeN, Math.max(1, safeK));
   }
 
   function clampN(nextN: number): number {
-    if (!Number.isFinite(nextN)) return 1
-    return Math.min(255, Math.max(1, Math.floor(nextN)))
+    if (!Number.isFinite(nextN)) return 1;
+    return Math.min(255, Math.max(1, Math.floor(nextN)));
   }
-  const [encoding, setEncoding] = useState<Encoding>('mnemo-words')
-  const [passphrase, setPassphrase] = useState('')
-  const [shares, setShares] = useState<string[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [encoding, setEncoding] = useState<Encoding>("mnemo-words");
+  const [passphrase, setPassphrase] = useState("");
+  const [shares, setShares] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const canSplit = useMemo(() => secret.length > 0 && k >= 1 && n >= 1 && n <= 255, [secret, k, n])
+  const canSplit = useMemo(
+    () => secret.length > 0 && k >= 1 && n >= 1 && n <= 255,
+    [secret, k, n],
+  );
 
   async function onSplit() {
-    setBusy(true)
-    setError(null)
-    setShares([])
+    setBusy(true);
+    setError(null);
+    setShares([]);
 
     try {
-      const wasm = await ensureWasm()
-      const bytes = new TextEncoder().encode(secret)
-      const out = wasm.split_secret(bytes, k, n, encoding, passphrase ? passphrase : undefined)
-      const outShares = Array.from(out).map((v) => String(v))
-      setShares(outShares)
+      const wasm = await ensureWasm();
+      const bytes = new TextEncoder().encode(secret);
+      const out = wasm.split_secret(
+        bytes,
+        k,
+        n,
+        encoding,
+        passphrase ? passphrase : undefined,
+      );
+      const outShares = Array.from(out).map((v) => String(v));
+      setShares(outShares);
     } catch (e) {
-      setError(toErrorMessage(e, strings))
+      setError(toErrorMessage(e, strings));
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
 
@@ -104,9 +114,9 @@ export function SplitForm({ strings }: SplitFormProps) {
               max={255}
               value={n}
               onChange={(e) => {
-                const nextN = clampN(Number(e.target.value))
-                setN(nextN)
-                setK((prevK) => clampK(prevK, nextN))
+                const nextN = clampN(Number(e.target.value));
+                setN(nextN);
+                setK((prevK) => clampK(prevK, nextN));
               }}
               className="input mt-2"
             />
@@ -138,14 +148,14 @@ export function SplitForm({ strings }: SplitFormProps) {
         </label>
 
         <div className="dir-row flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button type="button" disabled={!canSplit || busy} onClick={onSplit} className="btn-primary w-full sm:w-auto">
+          <button
+            type="button"
+            disabled={!canSplit || busy}
+            onClick={onSplit}
+            className="btn-primary w-full sm:w-auto"
+          >
             {busy ? strings.working : strings.splitCta}
           </button>
-
-          <div className="text-start text-xs text-slate-400">
-            <span className="font-medium text-slate-200">k={k}</span> <span className="text-emerald-300/40">•</span>{' '}
-            <span className="font-medium text-slate-200">n={n}</span>
-          </div>
         </div>
 
         {error ? <div className="alert-error">{error}</div> : null}
@@ -155,25 +165,42 @@ export function SplitForm({ strings }: SplitFormProps) {
         <div className="mt-6">
           <div className="dir-row items-start justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-slate-200">{strings.sharesTitle}</h3>
-              <p className="mt-1 text-xs text-slate-400">{strings.sharesHint}</p>
+              <h3 className="text-sm font-semibold text-slate-200">
+                {strings.sharesTitle}
+              </h3>
+              <p className="mt-1 text-xs text-slate-400">
+                {strings.sharesHint}
+              </p>
             </div>
           </div>
 
           <div className="mt-3 divide-y divide-emerald-500/10">
             {shares.map((s, i) => (
-              <div key={`${i}-${s.slice(0, 16)}`} className="py-4 first:pt-0 last:pb-0">
+              <div
+                key={`${i}-${s.slice(0, 16)}`}
+                className="py-4 first:pt-0 last:pb-0"
+              >
                 <div className="dir-row items-center justify-between gap-3">
                   <div className="text-xs font-semibold text-slate-200">
                     {strings.shareNumber} {i + 1}
                   </div>
-                  <CopyButton value={s} copyLabel={strings.copy} copiedLabel={strings.copied} />
+                  <CopyButton
+                    value={s}
+                    copyLabel={strings.copy}
+                    copiedLabel={strings.copied}
+                  />
                 </div>
 
-                <div dir="ltr" className="input mt-2 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
+                <div
+                  dir="ltr"
+                  className="input mt-2 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words"
+                >
                   <EncryptedText
                     text={s}
-                    revealDelayMs={Math.max(4, Math.min(24, Math.floor(1100 / Math.max(1, s.length))))}
+                    revealDelayMs={Math.max(
+                      4,
+                      Math.min(24, Math.floor(1100 / Math.max(1, s.length))),
+                    )}
                     flipDelayMs={35}
                     encryptedClassName="text-emerald-300/45"
                     revealedClassName="text-slate-200"
@@ -185,5 +212,5 @@ export function SplitForm({ strings }: SplitFormProps) {
         </div>
       ) : null}
     </section>
-  )
+  );
 }
