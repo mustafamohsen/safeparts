@@ -32,6 +32,8 @@ You choose a threshold (`k` of `n`):
 - Share packets include metadata; treat shares as sensitive and avoid logging or posting them.
 - Mnemonic formats use the BIP-39 English word list for readability and error detection.
   They are **not wallet seeds** and should not be imported into a wallet.
+- **Browser mode**: when using the optional web UI (WASM), splitting/combining runs entirely in your browser.
+  Your secret and shares are not sent to a server by default (unless you choose to copy, paste, upload, or deploy a modified UI).
 
 ## Install / Build (Rust)
 
