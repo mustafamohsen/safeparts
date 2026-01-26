@@ -3,6 +3,7 @@ resolver = "2"
 members = [
   "crates/ssss_mnemo_core",
   "crates/ssss_mnemo_cli",
+  "crates/ssss_mnemo_wasm",
 ]
 
 [workspace.package]
