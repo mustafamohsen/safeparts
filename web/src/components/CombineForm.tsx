@@ -65,10 +65,7 @@ function createShareBox(): ShareBox {
 export function CombineForm({ strings }: CombineFormProps) {
   const [encoding, setEncoding] = useState<Encoding>("mnemo-words");
   const [passphrase, setPassphrase] = useState("");
-  const [shareBoxes, setShareBoxes] = useState<ShareBox[]>(() => [
-    createShareBox(),
-    createShareBox(),
-  ]);
+  const [shareBoxes, setShareBoxes] = useState<ShareBox[]>(() => [createShareBox()]);
   const [invalidShareBoxIds, setInvalidShareBoxIds] = useState<string[]>([]);
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +92,7 @@ export function CombineForm({ strings }: CombineFormProps) {
 
   function removeShareBox(id: string) {
     setShareBoxes((prev) => {
-      if (prev.length <= 2) return prev;
+      if (prev.length <= 1) return prev;
       return prev.filter((b) => b.id !== id);
     });
     setInvalidShareBoxIds((prev) => prev.filter((v) => v !== id));
@@ -189,7 +186,7 @@ export function CombineForm({ strings }: CombineFormProps) {
                       type="button"
                       className="btn-ghost h-9 w-9 px-0"
                       onClick={() => removeShareBox(box.id)}
-                      disabled={shareBoxes.length <= 2}
+                      disabled={shareBoxes.length <= 1}
                       aria-label={strings.removeShare}
                       title={strings.removeShare}
                     >
