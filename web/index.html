@@ -16,11 +16,10 @@
     <script>
       ;(() => {
         try {
-          const theme = localStorage.getItem('sp_theme') || 'dark'
           const lang = localStorage.getItem('sp_lang') || 'en'
 
           const html = document.documentElement
-          html.classList.toggle('dark', theme === 'dark')
+          html.classList.add('dark')
           html.lang = lang
           html.dir = lang === 'ar' ? 'rtl' : 'ltr'
         } catch {

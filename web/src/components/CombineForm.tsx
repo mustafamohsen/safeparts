@@ -4,6 +4,7 @@ import type { Strings } from '../i18n'
 import { ensureWasm } from '../wasm'
 
 import { CopyButton } from './CopyButton'
+import { EncryptedText } from './ui/encrypted-text'
 
 type Encoding = 'base58check' | 'base64url' | 'mnemo-words' | 'mnemo-bip39'
 
@@ -118,7 +119,7 @@ export function CombineForm({ strings }: CombineFormProps) {
       <div className="dir-row items-start justify-between gap-4">
         <div className="text-start">
           <h2 className="text-lg font-semibold">{strings.combineTitle}</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{strings.combineSubtitle}</p>
+          <p className="mt-1 text-sm text-slate-300">{strings.combineSubtitle}</p>
         </div>
       </div>
 
@@ -157,14 +158,14 @@ export function CombineForm({ strings }: CombineFormProps) {
             </div>
           </div>
 
-          <div className="mt-3 divide-y divide-slate-200/50 dark:divide-white/10">
+          <div className="mt-3 divide-y divide-emerald-500/10">
             {shareBoxes.map((box, i) => {
               const isInvalid = invalidShareBoxIds.includes(box.id)
 
               return (
                 <div key={box.id} className="py-4 first:pt-0 last:pb-0">
                   <div className="dir-row items-center justify-between gap-3">
-                    <div className="text-start text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    <div className="text-start text-xs font-semibold text-slate-200">
                       {strings.shareNumber} {i + 1}
                     </div>
 
@@ -187,12 +188,10 @@ export function CombineForm({ strings }: CombineFormProps) {
                     onChange={(e) => setShareBoxValue(box.id, e.target.value)}
                     rows={encoding === 'mnemo-bip39' ? 6 : 3}
                     placeholder={strings.sharePlaceholder}
-                    className={`input mt-2 resize-y font-mono text-xs leading-relaxed ${
-                      isInvalid
-                        ? 'border-rose-400 focus:border-rose-400 focus:ring-rose-500/15 dark:border-rose-400/60 dark:focus:border-rose-300 dark:focus:ring-rose-400/10'
-                        : ''
-                    }`}
-                  />
+                     className={`input mt-2 resize-y font-mono text-xs leading-relaxed ${
+                       isInvalid ? 'border-rose-400 focus:border-rose-400 focus:ring-rose-500/15' : ''
+                     }`}
+                   />
                 </div>
               )
             })}
@@ -220,23 +219,25 @@ export function CombineForm({ strings }: CombineFormProps) {
       </div>
 
       {secret ? (
-        <div className="mt-6 rounded-2xl border border-slate-200/60 bg-white/40 p-3 dark:border-white/10 dark:bg-slate-950/20">
+        <div className="mt-6 rounded-2xl border border-emerald-500/15 bg-black/35 p-3">
           <div className="dir-row items-start justify-between gap-3">
             <div className="text-start">
-              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">{strings.recoveredTitle}</h3>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{strings.recoveredHint}</p>
+              <h3 className="text-sm font-semibold text-slate-200">{strings.recoveredTitle}</h3>
+              <p className="mt-1 text-xs text-slate-400">{strings.recoveredHint}</p>
             </div>
 
             <CopyButton value={secret} copyLabel={strings.copy} copiedLabel={strings.copied} className="shrink-0" />
           </div>
 
-          <textarea
-            dir="auto"
-            readOnly
-            value={secret}
-            rows={4}
-            className="input mt-3 min-h-[120px] resize-y font-mono text-xs leading-relaxed"
-          />
+          <div dir="auto" className="input mt-3 min-h-[120px] resize-y font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
+            <EncryptedText
+              text={secret}
+              revealDelayMs={Math.max(1, Math.min(12, Math.floor(600 / Math.max(1, secret.length))))}
+              flipDelayMs={18}
+              encryptedClassName="text-emerald-300/45"
+              revealedClassName="text-slate-200"
+            />
+          </div>
         </div>
       ) : null}
     </section>

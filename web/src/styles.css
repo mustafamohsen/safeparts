@@ -4,10 +4,6 @@
 
 @layer base {
   :root {
-    color-scheme: light;
-  }
-
-  html.dark {
     color-scheme: dark;
   }
 
@@ -22,7 +18,11 @@
   }
 
   body {
-    @apply min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+    @apply min-h-screen bg-black text-slate-100 antialiased;
+  }
+
+  ::selection {
+    @apply bg-emerald-500/25 text-emerald-50;
   }
 
   code {
@@ -32,19 +32,19 @@
 
 @layer components {
   .glass {
-    @apply rounded-2xl border border-slate-200/60 bg-white/60 shadow-lg shadow-slate-900/5 backdrop-blur-md dark:border-white/10 dark:bg-slate-900/40 dark:shadow-black/20;
+    @apply rounded-2xl border border-emerald-500/15 bg-black/55 shadow-lg shadow-emerald-500/5 backdrop-blur-md;
   }
 
   .field-label {
-    @apply text-sm font-medium text-slate-800 dark:text-slate-200;
+    @apply text-sm font-medium text-slate-200;
   }
 
   .field-hint {
-    @apply text-xs text-slate-500 dark:text-slate-400;
+    @apply text-xs text-slate-400;
   }
 
   .input {
-    @apply w-full rounded-xl border border-slate-300/70 bg-white/80 px-3 py-2 text-sm text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/15 dark:border-white/10 dark:bg-slate-950/30 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-300 dark:focus:ring-cyan-400/10;
+    @apply w-full rounded-xl border border-emerald-500/15 bg-black/40 px-3 py-2 text-sm text-slate-100 shadow-sm outline-none placeholder:text-slate-500 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/15;
   }
 
   .btn {
@@ -52,19 +52,19 @@
   }
 
   .btn-primary {
-    @apply btn bg-indigo-600 text-white shadow-black/10 hover:bg-indigo-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400;
+    @apply btn bg-emerald-500 text-black shadow-emerald-500/15 hover:bg-emerald-400;
   }
 
   .btn-secondary {
-    @apply btn border border-slate-200/70 bg-white/60 text-slate-900 hover:bg-white/80 dark:border-white/10 dark:bg-slate-900/30 dark:text-slate-100 dark:hover:bg-slate-900/50;
+    @apply btn border border-emerald-500/15 bg-black/35 text-slate-100 hover:bg-black/55;
   }
 
   .btn-ghost {
-    @apply btn bg-transparent text-slate-700 shadow-none hover:bg-slate-900/5 dark:text-slate-200 dark:hover:bg-white/5;
+    @apply btn bg-transparent text-slate-200 shadow-none hover:bg-white/5;
   }
 
   .pill {
-    @apply inline-flex items-center gap-1 rounded-xl border border-slate-200/70 bg-white/60 p-1 text-sm text-slate-900 dark:border-white/10 dark:bg-slate-900/30 dark:text-slate-100;
+    @apply inline-flex items-center gap-1 rounded-xl border border-emerald-500/15 bg-black/35 p-1 text-sm text-slate-100;
   }
 
   .pill-btn {
@@ -72,19 +72,18 @@
   }
 
   .pill-btn-active {
-    @apply bg-indigo-600 text-white shadow-sm dark:bg-cyan-500 dark:text-slate-950;
+    @apply bg-emerald-500 text-black shadow-sm;
   }
 
   .pill-btn-inactive {
-    @apply text-slate-700 hover:bg-slate-900/5 dark:text-slate-200 dark:hover:bg-white/5;
+    @apply text-slate-200 hover:bg-white/5;
   }
 
   .alert-error {
-    @apply rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200;
+    @apply rounded-xl border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-sm text-rose-200;
   }
 
   .dir-row {
     display: flex;
   }
 }
-

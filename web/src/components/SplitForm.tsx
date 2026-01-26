@@ -4,6 +4,7 @@ import type { Strings } from '../i18n'
 import { ensureWasm } from '../wasm'
 
 import { CopyButton } from './CopyButton'
+import { EncryptedText } from './ui/encrypted-text'
 
 type Encoding = 'base58check' | 'base64url' | 'mnemo-words' | 'mnemo-bip39'
 
@@ -66,7 +67,7 @@ export function SplitForm({ strings }: SplitFormProps) {
       <div className="dir-row items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">{strings.splitTitle}</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{strings.splitSubtitle}</p>
+          <p className="mt-1 text-sm text-slate-300">{strings.splitSubtitle}</p>
         </div>
       </div>
 
@@ -141,10 +142,9 @@ export function SplitForm({ strings }: SplitFormProps) {
             {busy ? strings.working : strings.splitCta}
           </button>
 
-          <div className="text-start text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-medium text-slate-700 dark:text-slate-300">k={k}</span>{' '}
-            <span className="text-slate-400 dark:text-slate-500">•</span>{' '}
-            <span className="font-medium text-slate-700 dark:text-slate-300">n={n}</span>
+          <div className="text-start text-xs text-slate-400">
+            <span className="font-medium text-slate-200">k={k}</span> <span className="text-emerald-300/40">•</span>{' '}
+            <span className="font-medium text-slate-200">n={n}</span>
           </div>
         </div>
 
@@ -155,27 +155,30 @@ export function SplitForm({ strings }: SplitFormProps) {
         <div className="mt-6">
           <div className="dir-row items-start justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">{strings.sharesTitle}</h3>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{strings.sharesHint}</p>
+              <h3 className="text-sm font-semibold text-slate-200">{strings.sharesTitle}</h3>
+              <p className="mt-1 text-xs text-slate-400">{strings.sharesHint}</p>
             </div>
           </div>
 
-          <div className="mt-3 divide-y divide-slate-200/50 dark:divide-white/10">
+          <div className="mt-3 divide-y divide-emerald-500/10">
             {shares.map((s, i) => (
               <div key={`${i}-${s.slice(0, 16)}`} className="py-4 first:pt-0 last:pb-0">
                 <div className="dir-row items-center justify-between gap-3">
-                  <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  <div className="text-xs font-semibold text-slate-200">
                     {strings.shareNumber} {i + 1}
                   </div>
                   <CopyButton value={s} copyLabel={strings.copy} copiedLabel={strings.copied} />
                 </div>
-                <textarea
-                  dir="ltr"
-                  readOnly
-                  value={s}
-                  rows={encoding === 'mnemo-bip39' ? 6 : 3}
-                  className="input mt-2 font-mono text-xs leading-relaxed"
-                />
+
+                <div dir="ltr" className="input mt-2 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
+                  <EncryptedText
+                    text={s}
+                    revealDelayMs={Math.max(1, Math.min(12, Math.floor(600 / Math.max(1, s.length))))}
+                    flipDelayMs={18}
+                    encryptedClassName="text-emerald-300/45"
+                    revealedClassName="text-slate-200"
+                  />
+                </div>
               </div>
             ))}
           </div>
