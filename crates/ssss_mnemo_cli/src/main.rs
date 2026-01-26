@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result, anyhow};
 use clap::{Parser, Subcommand};
-use ssss_mnemo_core::ascii;
+use ssss_mnemo_core::{ascii, mnemo_words};
 
 #[derive(Debug, Parser)]
 #[command(name = "ssss-mnemo")]
@@ -61,6 +61,7 @@ enum Commands {
 enum CliEncoding {
     Base58check,
     Base64url,
+    MnemoWords,
 }
 
 fn main() -> Result<()> {
@@ -80,15 +81,20 @@ fn main() -> Result<()> {
             let packets = ssss_mnemo_core::tag_and_split(&input, k, n)
                 .with_context(|| format!("split failed (k={k}, n={n})"))?;
 
-            let ascii_encoding = match encoding {
-                CliEncoding::Base58check => ascii::Encoding::Base58check,
-                CliEncoding::Base64url => ascii::Encoding::Base64url,
-            };
-
             let encoded: Vec<String> = packets
                 .iter()
-                .map(|p| ascii::encode_packet(p, ascii_encoding))
-                .collect();
+                .map(|p| match encoding {
+                    CliEncoding::Base58check => {
+                        Ok(ascii::encode_packet(p, ascii::Encoding::Base58check))
+                    }
+                    CliEncoding::Base64url => {
+                        Ok(ascii::encode_packet(p, ascii::Encoding::Base64url))
+                    }
+                    CliEncoding::MnemoWords => {
+                        mnemo_words::encode_packet(p).map_err(|e| anyhow!(e))
+                    }
+                })
+                .collect::<Result<Vec<_>>>()?;
 
             let output = encoded.join("\n") + "\n";
             write_output_text(out, out_stdout, &output)?;
@@ -104,20 +110,40 @@ fn main() -> Result<()> {
             let input = read_input(r#in, in_stdin)?;
             let input_str = String::from_utf8(input).context("shares input must be UTF-8")?;
 
-            let tokens: Vec<&str> = input_str.split_whitespace().collect();
-            if tokens.is_empty() {
-                return Err(anyhow!("no shares provided"));
-            }
+            let packets = match from {
+                CliEncoding::MnemoWords => {
+                    let lines: Vec<&str> = input_str
+                        .lines()
+                        .map(str::trim)
+                        .filter(|l| !l.is_empty())
+                        .collect();
+                    if lines.is_empty() {
+                        return Err(anyhow!("no shares provided"));
+                    }
 
-            let ascii_encoding = match from {
-                CliEncoding::Base58check => ascii::Encoding::Base58check,
-                CliEncoding::Base64url => ascii::Encoding::Base64url,
+                    lines
+                        .into_iter()
+                        .map(|line| mnemo_words::decode_packet(line).map_err(|e| anyhow!(e)))
+                        .collect::<Result<Vec<_>>>()?
+                }
+                CliEncoding::Base58check | CliEncoding::Base64url => {
+                    let tokens: Vec<&str> = input_str.split_whitespace().collect();
+                    if tokens.is_empty() {
+                        return Err(anyhow!("no shares provided"));
+                    }
+
+                    let encoding = match from {
+                        CliEncoding::Base58check => ascii::Encoding::Base58check,
+                        CliEncoding::Base64url => ascii::Encoding::Base64url,
+                        CliEncoding::MnemoWords => unreachable!("handled above"),
+                    };
+
+                    tokens
+                        .into_iter()
+                        .map(|t| ascii::decode_packet(t, encoding).map_err(|e| anyhow!(e)))
+                        .collect::<Result<Vec<_>>>()?
+                }
             };
-
-            let packets = tokens
-                .into_iter()
-                .map(|t| ascii::decode_packet(t, ascii_encoding).map_err(|e| anyhow!(e)))
-                .collect::<Result<Vec<_>>>()?;
 
             let secret = ssss_mnemo_core::combine_and_verify(&packets)
                 .map_err(|e| anyhow!(e))

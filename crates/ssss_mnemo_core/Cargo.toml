@@ -12,6 +12,7 @@ thiserror = "2"
 zeroize = { version = "1", features = ["alloc"] }
 base64 = "0.22"
 bs58 = { version = "0.5", features = ["check"] }
+bip39 = "2"
 
 [dev-dependencies]
 hex = "0.4"
