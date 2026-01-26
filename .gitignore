@@ -1,3 +1,8 @@
 /target
 **/*.rs.bk
 .DS_Store
+
+# Web
+/web/node_modules
+/web/dist
+/web/src/wasm_pkg

@@ -1,0 +1,75 @@
+:root {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+.container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.tab.active {
+  border-color: #444;
+  font-weight: 600;
+}
+
+.panel {
+  margin-top: 16px;
+  border: 1px solid #eee;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+label {
+  display: block;
+  margin: 10px 0;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+button {
+  padding: 10px 14px;
+}
+
+.error {
+  color: #b00020;
+}
+
+.results textarea {
+  margin-top: 8px;
+}
+
+.hint {
+  margin-top: 12px;
+  color: #666;
+  font-size: 0.9rem;
+}
