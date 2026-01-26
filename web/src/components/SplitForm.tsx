@@ -6,7 +6,7 @@ import { ensureWasm } from "../wasm";
 import { CopyButton } from "./CopyButton";
 import { EncryptedText } from "./ui/encrypted-text";
 
-type Encoding = "base58check" | "base64url" | "mnemo-words" | "mnemo-bip39";
+type Encoding = "base64url" | "mnemo-words";
 
 type SplitFormProps = {
   strings: Strings;
@@ -129,10 +129,8 @@ export function SplitForm({ strings }: SplitFormProps) {
               onChange={(e) => setEncoding(e.target.value as Encoding)}
               className="input mt-2"
             >
-              <option value="base58check">Base58Check (base58check)</option>
               <option value="base64url">Base64 URL (base64url)</option>
               <option value="mnemo-words">Words (mnemo-words)</option>
-              <option value="mnemo-bip39">BIP-39 Words (mnemo-bip39)</option>
             </select>
           </label>
         </div>

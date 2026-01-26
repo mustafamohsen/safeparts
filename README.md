@@ -23,10 +23,8 @@ You choose a threshold (`k` of `n`):
 - **Threshold secret sharing** (Shamir-style over GF(256), byte-wise).
 - **Integrity-checked reconstruction** via a BLAKE3 tag (detects wrong/corrupted shares).
 - **Multiple human-/machine-friendly encodings** for the same share packet:
-  - `base58check`
   - `base64url`
-  - `mnemo-words` (BIP-39 words + CRC16 for error detection)
-  - `mnemo-bip39` (chunked, valid BIP-39 mnemonics)
+  - `mnemo-words` (BIP-39 word list + CRC16 for error detection)
 - **Optional passphrase protection** (encrypt-before-split): Argon2id → ChaCha20-Poly1305.
 - **Scriptable CLI** (`safeparts`) and a **Rust core library** (`safeparts_core`).
 - **Optional WASM bindings** (`safeparts_wasm`) for embedding in web contexts.
@@ -76,9 +74,6 @@ Mnemonic output (more human-friendly):
 
 - `echo -n "my secret" | cargo run -q -p safeparts -- split --k 2 --n 3 --encoding mnemo-words --in-stdin --out-stdout`
 
-BIP-39 chunked mnemonics:
-
-- `echo -n "my secret" | cargo run -q -p safeparts -- split --k 2 --n 3 --encoding mnemo-bip39 --in-stdin --out-stdout`
 
 ### Combine shares
 
@@ -86,7 +81,7 @@ Provide at least `k` shares on stdin:
 
 - `printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine --from base64url --in-stdin --out-stdout`
 
-For `mnemo-words` and `mnemo-bip39`, each share is typically a full line (because the share contains spaces).
+For `mnemo-words`, each share is typically a full line (because the share contains spaces).
 
 ### Optional passphrase encryption
 
