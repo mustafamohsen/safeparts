@@ -213,3 +213,9 @@ If the repo ends up structured differently, prefer the actual layout over this.
 
 - No `.cursor/rules/`, `.cursorrules`, or `.github/copilot-instructions.md` files are currently present.
 - If these are added later, mirror their requirements here.
+
+## Git workflow
+- Always commit atomically and meaningfully
+- Write commit messages using conventional commits
+- Prefer rebase over merge
+- For major features, create a feature branch (feat/this-feature). Use kebab case branch names
