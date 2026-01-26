@@ -25,17 +25,17 @@ export function SplitForm({ strings }: SplitFormProps) {
   const [n, setN] = useState(3);
 
   function clampK(nextK: number, nextN: number): number {
-    if (!Number.isFinite(nextK)) return 1;
-    if (!Number.isFinite(nextN)) return 1;
+    if (!Number.isFinite(nextK)) return 2;
+    if (!Number.isFinite(nextN)) return 2;
 
-    const safeN = Math.min(255, Math.max(1, Math.floor(nextN)));
+    const safeN = Math.min(255, Math.max(2, Math.floor(nextN)));
     const safeK = Math.floor(nextK);
-    return Math.min(safeN, Math.max(1, safeK));
+    return Math.min(safeN, Math.max(2, safeK));
   }
 
   function clampN(nextN: number): number {
-    if (!Number.isFinite(nextN)) return 1;
-    return Math.min(255, Math.max(1, Math.floor(nextN)));
+    if (!Number.isFinite(nextN)) return 2;
+    return Math.min(255, Math.max(2, Math.floor(nextN)));
   }
   const [encoding, setEncoding] = useState<Encoding>("mnemo-words");
   const [passphrase, setPassphrase] = useState("");
@@ -44,7 +44,7 @@ export function SplitForm({ strings }: SplitFormProps) {
   const [busy, setBusy] = useState(false);
 
   const canSplit = useMemo(
-    () => secret.length > 0 && k >= 1 && n >= 1 && n <= 255,
+    () => secret.length > 0 && k >= 2 && n >= 2 && n <= 255,
     [secret, k, n],
   );
 
@@ -100,7 +100,7 @@ export function SplitForm({ strings }: SplitFormProps) {
             </span>
             <input
               type="number"
-              min={1}
+              min={2}
               max={Math.min(255, n)}
               value={k}
               onChange={(e) => setK(clampK(Number(e.target.value), n))}
@@ -114,7 +114,7 @@ export function SplitForm({ strings }: SplitFormProps) {
             </span>
             <input
               type="number"
-              min={1}
+              min={2}
               max={255}
               value={n}
               onChange={(e) => {
