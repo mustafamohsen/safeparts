@@ -83,6 +83,10 @@
     @apply rounded-xl border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-sm text-rose-200;
   }
 
+  .alert-info {
+    @apply rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2 text-xs text-slate-200;
+  }
+
   .dir-row {
     display: flex;
   }

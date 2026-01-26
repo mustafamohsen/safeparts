@@ -15,6 +15,8 @@ export const STRINGS = {
     language: 'Language',
     english: 'English',
     arabic: 'العربية',
+    github: 'GitHub',
+    privacyNote: 'Runs locally in your browser. Your secret never leaves your device.',
 
     splitTitle: 'Split',
     splitSubtitle: 'Turn one secret into multiple shares.',
@@ -68,6 +70,8 @@ export const STRINGS = {
     language: 'اللغة',
     english: 'English',
     arabic: 'العربية',
+    github: 'GitHub',
+    privacyNote: 'يعمل محلياً في المتصفح. لا يغادر سرك جهازك.',
 
     splitTitle: 'تقسيم',
     splitSubtitle: 'حوّل سراً واحداً إلى عدة حصص.',
