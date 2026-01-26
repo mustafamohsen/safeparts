@@ -195,17 +195,7 @@ export function App() {
         </main>
 
         <footer className="dir-row flex-wrap items-center justify-between gap-2 text-start text-xs text-slate-400">
-          <div className="dir-row items-center gap-2">
-            <span>Licensed under</span>
-            <a
-              href="https://github.com/mustafamohsen/safeparts/blob/main/LICENSE"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-300 underline decoration-emerald-400/30 underline-offset-4 hover:text-slate-100"
-            >
-              MIT
-            </a>
-          </div>
+          <div>MIT Licensed</div>
         </footer>
       </div>
     </div>
