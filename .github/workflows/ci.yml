@@ -31,6 +31,12 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Trigger Netlify build
-        if: ${{ secrets.NETLIFY_BUILD_HOOK_URL != '' }}
+        env:
+          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
         run: |
-          curl --fail --silent --show-error -X POST "${{ secrets.NETLIFY_BUILD_HOOK_URL }}"
+          if [ -z "$NETLIFY_BUILD_HOOK_URL" ]; then
+            echo "NETLIFY_BUILD_HOOK_URL not set; skipping Netlify build trigger."
+            exit 0
+          fi
+
+          curl --fail --silent --show-error -X POST "$NETLIFY_BUILD_HOOK_URL"
