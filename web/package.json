@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:wasm": "wasm-pack build ../crates/ssss_mnemo_wasm --target web --out-dir src/wasm_pkg",
+    "build:wasm": "bash -lc 'command -v wasm-pack >/dev/null 2>&1 || cargo install wasm-pack --locked --version 0.13.1; command -v wasm-bindgen >/dev/null 2>&1 || cargo install wasm-bindgen-cli --version 0.2.108 --locked; wasm-pack build ../crates/ssss_mnemo_wasm --mode no-install --target web --out-dir ../../web/src/wasm_pkg'",
+
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
