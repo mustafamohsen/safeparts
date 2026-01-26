@@ -1,40 +1,40 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 
-import { CombineForm } from './components/CombineForm'
-import { SplitForm } from './components/SplitForm'
-import { EncryptedText } from './components/ui/encrypted-text'
-import { STRINGS, type Lang } from './i18n'
+import { CombineForm } from "./components/CombineForm";
+import { SplitForm } from "./components/SplitForm";
+import { EncryptedText } from "./components/ui/encrypted-text";
+import { STRINGS, type Lang } from "./i18n";
 
-type Tab = 'split' | 'combine'
+type Tab = "split" | "combine";
 
-const LANG_KEY = 'sp_lang'
+const LANG_KEY = "sp_lang";
 
 function safeRead(key: string): string | null {
   try {
-    return localStorage.getItem(key)
+    return localStorage.getItem(key);
   } catch {
-    return null
+    return null;
   }
 }
 
 function safeWrite(key: string, value: string) {
   try {
-    localStorage.setItem(key, value)
+    localStorage.setItem(key, value);
   } catch {
     // ignore
   }
 }
 
 function applyDocumentPrefs(lang: Lang) {
-  const html = document.documentElement
-  html.classList.add('dark')
-  html.lang = lang
-  html.dir = lang === 'ar' ? 'rtl' : 'ltr'
+  const html = document.documentElement;
+  html.classList.add("dark");
+  html.lang = lang;
+  html.dir = lang === "ar" ? "rtl" : "ltr";
 }
 
 function getInitialLang(): Lang {
-  const stored = safeRead(LANG_KEY)
-  return stored === 'ar' ? 'ar' : 'en'
+  const stored = safeRead(LANG_KEY);
+  return stored === "ar" ? "ar" : "en";
 }
 
 function Background() {
@@ -46,19 +46,19 @@ function Background() {
       <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:repeating-linear-gradient(to_bottom,rgba(16,185,129,0.28)_0px,rgba(0,0,0,0)_2px,rgba(0,0,0,0)_6px)]" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
     </>
-  )
+  );
 }
 
 export function App() {
-  const [tab, setTab] = useState<Tab>('split')
-  const [lang, setLang] = useState<Lang>(() => getInitialLang())
+  const [tab, setTab] = useState<Tab>("split");
+  const [lang, setLang] = useState<Lang>(() => getInitialLang());
 
-  const strings = STRINGS[lang]
+  const strings = STRINGS[lang];
 
   useEffect(() => {
-    applyDocumentPrefs(lang)
-    safeWrite(LANG_KEY, lang)
-  }, [lang])
+    applyDocumentPrefs(lang);
+    safeWrite(LANG_KEY, lang);
+  }, [lang]);
 
   return (
     <div className="relative isolate min-h-screen overflow-hidden">
@@ -70,8 +70,10 @@ export function App() {
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 shrink-0 rounded-2xl bg-gradient-to-br from-emerald-500 via-green-400 to-emerald-300 shadow-lg shadow-emerald-500/20" />
               <div className="text-start">
-                <h1 className="text-xl font-semibold tracking-tight text-emerald-100">{strings.appName}</h1>
-                {lang === 'en' ? (
+                <h1 className="text-xl font-semibold tracking-tight text-emerald-100">
+                  {strings.appName}
+                </h1>
+                {lang === "en" ? (
                   <EncryptedText
                     className="mt-0.5 block text-xs"
                     text={strings.tagline}
@@ -81,7 +83,9 @@ export function App() {
                     revealedClassName="text-slate-300"
                   />
                 ) : (
-                  <p className="mt-0.5 text-xs text-slate-300">{strings.tagline}</p>
+                  <p className="mt-0.5 text-xs text-slate-300">
+                    {strings.tagline}
+                  </p>
                 )}
               </div>
             </div>
@@ -91,24 +95,24 @@ export function App() {
                 <button
                   type="button"
                   className={`grid h-8 w-8 place-items-center rounded-lg text-sm transition ${
-                    lang === 'en' ? 'bg-white/10' : 'hover:bg-white/5'
+                    lang === "en" ? "bg-white/10" : "hover:bg-white/5"
                   }`}
-                  onClick={() => setLang('en')}
+                  onClick={() => setLang("en")}
                   aria-label={strings.english}
                   title={strings.english}
                 >
-                  🇺🇸
+                  🇺
                 </button>
                 <button
                   type="button"
                   className={`grid h-8 w-8 place-items-center rounded-lg text-sm transition ${
-                    lang === 'ar' ? 'bg-white/10' : 'hover:bg-white/5'
+                    lang === "ar" ? "bg-white/10" : "hover:bg-white/5"
                   }`}
-                  onClick={() => setLang('ar')}
+                  onClick={() => setLang("ar")}
                   aria-label={strings.arabic}
                   title={strings.arabic}
                 >
-                  🇸🇦
+                  🇸
                 </button>
               </div>
             </div>
@@ -117,15 +121,15 @@ export function App() {
           <nav className="pill w-fit">
             <button
               type="button"
-              className={`pill-btn ${tab === 'split' ? 'pill-btn-active' : 'pill-btn-inactive'}`}
-              onClick={() => setTab('split')}
+              className={`pill-btn ${tab === "split" ? "pill-btn-active" : "pill-btn-inactive"}`}
+              onClick={() => setTab("split")}
             >
               {strings.splitTab}
             </button>
             <button
               type="button"
-              className={`pill-btn ${tab === 'combine' ? 'pill-btn-active' : 'pill-btn-inactive'}`}
-              onClick={() => setTab('combine')}
+              className={`pill-btn ${tab === "combine" ? "pill-btn-active" : "pill-btn-inactive"}`}
+              onClick={() => setTab("combine")}
             >
               {strings.combineTab}
             </button>
@@ -133,16 +137,15 @@ export function App() {
         </header>
 
         <main className="flex flex-col gap-6">
-          {tab === 'split' ? <SplitForm strings={strings} /> : <CombineForm strings={strings} />}
+          {tab === "split" ? (
+            <SplitForm strings={strings} />
+          ) : (
+            <CombineForm strings={strings} />
+          )}
         </main>
 
-        <footer className="text-start text-xs text-slate-400">
-          <span>{strings.wasmHint} </span>
-          <code dir="ltr" className="rounded bg-emerald-500/10 px-1 py-0.5 text-[11px] text-emerald-100">
-            {strings.wasmCommand}
-          </code>
-        </footer>
+        <footer className="text-start text-xs text-slate-400"></footer>
       </div>
     </div>
-  )
+  );
 }
