@@ -144,7 +144,7 @@ export function App() {
                   aria-label={strings.english}
                   title={strings.english}
                 >
-                  🇺🇸
+                  EN
                 </button>
                 <button
                   type="button"
@@ -155,7 +155,7 @@ export function App() {
                   aria-label={strings.arabic}
                   title={strings.arabic}
                 >
-                  🇸🇦
+                  AR
                 </button>
               </div>
             </div>

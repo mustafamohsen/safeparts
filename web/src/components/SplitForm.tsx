@@ -95,7 +95,7 @@ export function SplitForm({ strings }: SplitFormProps) {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label className="block">
-            <span className="field-label">{strings.kLabel}</span>
+            <span className="field-label block sm:min-h-10">{strings.kLabel}</span>
             <input
               type="number"
               min={1}
@@ -107,7 +107,7 @@ export function SplitForm({ strings }: SplitFormProps) {
           </label>
 
           <label className="block">
-            <span className="field-label">{strings.nLabel}</span>
+            <span className="field-label block sm:min-h-10">{strings.nLabel}</span>
             <input
               type="number"
               min={1}
@@ -123,7 +123,7 @@ export function SplitForm({ strings }: SplitFormProps) {
           </label>
 
           <label className="block">
-            <span className="field-label">{strings.encodingLabel}</span>
+            <span className="field-label block sm:min-h-10">{strings.encodingLabel}</span>
             <select
               value={encoding}
               onChange={(e) => setEncoding(e.target.value as Encoding)}
