@@ -9,7 +9,7 @@ const CRC16_POLY: u16 = 0x1021;
 const CRC16_INIT: u16 = 0xFFFF;
 
 pub fn encode_packet(packet: &SharePacket) -> CoreResult<String> {
-    let payload = packet.encode_binary();
+    let payload = packet.encode_binary()?;
 
     let mut framed = Vec::with_capacity(4 + payload.len() + 2);
     let payload_len = u32::try_from(payload.len())
@@ -164,6 +164,7 @@ mod tests {
             n: 5,
             x: 2,
             payload: vec![9, 8, 7, 6, 5, 4, 3],
+            crypto_params: None,
         };
 
         let s = encode_packet(&pkt).unwrap();
@@ -179,6 +180,7 @@ mod tests {
             n: 3,
             x: 1,
             payload: vec![1, 2, 3, 4, 5],
+            crypto_params: None,
         };
 
         let mut words: Vec<String> = encode_packet(&pkt)

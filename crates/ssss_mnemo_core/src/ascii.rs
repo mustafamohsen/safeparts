@@ -9,11 +9,11 @@ pub enum Encoding {
     Base64url,
 }
 
-pub fn encode_packet(packet: &SharePacket, encoding: Encoding) -> String {
-    let bytes = packet.encode_binary();
+pub fn encode_packet(packet: &SharePacket, encoding: Encoding) -> CoreResult<String> {
+    let bytes = packet.encode_binary()?;
     match encoding {
-        Encoding::Base58check => bs58::encode(bytes).with_check().into_string(),
-        Encoding::Base64url => base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(bytes),
+        Encoding::Base58check => Ok(bs58::encode(bytes).with_check().into_string()),
+        Encoding::Base64url => Ok(base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(bytes)),
     }
 }
 
@@ -44,9 +44,10 @@ mod tests {
             n: 5,
             x: 1,
             payload: vec![1, 2, 3, 4],
+            crypto_params: None,
         };
 
-        let enc = encode_packet(&pkt, Encoding::Base64url);
+        let enc = encode_packet(&pkt, Encoding::Base64url).unwrap();
         let dec = decode_packet(&enc, Encoding::Base64url).unwrap();
         assert_eq!(dec, pkt);
     }
@@ -59,9 +60,10 @@ mod tests {
             n: 3,
             x: 3,
             payload: vec![0, 255, 4, 9],
+            crypto_params: None,
         };
 
-        let enc = encode_packet(&pkt, Encoding::Base58check);
+        let enc = encode_packet(&pkt, Encoding::Base58check).unwrap();
         let dec = decode_packet(&enc, Encoding::Base58check).unwrap();
         assert_eq!(dec, pkt);
     }

@@ -3,18 +3,15 @@ use core::convert::TryInto;
 use bip39::{Language, Mnemonic};
 
 use crate::error::{CoreError, CoreResult};
-use crate::packet::SharePacket;
+use crate::packet::{self, SharePacket};
 
 const ENTROPY_LEN: usize = 32;
 const CHUNK_LEN: usize = 28;
 const FRAME_HEADER_LEN: usize = 4;
 const FRAME_SEPARATOR: &str = " / ";
 
-const PACKET_HEADER_LEN: usize = 29;
-const PACKET_PAYLOAD_LEN_OFFSET: usize = 25;
-
 pub fn encode_packet(packet: &SharePacket) -> CoreResult<String> {
-    let bytes = packet.encode_binary();
+    let bytes = packet.encode_binary()?;
     let frames: Vec<&[u8]> = bytes.chunks(CHUNK_LEN).collect();
 
     let frame_count = u16::try_from(frames.len())
@@ -123,18 +120,8 @@ pub fn decode_packet(s: &str) -> CoreResult<SharePacket> {
         combined.extend_from_slice(&chunk);
     }
 
-    if combined.len() < PACKET_HEADER_LEN {
-        return Err(CoreError::Encoding("packet bytes too short".to_string()));
-    }
-
-    let payload_len_bytes: [u8; 4] = combined
-        [PACKET_PAYLOAD_LEN_OFFSET..PACKET_PAYLOAD_LEN_OFFSET + 4]
-        .try_into()
-        .map_err(|_| CoreError::Encoding("packet length field missing".to_string()))?;
-    let payload_len = u32::from_be_bytes(payload_len_bytes) as usize;
-    let total_len = PACKET_HEADER_LEN
-        .checked_add(payload_len)
-        .ok_or_else(|| CoreError::Encoding("packet length overflow".to_string()))?;
+    let total_len = packet::binary_total_len(&combined)
+        .map_err(|e| CoreError::Encoding(format!("invalid packet header: {e}")))?;
 
     if combined.len() < total_len {
         return Err(CoreError::Encoding("packet bytes truncated".to_string()));
@@ -152,6 +139,7 @@ pub fn decode_packet(s: &str) -> CoreResult<SharePacket> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::packet::SharePacket;
     use crate::sss::SetId;
 
     #[test]
@@ -162,6 +150,7 @@ mod tests {
             n: 5,
             x: 4,
             payload: (0u8..200).collect(),
+            crypto_params: None,
         };
 
         let s = encode_packet(&pkt).unwrap();
@@ -177,6 +166,7 @@ mod tests {
             n: 3,
             x: 1,
             payload: (0u8..120).collect(),
+            crypto_params: None,
         };
 
         let s = encode_packet(&pkt).unwrap();
@@ -200,6 +190,7 @@ mod tests {
             n: 3,
             x: 2,
             payload: vec![1, 2, 3, 4, 5, 6],
+            crypto_params: None,
         };
 
         let s = encode_packet(&pkt).unwrap();

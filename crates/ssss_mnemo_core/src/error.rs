@@ -33,4 +33,19 @@ pub enum CoreError {
 
     #[error("encoding error: {0}")]
     Encoding(String),
+
+    #[error("crypto error: {0}")]
+    Crypto(String),
+
+    #[error("encryption failed")]
+    EncryptFailed,
+
+    #[error("decryption failed")]
+    DecryptFailed,
+
+    #[error("passphrase required")]
+    PassphraseRequired,
+
+    #[error("crypto params mismatch")]
+    CryptoParamsMismatch,
 }
