@@ -1,21 +1,47 @@
-// @ts-nocheck
 import { useMemo, useState } from 'react'
 
+import type { Strings } from '../i18n'
 import { ensureWasm } from '../wasm'
+
+import { CopyButton } from './CopyButton'
 
 type Encoding = 'base58check' | 'base64url' | 'mnemo-words' | 'mnemo-bip39'
 
-export function SplitForm() {
+type SplitFormProps = {
+  strings: Strings
+}
+
+function toErrorMessage(err: unknown, strings: Strings): string {
+  const message = err instanceof Error ? err.message : String(err)
+  if (/wasm_pkg|safeparts_wasm|Cannot find module/i.test(message)) return strings.errorWasmMissing
+  return message
+}
+
+export function SplitForm({ strings }: SplitFormProps) {
   const [secret, setSecret] = useState('')
   const [k, setK] = useState(2)
   const [n, setN] = useState(3)
+
+  function clampK(nextK: number, nextN: number): number {
+    if (!Number.isFinite(nextK)) return 1
+    if (!Number.isFinite(nextN)) return 1
+
+    const safeN = Math.min(255, Math.max(1, Math.floor(nextN)))
+    const safeK = Math.floor(nextK)
+    return Math.min(safeN, Math.max(1, safeK))
+  }
+
+  function clampN(nextN: number): number {
+    if (!Number.isFinite(nextN)) return 1
+    return Math.min(255, Math.max(1, Math.floor(nextN)))
+  }
   const [encoding, setEncoding] = useState<Encoding>('mnemo-words')
   const [passphrase, setPassphrase] = useState('')
   const [shares, setShares] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  const canSplit = useMemo(() => secret.length > 0 && k >= 1 && n >= k && n <= 255, [secret, k, n])
+  const canSplit = useMemo(() => secret.length > 0 && k >= 1 && n >= 1 && n <= 255, [secret, k, n])
 
   async function onSplit() {
     setBusy(true)
@@ -29,69 +55,132 @@ export function SplitForm() {
       const outShares = Array.from(out).map((v) => String(v))
       setShares(outShares)
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(toErrorMessage(e, strings))
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <section className="panel">
-      <h2>Split</h2>
-
-      <label>
-        Secret
-        <textarea value={secret} onChange={(e) => setSecret(e.target.value)} rows={4} />
-      </label>
-
-      <div className="row">
-        <label>
-          k
-          <input type="number" min={1} max={255} value={k} onChange={(e) => setK(Number(e.target.value))} />
-        </label>
-        <label>
-          n
-          <input type="number" min={1} max={255} value={n} onChange={(e) => setN(Number(e.target.value))} />
-        </label>
-        <label>
-          Encoding
-          <select value={encoding} onChange={(e) => setEncoding(e.target.value as Encoding)}>
-            <option value="base58check">base58check</option>
-            <option value="base64url">base64url</option>
-            <option value="mnemo-words">mnemo-words</option>
-            <option value="mnemo-bip39">mnemo-bip39</option>
-          </select>
-        </label>
+    <section className="glass p-4 sm:p-6">
+      <div className="dir-row items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">{strings.splitTitle}</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{strings.splitSubtitle}</p>
+        </div>
       </div>
 
-      <label>
-        Passphrase (optional)
-        <input value={passphrase} onChange={(e) => setPassphrase(e.target.value)} />
-      </label>
+      <div className="mt-6 grid grid-cols-1 gap-4">
+        <label className="block">
+          <span className="field-label">{strings.secretLabel}</span>
+          <span className="field-hint mt-1 block">{strings.secretHint}</span>
+          <textarea
+            value={secret}
+            onChange={(e) => setSecret(e.target.value)}
+            rows={4}
+            className="input mt-3 min-h-[120px] resize-y font-mono text-xs leading-relaxed"
+          />
+        </label>
 
-      <button type="button" disabled={!canSplit || busy} onClick={onSplit}>
-        {busy ? 'Working…' : 'Split'}
-      </button>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <label className="block">
+            <span className="field-label">{strings.kLabel}</span>
+            <input
+              type="number"
+              min={1}
+              max={Math.min(255, n)}
+              value={k}
+              onChange={(e) => setK(clampK(Number(e.target.value), n))}
+              className="input mt-2"
+            />
+          </label>
 
-      {error ? <p className="error">{error}</p> : null}
+          <label className="block">
+            <span className="field-label">{strings.nLabel}</span>
+            <input
+              type="number"
+              min={1}
+              max={255}
+              value={n}
+              onChange={(e) => {
+                const nextN = clampN(Number(e.target.value))
+                setN(nextN)
+                setK((prevK) => clampK(prevK, nextN))
+              }}
+              className="input mt-2"
+            />
+          </label>
+
+          <label className="block">
+            <span className="field-label">{strings.encodingLabel}</span>
+            <select
+              value={encoding}
+              onChange={(e) => setEncoding(e.target.value as Encoding)}
+              className="input mt-2"
+            >
+              <option value="base58check">Base58Check (base58check)</option>
+              <option value="base64url">Base64 URL (base64url)</option>
+              <option value="mnemo-words">Words (mnemo-words)</option>
+              <option value="mnemo-bip39">BIP-39 Words (mnemo-bip39)</option>
+            </select>
+          </label>
+        </div>
+
+        <label className="block">
+          <span className="field-label">{strings.passphraseLabel}</span>
+          <input
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.target.value)}
+            className="input mt-2"
+            autoComplete="new-password"
+          />
+        </label>
+
+        <div className="dir-row flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <button type="button" disabled={!canSplit || busy} onClick={onSplit} className="btn-primary w-full sm:w-auto">
+            {busy ? strings.working : strings.splitCta}
+          </button>
+
+          <div className="text-start text-xs text-slate-500 dark:text-slate-400">
+            <span className="font-medium text-slate-700 dark:text-slate-300">k={k}</span>{' '}
+            <span className="text-slate-400 dark:text-slate-500">•</span>{' '}
+            <span className="font-medium text-slate-700 dark:text-slate-300">n={n}</span>
+          </div>
+        </div>
+
+        {error ? <div className="alert-error">{error}</div> : null}
+      </div>
 
       {shares.length > 0 ? (
-        <div className="results">
-          <h3>Shares</h3>
-          {shares.map((s, i) => (
-            <textarea
-              key={`${i}-${s.slice(0, 16)}`}
-              readOnly
-              value={s}
-              rows={encoding === 'mnemo-bip39' ? 6 : 2}
-            />
-          ))}
+        <div className="mt-6">
+          <div className="dir-row items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">{strings.sharesTitle}</h3>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{strings.sharesHint}</p>
+            </div>
+          </div>
+
+          <div className="mt-3 divide-y divide-slate-200/50 dark:divide-white/10">
+            {shares.map((s, i) => (
+              <div key={`${i}-${s.slice(0, 16)}`} className="py-4 first:pt-0 last:pb-0">
+                <div className="dir-row items-center justify-between gap-3">
+                  <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    {strings.shareNumber} {i + 1}
+                  </div>
+                  <CopyButton value={s} copyLabel={strings.copy} copiedLabel={strings.copied} />
+                </div>
+                <textarea
+                  dir="ltr"
+                  readOnly
+                  value={s}
+                  rows={encoding === 'mnemo-bip39' ? 6 : 3}
+                  className="input mt-2 font-mono text-xs leading-relaxed"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
-
-      <p className="hint">
-        Note: run <code>npm run build:wasm</code> before using the UI.
-      </p>
     </section>
   )
 }

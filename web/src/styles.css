@@ -1,75 +1,90 @@
-:root {
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html {
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+      "Apple Color Emoji", "Segoe UI Emoji";
+  }
+
+  html[lang='ar'] {
+    font-family: "IBM Plex Sans Arabic", "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+      Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  }
+
+  body {
+    @apply min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  }
+
+  code {
+    @apply font-mono;
+  }
 }
 
-.container {
-  max-width: 900px;
-  margin: 24px auto;
-  padding: 0 16px;
+@layer components {
+  .glass {
+    @apply rounded-2xl border border-slate-200/60 bg-white/60 shadow-lg shadow-slate-900/5 backdrop-blur-md dark:border-white/10 dark:bg-slate-900/40 dark:shadow-black/20;
+  }
+
+  .field-label {
+    @apply text-sm font-medium text-slate-800 dark:text-slate-200;
+  }
+
+  .field-hint {
+    @apply text-xs text-slate-500 dark:text-slate-400;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-slate-300/70 bg-white/80 px-3 py-2 text-sm text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/15 dark:border-white/10 dark:bg-slate-950/30 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-300 dark:focus:ring-cyan-400/10;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply btn bg-indigo-600 text-white shadow-black/10 hover:bg-indigo-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400;
+  }
+
+  .btn-secondary {
+    @apply btn border border-slate-200/70 bg-white/60 text-slate-900 hover:bg-white/80 dark:border-white/10 dark:bg-slate-900/30 dark:text-slate-100 dark:hover:bg-slate-900/50;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-slate-700 shadow-none hover:bg-slate-900/5 dark:text-slate-200 dark:hover:bg-white/5;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-xl border border-slate-200/70 bg-white/60 p-1 text-sm text-slate-900 dark:border-white/10 dark:bg-slate-900/30 dark:text-slate-100;
+  }
+
+  .pill-btn {
+    @apply rounded-lg px-3 py-1.5 text-xs font-medium transition;
+  }
+
+  .pill-btn-active {
+    @apply bg-indigo-600 text-white shadow-sm dark:bg-cyan-500 dark:text-slate-950;
+  }
+
+  .pill-btn-inactive {
+    @apply text-slate-700 hover:bg-slate-900/5 dark:text-slate-200 dark:hover:bg-white/5;
+  }
+
+  .alert-error {
+    @apply rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200;
+  }
+
+  .dir-row {
+    display: flex;
+  }
 }
 
-.header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.tabs {
-  display: flex;
-  gap: 8px;
-}
-
-.tab {
-  border: 1px solid #ddd;
-  background: #fff;
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-.tab.active {
-  border-color: #444;
-  font-weight: 600;
-}
-
-.panel {
-  margin-top: 16px;
-  border: 1px solid #eee;
-  padding: 16px;
-  border-radius: 8px;
-}
-
-label {
-  display: block;
-  margin: 10px 0;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 8px;
-  margin-top: 6px;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-}
-
-button {
-  padding: 10px 14px;
-}
-
-.error {
-  color: #b00020;
-}
-
-.results textarea {
-  margin-top: 8px;
-}
-
-.hint {
-  margin-top: 12px;
-  color: #666;
-  font-size: 0.9rem;
-}
