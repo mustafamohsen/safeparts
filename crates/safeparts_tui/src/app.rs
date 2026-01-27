@@ -5,10 +5,12 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, Result};
 use base64::Engine;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::layout::{Alignment, Constraint, Direction, Layout, Margin, Rect};
 use ratatui::style::{Color, Modifier, Style};
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Tabs, Wrap};
+use ratatui::text::{Line, Span, Text};
+use ratatui::widgets::{
+    Block, Borders, Cell, Clear, List, ListItem, Paragraph, Row, Table, Tabs, Wrap,
+};
 use ratatui::{Frame, Terminal};
 use tui_textarea::{Input, TextArea};
 use zeroize::Zeroizing;
@@ -17,7 +19,7 @@ use crate::clipboard::Clipboard;
 use crate::domain::{Encoding, combine_shares, set_id_hex, split_secret};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Tab {
+enum TabId {
     Split,
     Combine,
 }
@@ -44,8 +46,57 @@ impl Modal {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Focus {
+    SplitSecret,
+    SplitK,
+    SplitN,
+    SplitEncoding,
+    SplitPassphrase,
+    SplitShares,
+
+    CombineShares,
+    CombineEncoding,
+    CombinePassphrase,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum StatusKind {
+    Info,
+    Ok,
+    Error,
+}
+
+#[derive(Clone, Debug)]
+struct Status {
+    kind: StatusKind,
+    msg: String,
+    at: Instant,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct Theme {
+    accent: Color,
+    dim: Color,
+    ok: Color,
+    err: Color,
+    border: Color,
+}
+
+impl Theme {
+    fn default_dark() -> Self {
+        Self {
+            accent: Color::Cyan,
+            dim: Color::Gray,
+            ok: Color::Green,
+            err: Color::Red,
+            border: Color::DarkGray,
+        }
+    }
+}
+
 pub struct App {
-    tab: Tab,
+    tab: TabId,
     focus: Focus,
 
     // split
@@ -70,31 +121,19 @@ pub struct App {
 
     // common
     clipboard: Clipboard,
-    status: String,
-    last_status_at: Option<Instant>,
+    status: Option<Status>,
     show_help: bool,
     modal: Option<Modal>,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Focus {
-    SplitSecret,
-    SplitK,
-    SplitN,
-    SplitEncoding,
-    SplitPassphrase,
-    SplitShares,
-
-    CombineShares,
-    CombineEncoding,
-    CombinePassphrase,
+    theme: Theme,
 }
 
 impl App {
     pub fn new() -> Self {
+        let theme = Theme::default_dark();
+
         let mut split_secret_text = TextArea::default();
         split_secret_text
-            .set_placeholder_text("Paste secret text here (UTF-8) or use Load file...");
+            .set_placeholder_text("Paste secret text here (UTF-8) or Ctrl+L to load a file...");
 
         let mut combine_shares_text = TextArea::default();
         combine_shares_text.set_placeholder_text(
@@ -102,7 +141,7 @@ impl App {
         );
 
         Self {
-            tab: Tab::Split,
+            tab: TabId::Split,
             focus: Focus::SplitSecret,
 
             split_secret_text,
@@ -124,10 +163,10 @@ impl App {
             combine_used_encoding: None,
 
             clipboard: Clipboard::new(),
-            status: String::new(),
-            last_status_at: None,
+            status: None,
             show_help: false,
             modal: None,
+            theme,
         }
     }
 
@@ -135,7 +174,7 @@ impl App {
         loop {
             terminal.draw(|f| self.render(f))?;
 
-            if crossterm::event::poll(Duration::from_millis(100))? {
+            if crossterm::event::poll(Duration::from_millis(50))? {
                 match crossterm::event::read()? {
                     Event::Key(key) => {
                         if self.on_key(key)? {
@@ -154,17 +193,31 @@ impl App {
     }
 
     fn expire_status(&mut self) {
-        if let Some(at) = self.last_status_at {
-            if at.elapsed() > Duration::from_secs(3) {
-                self.status.clear();
-                self.last_status_at = None;
+        if let Some(status) = self.status.as_ref() {
+            if status.at.elapsed() > Duration::from_secs(3) {
+                self.status = None;
             }
         }
     }
 
-    fn set_status(&mut self, msg: impl Into<String>) {
-        self.status = msg.into();
-        self.last_status_at = Some(Instant::now());
+    fn set_status(&mut self, kind: StatusKind, msg: impl Into<String>) {
+        self.status = Some(Status {
+            kind,
+            msg: msg.into(),
+            at: Instant::now(),
+        });
+    }
+
+    fn set_ok(&mut self, msg: impl Into<String>) {
+        self.set_status(StatusKind::Ok, msg);
+    }
+
+    fn set_err(&mut self, msg: impl Into<String>) {
+        self.set_status(StatusKind::Error, msg);
+    }
+
+    fn set_info(&mut self, msg: impl Into<String>) {
+        self.set_status(StatusKind::Info, msg);
     }
 
     fn on_key(&mut self, key: KeyEvent) -> Result<bool> {
@@ -193,8 +246,13 @@ impl App {
             return Ok(false);
         }
 
-        if key.modifiers.contains(KeyModifiers::SHIFT) && key.code == KeyCode::BackTab {
+        if key.code == KeyCode::BackTab {
             self.prev_focus();
+            return Ok(false);
+        }
+
+        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('l') {
+            self.on_load()?;
             return Ok(false);
         }
 
@@ -224,10 +282,6 @@ impl App {
             }
             KeyCode::Enter => {
                 self.on_enter()?;
-                Ok(false)
-            }
-            KeyCode::Char('l') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.on_load()?;
                 Ok(false)
             }
             KeyCode::Up => {
@@ -337,23 +391,23 @@ impl App {
 
     fn on_enter(&mut self) -> Result<()> {
         match self.tab {
-            Tab::Split => self.do_split(),
-            Tab::Combine => self.do_combine(),
+            TabId::Split => self.do_split(),
+            TabId::Combine => self.do_combine(),
         }
     }
 
     fn on_load(&mut self) -> Result<()> {
         match self.tab {
-            Tab::Split => {
+            TabId::Split => {
                 self.modal = Some(Modal::new(
                     ModalKind::LoadSecretFile,
-                    "Enter secret file path (bytes).",
+                    "Enter secret file path (bytes)",
                 ));
             }
-            Tab::Combine => {
+            TabId::Combine => {
                 self.modal = Some(Modal::new(
                     ModalKind::LoadShareFiles,
-                    "Enter share file paths (one per line).",
+                    "Enter share file paths (one per line)",
                 ));
             }
         }
@@ -362,24 +416,24 @@ impl App {
 
     fn on_save(&mut self) -> Result<()> {
         match self.tab {
-            Tab::Split => {
+            TabId::Split => {
                 if self.split_shares.is_empty() {
-                    self.set_status("no shares to save");
+                    self.set_info("no shares to save");
                     return Ok(());
                 }
                 self.modal = Some(Modal::new(
                     ModalKind::SaveSharesDir,
-                    "Enter output directory for share files.",
+                    "Enter output directory for share files",
                 ));
             }
-            Tab::Combine => {
+            TabId::Combine => {
                 if self.combine_recovered.is_none() {
-                    self.set_status("nothing to save");
+                    self.set_info("nothing to save");
                     return Ok(());
                 }
                 self.modal = Some(Modal::new(
                     ModalKind::SaveSecretFile,
-                    "Enter output file path for recovered secret.",
+                    "Enter output file path for recovered secret",
                 ));
             }
         }
@@ -388,9 +442,9 @@ impl App {
 
     fn on_copy(&mut self) -> Result<()> {
         let text = match self.tab {
-            Tab::Split => {
+            TabId::Split => {
                 if self.split_shares.is_empty() {
-                    self.set_status("no shares to copy");
+                    self.set_info("no shares to copy");
                     return Ok(());
                 }
 
@@ -403,28 +457,28 @@ impl App {
                     self.split_shares.join("\n") + "\n"
                 }
             }
-            Tab::Combine => {
+            TabId::Combine => {
                 if let Some(text) = self.combine_recovered_text.as_ref() {
                     text.clone()
                 } else if let Some(bytes) = self.combine_recovered.as_ref() {
                     base64::engine::general_purpose::STANDARD.encode(bytes)
                 } else {
-                    self.set_status("nothing to copy");
+                    self.set_info("nothing to copy");
                     return Ok(());
                 }
             }
         };
 
         match self.clipboard.set_text(&text) {
-            Ok(()) => self.set_status("copied"),
-            Err(e) => self.set_status(format!("copy failed: {e}")),
+            Ok(()) => self.set_ok("copied"),
+            Err(e) => self.set_err(format!("copy failed: {e}")),
         }
         Ok(())
     }
 
     fn on_paste(&mut self) -> Result<()> {
         let Ok(text) = self.clipboard.get_text() else {
-            self.set_status("paste unavailable");
+            self.set_info("paste unavailable");
             return Ok(());
         };
 
@@ -443,7 +497,7 @@ impl App {
             Focus::CombinePassphrase => {
                 self.combine_passphrase.push_str(&text);
             }
-            _ => self.set_status("paste into a text field"),
+            _ => self.set_info("paste into a text field"),
         }
 
         Ok(())
@@ -480,13 +534,12 @@ impl App {
                 self.split_secret_file_len = Some(bytes.len());
                 self.split_secret_file = Some(p);
 
-                // Keep the text editor empty; the file is the source of truth.
                 self.split_secret_text = TextArea::default();
                 self.split_secret_text.set_placeholder_text(
                     "Using secret file input. Type here to switch back to text input.",
                 );
 
-                self.set_status("loaded secret file");
+                self.set_ok("loaded secret file");
             }
             ModalKind::LoadShareFiles => {
                 let mut combined = String::new();
@@ -498,7 +551,7 @@ impl App {
                     combined.push_str("\n\n");
                 }
                 self.combine_shares_text.insert_str(combined);
-                self.set_status("loaded share files");
+                self.set_ok("loaded share files");
             }
             ModalKind::SaveSharesDir => {
                 let dir = if text.is_empty() {
@@ -520,17 +573,17 @@ impl App {
                         .with_context(|| format!("write {}", path.display()))?;
                 }
 
-                self.set_status(format!("saved {n} share files"));
+                self.set_ok(format!("saved {n} share files"));
             }
             ModalKind::SaveSecretFile => {
                 let Some(bytes) = self.combine_recovered.as_ref() else {
-                    self.set_status("nothing to save");
+                    self.set_info("nothing to save");
                     return Ok(());
                 };
 
                 let path = PathBuf::from(text);
                 fs::write(&path, bytes).with_context(|| format!("write {}", path.display()))?;
-                self.set_status("saved recovered secret");
+                self.set_ok("saved recovered secret");
             }
         }
 
@@ -545,7 +598,7 @@ impl App {
         };
 
         if secret_bytes.is_empty() {
-            self.set_status("secret is empty");
+            self.set_info("secret is empty");
             return Ok(());
         }
 
@@ -567,9 +620,9 @@ impl App {
                 self.split_shares = shares;
                 self.split_selected_share = 0;
                 self.focus = Focus::SplitShares;
-                self.set_status("split ok");
+                self.set_ok("split ok");
             }
-            Err(e) => self.set_status(format!("split error: {e}")),
+            Err(e) => self.set_err(format!("split error: {e}")),
         }
 
         Ok(())
@@ -589,16 +642,18 @@ impl App {
                 self.combine_used_encoding = Some(used_enc);
                 self.combine_recovered_text = String::from_utf8(bytes.clone()).ok();
                 self.combine_recovered = Some(bytes);
+
                 let detected = self
                     .combine_used_encoding
                     .map(|e| e.label().to_string())
                     .unwrap_or_else(|| "unknown".into());
-                self.set_status(format!("combined ok ({detected})"));
+                self.set_ok(format!("combined ok ({detected})"));
             }
             Err(e) => {
                 self.combine_recovered = None;
                 self.combine_recovered_text = None;
-                self.set_status(format!("combine error: {e}"));
+                self.combine_used_encoding = None;
+                self.set_err(format!("combine error: {e}"));
             }
         }
 
@@ -607,12 +662,12 @@ impl App {
 
     fn next_tab(&mut self) {
         self.tab = match self.tab {
-            Tab::Split => Tab::Combine,
-            Tab::Combine => Tab::Split,
+            TabId::Split => TabId::Combine,
+            TabId::Combine => TabId::Split,
         };
         self.focus = match self.tab {
-            Tab::Split => Focus::SplitSecret,
-            Tab::Combine => Focus::CombineShares,
+            TabId::Split => Focus::SplitSecret,
+            TabId::Combine => Focus::CombineShares,
         };
     }
 
@@ -622,79 +677,79 @@ impl App {
 
     fn next_focus(&mut self) {
         self.focus = match (self.tab, self.focus) {
-            (Tab::Split, Focus::SplitSecret) => Focus::SplitK,
-            (Tab::Split, Focus::SplitK) => Focus::SplitN,
-            (Tab::Split, Focus::SplitN) => Focus::SplitEncoding,
-            (Tab::Split, Focus::SplitEncoding) => Focus::SplitPassphrase,
-            (Tab::Split, Focus::SplitPassphrase) => Focus::SplitShares,
-            (Tab::Split, Focus::SplitShares) => Focus::SplitSecret,
+            (TabId::Split, Focus::SplitSecret) => Focus::SplitK,
+            (TabId::Split, Focus::SplitK) => Focus::SplitN,
+            (TabId::Split, Focus::SplitN) => Focus::SplitEncoding,
+            (TabId::Split, Focus::SplitEncoding) => Focus::SplitPassphrase,
+            (TabId::Split, Focus::SplitPassphrase) => Focus::SplitShares,
+            (TabId::Split, Focus::SplitShares) => Focus::SplitSecret,
 
-            (Tab::Combine, Focus::CombineShares) => Focus::CombineEncoding,
-            (Tab::Combine, Focus::CombineEncoding) => Focus::CombinePassphrase,
-            (Tab::Combine, Focus::CombinePassphrase) => Focus::CombineShares,
+            (TabId::Combine, Focus::CombineShares) => Focus::CombineEncoding,
+            (TabId::Combine, Focus::CombineEncoding) => Focus::CombinePassphrase,
+            (TabId::Combine, Focus::CombinePassphrase) => Focus::CombineShares,
 
-            (Tab::Split, _) => Focus::SplitSecret,
-            (Tab::Combine, _) => Focus::CombineShares,
+            (TabId::Split, _) => Focus::SplitSecret,
+            (TabId::Combine, _) => Focus::CombineShares,
         };
     }
 
     fn prev_focus(&mut self) {
         self.focus = match (self.tab, self.focus) {
-            (Tab::Split, Focus::SplitSecret) => Focus::SplitShares,
-            (Tab::Split, Focus::SplitK) => Focus::SplitSecret,
-            (Tab::Split, Focus::SplitN) => Focus::SplitK,
-            (Tab::Split, Focus::SplitEncoding) => Focus::SplitN,
-            (Tab::Split, Focus::SplitPassphrase) => Focus::SplitEncoding,
-            (Tab::Split, Focus::SplitShares) => Focus::SplitPassphrase,
+            (TabId::Split, Focus::SplitSecret) => Focus::SplitShares,
+            (TabId::Split, Focus::SplitK) => Focus::SplitSecret,
+            (TabId::Split, Focus::SplitN) => Focus::SplitK,
+            (TabId::Split, Focus::SplitEncoding) => Focus::SplitN,
+            (TabId::Split, Focus::SplitPassphrase) => Focus::SplitEncoding,
+            (TabId::Split, Focus::SplitShares) => Focus::SplitPassphrase,
 
-            (Tab::Combine, Focus::CombineShares) => Focus::CombinePassphrase,
-            (Tab::Combine, Focus::CombineEncoding) => Focus::CombineShares,
-            (Tab::Combine, Focus::CombinePassphrase) => Focus::CombineEncoding,
+            (TabId::Combine, Focus::CombineShares) => Focus::CombinePassphrase,
+            (TabId::Combine, Focus::CombineEncoding) => Focus::CombineShares,
+            (TabId::Combine, Focus::CombinePassphrase) => Focus::CombineEncoding,
 
-            (Tab::Split, _) => Focus::SplitSecret,
-            (Tab::Combine, _) => Focus::CombineShares,
+            (TabId::Split, _) => Focus::SplitSecret,
+            (TabId::Combine, _) => Focus::CombineShares,
         };
     }
 
     fn render(&mut self, f: &mut Frame) {
-        let size = f.size();
+        let area = f.size();
 
-        let chunks = Layout::default()
+        let outer = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(3),
                 Constraint::Min(0),
                 Constraint::Length(2),
             ])
-            .split(size);
+            .split(area);
 
-        self.render_tabs(f, chunks[0]);
+        self.render_header(f, outer[0]);
 
         match self.tab {
-            Tab::Split => self.render_split(f, chunks[1]),
-            Tab::Combine => self.render_combine(f, chunks[1]),
+            TabId::Split => self.render_split(f, outer[1]),
+            TabId::Combine => self.render_combine(f, outer[1]),
         }
 
-        self.render_status(f, chunks[2]);
+        self.render_footer(f, outer[2]);
 
         if self.show_help {
-            self.render_help(f, centered_rect(80, 80, size));
+            self.render_help(f, centered_rect(86, 86, area));
         }
 
         if let Some(modal) = self.modal.as_mut() {
-            Self::render_modal(f, centered_rect(80, 40, size), modal);
+            Self::render_modal(f, centered_rect(78, 45, area), modal, self.theme);
         }
     }
 
-    fn render_tabs(&self, f: &mut Frame, area: Rect) {
+    fn render_header(&self, f: &mut Frame, area: Rect) {
         let titles = ["Split", "Combine"]
             .iter()
-            .map(|t| Line::from(Span::styled(*t, Style::default().fg(Color::White))))
+            .map(|t| Line::from(*t))
             .collect::<Vec<_>>();
 
         let idx = match self.tab {
-            Tab::Split => 0,
-            Tab::Combine => 1,
+            TabId::Split => 0,
+            TabId::Combine => 1,
         };
 
         let tabs = Tabs::new(titles)
@@ -702,46 +757,74 @@ impl App {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .title("safeparts-tui"),
+                    .title(" safeparts ")
+                    .border_style(Style::default().fg(self.theme.border)),
             )
             .highlight_style(
                 Style::default()
-                    .fg(Color::Cyan)
+                    .fg(self.theme.accent)
                     .add_modifier(Modifier::BOLD),
             );
+
         f.render_widget(tabs, area);
     }
 
-    fn render_status(&self, f: &mut Frame, area: Rect) {
-        let help = "Tab focus • ←/→ tabs • Enter run • Ctrl+L load • Ctrl+S save • Ctrl+C copy • Ctrl+Q quit • ? help";
-        let text = if self.status.is_empty() {
-            help.to_string()
-        } else {
-            format!("{}  —  {}", self.status, help)
+    fn render_footer(&self, f: &mut Frame, area: Rect) {
+        let shortcuts = match self.tab {
+            TabId::Split => {
+                "Enter split • Ctrl+L load • Ctrl+S export • Ctrl+C copy • Tab focus • ? help • Ctrl+Q quit"
+            }
+            TabId::Combine => {
+                "Enter combine • Ctrl+L load • Ctrl+S save • Ctrl+C copy • Tab focus • ? help • Ctrl+Q quit"
+            }
         };
 
+        let status_line = self.status.as_ref().map(|s| {
+            let (label, color) = match s.kind {
+                StatusKind::Info => ("info", self.theme.dim),
+                StatusKind::Ok => ("ok", self.theme.ok),
+                StatusKind::Error => ("error", self.theme.err),
+            };
+
+            Line::from(vec![
+                Span::styled(format!("[{label}] "), Style::default().fg(color)),
+                Span::raw(&s.msg),
+            ])
+        });
+
+        let mut text = Text::default();
+        if let Some(line) = status_line {
+            text.lines.push(line);
+        }
+        text.lines.push(Line::from(Span::styled(
+            shortcuts,
+            Style::default().fg(self.theme.dim),
+        )));
+
         let p = Paragraph::new(text)
-            .style(Style::default().fg(Color::Gray))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(self.theme.border)),
+            )
             .wrap(Wrap { trim: true });
         f.render_widget(p, area);
     }
 
     fn render_split(&mut self, f: &mut Frame, area: Rect) {
-        let chunks = Layout::default()
+        let layout = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([Constraint::Percentage(55), Constraint::Percentage(45)])
+            .constraints([Constraint::Percentage(52), Constraint::Percentage(48)])
             .split(area);
 
-        // left: inputs
         let left = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Min(8),
-                Constraint::Length(6),
-                Constraint::Length(3),
+                Constraint::Min(10),
+                Constraint::Length(8),
                 Constraint::Length(4),
             ])
-            .split(chunks[0]);
+            .split(layout[0]);
 
         let secret_title = if let Some(p) = self.split_secret_file.as_ref() {
             let suffix = self
@@ -753,209 +836,384 @@ impl App {
             "Secret (text)".to_string()
         };
 
-        let secret_block = block_for(self.focus == Focus::SplitSecret, secret_title);
-        self.split_secret_text.set_block(secret_block);
+        {
+            let block = self.block_for_focus(self.focus == Focus::SplitSecret, secret_title);
+            self.split_secret_text.set_block(block);
+        }
         f.render_widget(&self.split_secret_text, left[0]);
 
-        let params =
-            split_params_lines(self.split_k, self.split_n, self.split_encoding, self.focus);
-        let params_block = block_for(
-            matches!(
-                self.focus,
-                Focus::SplitK | Focus::SplitN | Focus::SplitEncoding
-            ),
-            "Params",
-        );
-        let p = Paragraph::new(params).block(params_block);
-        f.render_widget(p, left[1]);
+        f.render_widget(self.split_settings_table(), left[1]);
 
-        let passphrase_block = block_for(
-            self.focus == Focus::SplitPassphrase,
-            "Passphrase (optional)",
-        );
-        let passphrase_text = masked_passphrase(&self.split_passphrase);
-        let passphrase = Paragraph::new(vec![
-            Line::from(passphrase_text),
-            Line::from("Ctrl+U clears").style(Style::default().fg(Color::Gray)),
-        ])
-        .block(passphrase_block);
-        f.render_widget(passphrase, left[2]);
+        let tips = vec![
+            Line::from(vec![
+                Span::styled("Tip: ", Style::default().fg(self.theme.dim)),
+                Span::raw("Tab to focus; ↑/↓ to change numeric/encoding."),
+            ]),
+            Line::from(vec![
+                Span::styled("Copy: ", Style::default().fg(self.theme.dim)),
+                Span::raw("Ctrl+C copies selected share; focus elsewhere copies all."),
+            ]),
+        ];
 
-        let actions = Paragraph::new(vec![
-            Line::from("Enter: split"),
-            Line::from("Ctrl+L: load secret file"),
-            Line::from("Ctrl+S: save shares (per file)"),
-        ])
-        .block(Block::default().borders(Borders::ALL).title("Actions"));
-        f.render_widget(actions, left[3]);
+        let tips = Paragraph::new(tips)
+            .block(self.block("Tips"))
+            .wrap(Wrap { trim: true });
+        f.render_widget(tips, left[2]);
 
-        // right: shares
         let right = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Length(8), Constraint::Min(0)])
-            .split(chunks[1]);
+            .constraints([
+                Constraint::Length(3),
+                Constraint::Min(6),
+                Constraint::Min(6),
+            ])
+            .split(layout[1]);
 
-        let shares_header = Paragraph::new(vec![
-            Line::from(format!("Shares: {}", self.split_shares.len())),
-            Line::from("Up/Down select share"),
-            Line::from("Ctrl+C copy selected (or all)").style(Style::default().fg(Color::Gray)),
-        ])
-        .block(Block::default().borders(Borders::ALL).title("Shares"));
-        f.render_widget(shares_header, right[0]);
+        let header = Paragraph::new(Line::from(vec![
+            Span::styled(
+                format!("{} shares", self.split_shares.len()),
+                Style::default()
+                    .fg(self.theme.accent)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(
+                "  •  Ctrl+S exports one file/share",
+                Style::default().fg(self.theme.dim),
+            ),
+        ]))
+        .block(self.block("Output"));
+        f.render_widget(header, right[0]);
 
         let items = self
             .split_shares
             .iter()
             .enumerate()
-            .map(|(i, s)| {
-                let label = format!("#{:02} {}", i + 1, preview(s));
-                ListItem::new(label)
-            })
+            .map(|(i, s)| ListItem::new(format!("#{:02}  {}", i + 1, preview(s))))
             .collect::<Vec<_>>();
 
         let list = List::new(items)
-            .block(block_for(self.focus == Focus::SplitShares, "Share list"))
+            .block(self.block_for_focus(self.focus == Focus::SplitShares, "Share list"))
             .highlight_style(
                 Style::default()
-                    .fg(Color::Cyan)
+                    .fg(self.theme.accent)
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol("▶ ");
+
         f.render_stateful_widget(list, right[1], &mut list_state(self.split_selected_share));
+
+        let preview_text = self
+            .split_shares
+            .get(self.split_selected_share)
+            .cloned()
+            .unwrap_or_default();
+
+        let preview = Paragraph::new(preview_text)
+            .block(self.block("Selected share (copy-friendly)"))
+            .wrap(Wrap { trim: false });
+        f.render_widget(preview, right[2]);
+    }
+
+    fn split_settings_table(&self) -> Table {
+        let rows = vec![
+            settings_row(
+                "k",
+                format!("{}  (↑/↓)", self.split_k),
+                self.focus == Focus::SplitK,
+                self.theme,
+            ),
+            settings_row(
+                "n",
+                format!("{}  (↑/↓)", self.split_n),
+                self.focus == Focus::SplitN,
+                self.theme,
+            ),
+            settings_row(
+                "encoding",
+                format!("{}  (↑/↓)", self.split_encoding.label()),
+                self.focus == Focus::SplitEncoding,
+                self.theme,
+            ),
+            settings_row(
+                "passphrase",
+                format!(
+                    "{}  (Ctrl+U clear)",
+                    masked_passphrase(&self.split_passphrase)
+                ),
+                self.focus == Focus::SplitPassphrase,
+                self.theme,
+            ),
+            Row::new(vec![
+                Cell::from(Span::styled("actions", Style::default().fg(self.theme.dim))),
+                Cell::from(Span::styled(
+                    "Enter split • Ctrl+L load file",
+                    Style::default().fg(self.theme.dim),
+                )),
+            ]),
+        ];
+
+        Table::new(rows, [Constraint::Length(12), Constraint::Min(0)])
+            .block(self.block("Settings"))
+            .column_spacing(1)
     }
 
     fn render_combine(&mut self, f: &mut Frame, area: Rect) {
-        let chunks = Layout::default()
+        let layout = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([Constraint::Percentage(55), Constraint::Percentage(45)])
+            .constraints([Constraint::Percentage(52), Constraint::Percentage(48)])
             .split(area);
 
-        // left: input
         let left = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Min(10), Constraint::Length(7)])
-            .split(chunks[0]);
+            .constraints([Constraint::Min(10), Constraint::Length(8)])
+            .split(layout[0]);
 
-        let shares_block = block_for(self.focus == Focus::CombineShares, "Shares input");
-        self.combine_shares_text.set_block(shares_block);
+        {
+            let block = self.block_for_focus(self.focus == Focus::CombineShares, "Shares input");
+            self.combine_shares_text.set_block(block);
+        }
         f.render_widget(&self.combine_shares_text, left[0]);
 
-        let settings_block = block_for(
-            matches!(
-                self.focus,
-                Focus::CombineEncoding | Focus::CombinePassphrase
-            ),
-            "Combine",
-        );
+        f.render_widget(self.combine_settings_table(), left[1]);
 
-        let enc_style = if self.focus == Focus::CombineEncoding {
-            Style::default()
-                .fg(Color::Cyan)
-                .add_modifier(Modifier::BOLD)
-        } else {
-            Style::default().fg(Color::Cyan)
-        };
-
-        let pass_style = if self.focus == Focus::CombinePassphrase {
-            Style::default()
-                .fg(Color::Cyan)
-                .add_modifier(Modifier::BOLD)
-        } else {
-            Style::default().fg(Color::Cyan)
-        };
-
-        let params = vec![
-            Line::from(vec![
-                Span::raw("Encoding: "),
-                Span::styled(self.combine_encoding.label(), enc_style),
-            ]),
-            Line::from(vec![
-                Span::raw("Passphrase: "),
-                Span::styled(masked_passphrase(&self.combine_passphrase), pass_style),
-            ]),
-            Line::from("Enter: combine"),
-            Line::from("Ctrl+L: load share files (paths)"),
-            Line::from("Ctrl+S: save recovered secret"),
-        ];
-        let params = Paragraph::new(params).block(settings_block);
-        f.render_widget(params, left[1]);
-
-        // right: output
         let right = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Length(6), Constraint::Min(0)])
-            .split(chunks[1]);
+            .constraints([
+                Constraint::Length(5),
+                Constraint::Min(6),
+                Constraint::Min(6),
+            ])
+            .split(layout[1]);
 
-        let meta_lines = vec![
-            Line::from(format!(
-                "Detected: {}",
-                self.combine_used_encoding.map(|e| e.label()).unwrap_or("-")
+        let detected = self.combine_used_encoding.map(|e| e.label()).unwrap_or("-");
+
+        let recovered_len = self
+            .combine_recovered
+            .as_ref()
+            .map(|b| b.len())
+            .unwrap_or(0);
+
+        let meta = Paragraph::new(vec![
+            Line::from(vec![
+                Span::styled("Detected: ", Style::default().fg(self.theme.dim)),
+                Span::styled(detected, Style::default().fg(self.theme.accent)),
+            ]),
+            Line::from(vec![
+                Span::styled("Bytes: ", Style::default().fg(self.theme.dim)),
+                Span::styled(
+                    recovered_len.to_string(),
+                    Style::default().fg(self.theme.accent),
+                ),
+            ]),
+            Line::from(Span::styled(
+                "Ctrl+C copies UTF-8 else base64",
+                Style::default().fg(self.theme.dim),
             )),
-            Line::from(format!(
-                "Bytes: {}",
-                self.combine_recovered.as_ref().map(Vec::len).unwrap_or(0)
-            )),
-            Line::from("Ctrl+C copies UTF-8 text else base64")
-                .style(Style::default().fg(Color::Gray)),
-        ];
-        let meta = Paragraph::new(meta_lines)
-            .block(Block::default().borders(Borders::ALL).title("Recovered"));
+        ])
+        .block(self.block("Recovered"));
         f.render_widget(meta, right[0]);
 
-        let body = if let Some(text) = self.combine_recovered_text.as_ref() {
-            text.clone()
-        } else if let Some(bytes) = self.combine_recovered.as_ref() {
-            base64::engine::general_purpose::STANDARD.encode(bytes)
-        } else {
-            String::new()
-        };
+        let utf8_text = self.combine_recovered_text.clone().unwrap_or_default();
+        let base64_text = self
+            .combine_recovered
+            .as_ref()
+            .map(|b| base64::engine::general_purpose::STANDARD.encode(b))
+            .unwrap_or_default();
 
-        let out = Paragraph::new(body)
-            .block(Block::default().borders(Borders::ALL).title("Output"))
+        let text_view = Paragraph::new(utf8_text)
+            .block(self.block("Text view (UTF-8)"))
             .wrap(Wrap { trim: false });
-        f.render_widget(out, right[1]);
+        f.render_widget(text_view, right[1]);
+
+        let base64_view = Paragraph::new(base64_text)
+            .block(self.block("Bytes view (base64)"))
+            .wrap(Wrap { trim: false });
+        f.render_widget(base64_view, right[2]);
+    }
+
+    fn combine_settings_table(&self) -> Table {
+        let rows = vec![
+            settings_row(
+                "encoding",
+                format!("{}  (↑/↓)", self.combine_encoding.label()),
+                self.focus == Focus::CombineEncoding,
+                self.theme,
+            ),
+            settings_row(
+                "passphrase",
+                format!(
+                    "{}  (Ctrl+U clear)",
+                    masked_passphrase(&self.combine_passphrase)
+                ),
+                self.focus == Focus::CombinePassphrase,
+                self.theme,
+            ),
+            Row::new(vec![
+                Cell::from(Span::styled("actions", Style::default().fg(self.theme.dim))),
+                Cell::from(Span::styled(
+                    "Enter combine • Ctrl+L load files • Ctrl+S save",
+                    Style::default().fg(self.theme.dim),
+                )),
+            ]),
+        ];
+
+        Table::new(rows, [Constraint::Length(12), Constraint::Min(0)])
+            .block(self.block("Settings"))
+            .column_spacing(1)
     }
 
     fn render_help(&self, f: &mut Frame, area: Rect) {
         f.render_widget(Clear, area);
-        let lines = vec![
-            Line::from("safeparts-tui"),
+
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .title(" Help ")
+            .border_style(Style::default().fg(self.theme.border));
+
+        let content = vec![
+            Line::from(Span::styled(
+                "safeparts-tui",
+                Style::default()
+                    .fg(self.theme.accent)
+                    .add_modifier(Modifier::BOLD),
+            )),
             Line::from(""),
-            Line::from("Navigation"),
+            Line::from(Span::styled(
+                "Navigation",
+                Style::default().add_modifier(Modifier::BOLD),
+            )),
             Line::from("  Left/Right: switch Split/Combine"),
-            Line::from("  Tab: cycle focus"),
+            Line::from("  Tab / Shift+Tab: change focus"),
             Line::from(""),
-            Line::from("Actions"),
+            Line::from(Span::styled(
+                "Actions",
+                Style::default().add_modifier(Modifier::BOLD),
+            )),
             Line::from("  Enter: run split/combine"),
-            Line::from("  Ctrl+L: load file(s)"),
-            Line::from("  Ctrl+S: save (shares or secret)"),
-            Line::from("  Ctrl+C: copy (UTF-8 else base64)"),
+            Line::from("  Ctrl+L: load secret/share file(s)"),
+            Line::from("  Ctrl+S: save/export"),
+            Line::from("  Ctrl+C: copy (UTF-8 if possible, else base64)"),
+            Line::from("  Ctrl+V: paste into focused editor"),
+            Line::from("  Ctrl+U: clear passphrase"),
             Line::from("  Ctrl+Q: quit"),
             Line::from(""),
-            Line::from("Input formats"),
+            Line::from(Span::styled(
+                "Input formats",
+                Style::default().add_modifier(Modifier::BOLD),
+            )),
             Line::from("  base64/base58: whitespace-separated shares"),
-            Line::from("  mnemonics: one share per paragraph"),
+            Line::from("  mnemonics: one share per paragraph (blank-line separated)"),
         ];
 
-        let p = Paragraph::new(lines)
-            .block(Block::default().borders(Borders::ALL).title("Help"))
+        let p = Paragraph::new(content)
+            .block(block)
+            .alignment(Alignment::Left)
             .wrap(Wrap { trim: false });
         f.render_widget(p, area);
     }
 
-    fn render_modal(f: &mut Frame, area: Rect, modal: &mut Modal) {
+    fn render_modal(f: &mut Frame, area: Rect, modal: &mut Modal, theme: Theme) {
         f.render_widget(Clear, area);
-        let title = match modal.kind {
-            ModalKind::LoadSecretFile => "Load secret file",
-            ModalKind::LoadShareFiles => "Load share files",
-            ModalKind::SaveSharesDir => "Save shares",
-            ModalKind::SaveSecretFile => "Save secret",
+
+        let (title, helper) = match modal.kind {
+            ModalKind::LoadSecretFile => (
+                "Load secret file",
+                "Paste a path and press Enter (Esc cancels)",
+            ),
+            ModalKind::LoadShareFiles => {
+                ("Load share files", "One file path per line (Esc cancels)")
+            }
+            ModalKind::SaveSharesDir => (
+                "Export shares",
+                "Enter a directory; exports one file per share",
+            ),
+            ModalKind::SaveSecretFile => ("Save secret", "Enter file path for recovered bytes"),
         };
 
-        modal
-            .input
-            .set_block(Block::default().borders(Borders::ALL).title(title));
-        f.render_widget(&modal.input, area);
+        let outer = Block::default()
+            .borders(Borders::ALL)
+            .title(format!(" {title} "))
+            .border_style(Style::default().fg(theme.border));
+
+        f.render_widget(outer, area);
+
+        let inner = area.inner(Margin {
+            vertical: 1,
+            horizontal: 2,
+        });
+
+        let parts = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(2),
+                Constraint::Min(1),
+                Constraint::Length(1),
+            ])
+            .split(inner);
+
+        let helper = Paragraph::new(Line::from(vec![
+            Span::styled("Hint: ", Style::default().fg(theme.dim)),
+            Span::raw(helper),
+        ]));
+        f.render_widget(helper, parts[0]);
+
+        modal.input.set_block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(" Path ")
+                .border_style(Style::default().fg(theme.accent)),
+        );
+        f.render_widget(&modal.input, parts[1]);
+
+        let footer = Paragraph::new(Line::from(Span::styled(
+            "Enter confirm • Esc cancel",
+            Style::default().fg(theme.dim),
+        )))
+        .alignment(Alignment::Center);
+        f.render_widget(footer, parts[2]);
+    }
+
+    fn block(&self, title: impl Into<String>) -> Block<'static> {
+        Block::default()
+            .borders(Borders::ALL)
+            .title(format!(" {} ", title.into()))
+            .border_style(Style::default().fg(self.theme.border))
+    }
+
+    fn block_for_focus(&self, active: bool, title: impl Into<String>) -> Block<'static> {
+        let mut block = self.block(title);
+        if active {
+            block = block.border_style(Style::default().fg(self.theme.accent));
+        }
+        block
+    }
+}
+
+fn settings_row(label: &'static str, value: String, active: bool, theme: Theme) -> Row<'static> {
+    let value_style = if active {
+        Style::default()
+            .fg(theme.accent)
+            .add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(theme.accent)
+    };
+
+    Row::new(vec![
+        Cell::from(Span::styled(
+            label,
+            Style::default().add_modifier(Modifier::BOLD),
+        )),
+        Cell::from(Span::styled(value, value_style)),
+    ])
+}
+
+fn masked_passphrase(p: &str) -> String {
+    if p.is_empty() {
+        "(none)".to_string()
+    } else {
+        let len = p.chars().count();
+        let shown = len.min(12);
+        format!("{} (len={len})", "•".repeat(shown))
     }
 }
 
@@ -966,70 +1224,6 @@ fn preview(s: &str) -> String {
     } else {
         format!("{}…", &s[..max])
     }
-}
-
-fn masked_passphrase(p: &str) -> String {
-    if p.is_empty() {
-        "(none)".to_string()
-    } else {
-        format!(
-            "{} (len={})",
-            "•".repeat(p.chars().count().min(24)),
-            p.chars().count()
-        )
-    }
-}
-
-fn split_params_lines(k: u8, n: u8, encoding: Encoding, focus: Focus) -> Vec<Line<'static>> {
-    let k_style = if focus == Focus::SplitK {
-        Style::default()
-            .fg(Color::Cyan)
-            .add_modifier(Modifier::BOLD)
-    } else {
-        Style::default().fg(Color::Cyan)
-    };
-
-    let n_style = if focus == Focus::SplitN {
-        Style::default()
-            .fg(Color::Cyan)
-            .add_modifier(Modifier::BOLD)
-    } else {
-        Style::default().fg(Color::Cyan)
-    };
-
-    let e_style = if focus == Focus::SplitEncoding {
-        Style::default()
-            .fg(Color::Cyan)
-            .add_modifier(Modifier::BOLD)
-    } else {
-        Style::default().fg(Color::Cyan)
-    };
-
-    vec![
-        Line::from(vec![
-            Span::raw("k: "),
-            Span::styled(k.to_string(), k_style),
-            Span::raw("   n: "),
-            Span::styled(n.to_string(), n_style),
-        ]),
-        Line::from(vec![
-            Span::raw("encoding: "),
-            Span::styled(encoding.label(), e_style),
-        ]),
-        Line::from("Focus fields with Tab; use ↑/↓ to change"),
-    ]
-}
-
-fn block_for(active: bool, title: impl Into<String>) -> Block<'static> {
-    let style = if active {
-        Style::default().fg(Color::Cyan)
-    } else {
-        Style::default()
-    };
-    Block::default()
-        .borders(Borders::ALL)
-        .title(title.into())
-        .border_style(style)
 }
 
 fn cycle_encoding(current: Encoding, delta: i32, allowed: &[Encoding]) -> Encoding {
