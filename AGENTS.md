@@ -155,8 +155,9 @@ If the repo ends up structured differently, prefer the actual layout over this.
 ### CLI (Rust)
 
 - Prefer `clap` derive APIs (per PRD) and consistent flags:
-  - `--k`, `--n`, `--encoding`, `--in-stdin`, `--out-stdout`, `--in <file>`, `--out <file>`.
-  - For encryption: `--passphrase <text>` or `--passphrase-file <path>`.
+  - `-k/--k`, `-n/--n`, `-e/--encoding`, `-i/--in <file>`, `-o/--out <file>`.
+  - Stdin/stdout are defaults; use `-i -` / `-o -` explicitly if needed.
+  - For encryption: `-p/--passphrase <text>` or `-P/--passphrase-file <path>`.
   - Binary name: `safeparts`.
 - Ensure commands are script-friendly:
   - deterministic output where possible

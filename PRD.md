@@ -64,8 +64,8 @@ This project delivers a cross-platform tool and library for **splitting arbitrar
 ### 2.5 CLI UX
 
 ```bash
-safeparts split --k 3 --n 5 --encoding mnemo-bip39 --in-stdin --out-stdout
-safeparts combine --from mnemo-bip39 --in-stdin --out recovered.bin
+safeparts split -k 3 -n 5 -e mnemo-bip39
+safeparts combine -o recovered.bin
 ```
 
 * `split`: produce shares in selected encoding.

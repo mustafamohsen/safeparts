@@ -6,18 +6,16 @@ fn run_split(encoding: &str, k: u8, n: u8, input: &[u8], passphrase: Option<&str
 
     cmd.args([
         "split",
-        "--k",
+        "-k",
         &k.to_string(),
-        "--n",
+        "-n",
         &n.to_string(),
-        "--encoding",
+        "-e",
         encoding,
-        "--in-stdin",
-        "--out-stdout",
     ]);
 
     if let Some(passphrase) = passphrase {
-        cmd.args(["--passphrase", passphrase]);
+        cmd.args(["-p", passphrase]);
     }
 
     let assert = cmd.write_stdin(input).assert().success();
@@ -31,14 +29,18 @@ fn run_split(encoding: &str, k: u8, n: u8, input: &[u8], passphrase: Option<&str
         .collect()
 }
 
-fn run_combine(from: &str, shares: &[String], passphrase: Option<&str>) -> Vec<u8> {
+fn run_combine(encoding: Option<&str>, shares: &[String], passphrase: Option<&str>) -> Vec<u8> {
     let stdin = shares.join("\n") + "\n";
 
     let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
-    cmd.args(["combine", "--from", from, "--in-stdin", "--out-stdout"]);
+    cmd.arg("combine");
+
+    if let Some(encoding) = encoding {
+        cmd.args(["-e", encoding]);
+    }
 
     if let Some(passphrase) = passphrase {
-        cmd.args(["--passphrase", passphrase]);
+        cmd.args(["-p", passphrase]);
     }
 
     let assert = cmd.write_stdin(stdin).assert().success();
@@ -46,18 +48,18 @@ fn run_combine(from: &str, shares: &[String], passphrase: Option<&str>) -> Vec<u
 }
 
 #[test]
-fn e2e_round_trip_base58check() {
-    let input = b"hello e2e base58check";
-    let shares = run_split("base58check", 2, 3, input, None);
-    let recovered = run_combine("base58check", &shares[..2], None);
+fn e2e_round_trip_base58() {
+    let input = b"hello e2e base58";
+    let shares = run_split("base58", 2, 3, input, None);
+    let recovered = run_combine(None, &shares[..2], None);
     assert_eq!(recovered, input);
 }
 
 #[test]
-fn e2e_round_trip_base64url() {
-    let input = b"hello e2e base64url";
-    let shares = run_split("base64url", 2, 3, input, None);
-    let recovered = run_combine("base64url", &shares[..2], None);
+fn e2e_round_trip_base64() {
+    let input = b"hello e2e base64";
+    let shares = run_split("base64", 2, 3, input, None);
+    let recovered = run_combine(None, &shares[..2], None);
     assert_eq!(recovered, input);
 }
 
@@ -65,7 +67,7 @@ fn e2e_round_trip_base64url() {
 fn e2e_round_trip_mnemo_words() {
     let input = b"hello e2e mnemo words";
     let shares = run_split("mnemo-words", 2, 3, input, None);
-    let recovered = run_combine("mnemo-words", &shares[..2], None);
+    let recovered = run_combine(None, &shares[..2], None);
     assert_eq!(recovered, input);
 }
 
@@ -73,75 +75,55 @@ fn e2e_round_trip_mnemo_words() {
 fn e2e_round_trip_mnemo_bip39() {
     let input = b"hello e2e mnemo bip39";
     let shares = run_split("mnemo-bip39", 2, 3, input, None);
-    let recovered = run_combine("mnemo-bip39", &shares[..2], None);
+    let recovered = run_combine(None, &shares[..2], None);
     assert_eq!(recovered, input);
 }
 
 #[test]
-fn e2e_round_trip_encrypted_base64url() {
+fn e2e_round_trip_encrypted_base64() {
     let input = b"hello e2e encrypted";
-    let shares = run_split("base64url", 2, 3, input, Some("passphrase"));
-    let recovered = run_combine("base64url", &shares[..2], Some("passphrase"));
+    let shares = run_split("base64", 2, 3, input, Some("passphrase"));
+    let recovered = run_combine(None, &shares[..2], Some("passphrase"));
     assert_eq!(recovered, input);
 }
 
 #[test]
 fn encrypted_without_passphrase_fails() {
     let input = b"hello";
-    let shares = run_split("base64url", 2, 3, input, Some("pw"));
+    let shares = run_split("base64", 2, 3, input, Some("pw"));
 
     let stdin = format!("{}\n{}\n", shares[0], shares[1]);
     let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
-    cmd.args([
-        "combine",
-        "--from",
-        "base64url",
-        "--in-stdin",
-        "--out-stdout",
-    ])
-    .write_stdin(stdin)
-    .assert()
-    .failure()
-    .stderr(predicate::str::contains("passphrase required"));
+    cmd.args(["combine"])
+        .write_stdin(stdin)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("passphrase required"));
 }
 
 #[test]
 fn wrong_passphrase_fails() {
     let input = b"hello";
-    let shares = run_split("base64url", 2, 3, input, Some("pw"));
+    let shares = run_split("base64", 2, 3, input, Some("pw"));
 
     let stdin = format!("{}\n{}\n", shares[0], shares[1]);
     let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
-    cmd.args([
-        "combine",
-        "--from",
-        "base64url",
-        "--passphrase",
-        "wrong",
-        "--in-stdin",
-        "--out-stdout",
-    ])
-    .write_stdin(stdin)
-    .assert()
-    .failure();
+    cmd.args(["combine", "-p", "wrong"])
+        .write_stdin(stdin)
+        .assert()
+        .failure();
 }
 
 #[test]
 fn combine_with_insufficient_shares_fails() {
     let input = b"insufficient";
-    let shares = run_split("base64url", 2, 3, input, None);
+    let shares = run_split("base64", 2, 3, input, None);
 
     let stdin = format!("{}\n", shares[0]);
     let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
-    cmd.args([
-        "combine",
-        "--from",
-        "base64url",
-        "--in-stdin",
-        "--out-stdout",
-    ])
-    .write_stdin(stdin)
-    .assert()
-    .failure()
-    .stderr(predicate::str::contains("need at least k shares"));
+    cmd.args(["combine"])
+        .write_stdin(stdin)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("need at least k shares"));
 }

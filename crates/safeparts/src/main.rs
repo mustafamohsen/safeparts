@@ -1,14 +1,17 @@
+use std::ffi::OsStr;
 use std::fs;
 use std::io::{self, Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Context, Result, anyhow, bail};
 use clap::{Parser, Subcommand};
+use safeparts_core::packet::SharePacket;
 use safeparts_core::{ascii, mnemo_bip39, mnemo_words};
 
 #[derive(Debug, Parser)]
 #[command(name = "safeparts")]
 #[command(about = "Split/combine secrets into threshold shares", long_about = None)]
+#[command(disable_help_subcommand = true)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -16,64 +19,73 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
+    /// Split a secret into N shares.
     Split {
-        #[arg(long)]
+        /// Threshold shares required to recover.
+        #[arg(short = 'k', long)]
         k: u8,
 
-        #[arg(long)]
+        /// Total shares to create.
+        #[arg(short = 'n', long)]
         n: u8,
 
-        #[arg(long, value_enum, default_value_t = CliEncoding::Base58check)]
+        /// Output encoding for shares.
+        #[arg(short = 'e', long, value_enum, default_value_t = CliEncoding::Base64)]
         encoding: CliEncoding,
 
-        #[arg(long)]
+        /// Encrypt secret before splitting.
+        #[arg(short = 'p', long, conflicts_with = "passphrase_file")]
         passphrase: Option<String>,
 
-        #[arg(long)]
+        /// Read passphrase from file.
+        #[arg(short = 'P', long, value_name = "FILE", conflicts_with = "passphrase")]
         passphrase_file: Option<PathBuf>,
 
-        #[arg(long)]
+        /// Read secret from file (use '-' for stdin).
+        #[arg(short = 'i', long = "in", value_name = "FILE")]
         r#in: Option<PathBuf>,
 
-        #[arg(long, default_value_t = false)]
-        in_stdin: bool,
-
-        #[arg(long)]
+        /// Write shares to file (use '-' for stdout).
+        #[arg(short = 'o', long, value_name = "FILE")]
         out: Option<PathBuf>,
-
-        #[arg(long, default_value_t = false)]
-        out_stdout: bool,
     },
 
+    /// Combine shares to recover the original secret.
     Combine {
-        #[arg(long, value_enum, default_value_t = CliEncoding::Base58check)]
-        from: CliEncoding,
+        /// Share encoding (if omitted, auto-detect).
+        #[arg(short = 'e', long, value_enum, alias = "from")]
+        encoding: Option<CliEncoding>,
 
-        #[arg(long)]
+        /// Decrypt recovered secret.
+        #[arg(short = 'p', long, conflicts_with = "passphrase_file")]
         passphrase: Option<String>,
 
-        #[arg(long)]
+        /// Read passphrase from file.
+        #[arg(short = 'P', long, value_name = "FILE", conflicts_with = "passphrase")]
         passphrase_file: Option<PathBuf>,
 
-        #[arg(long)]
+        /// Read shares from file (use '-' for stdin).
+        #[arg(short = 'i', long = "in", value_name = "FILE")]
         r#in: Option<PathBuf>,
 
-        #[arg(long, default_value_t = false)]
-        in_stdin: bool,
-
-        #[arg(long)]
+        /// Write recovered secret to file (use '-' for stdout).
+        #[arg(short = 'o', long, value_name = "FILE")]
         out: Option<PathBuf>,
-
-        #[arg(long, default_value_t = false)]
-        out_stdout: bool,
     },
 }
 
 #[derive(Clone, Copy, Debug, clap::ValueEnum)]
 enum CliEncoding {
-    Base58check,
-    Base64url,
+    #[value(name = "base64", alias = "base64url")]
+    Base64,
+
+    #[value(name = "base58", alias = "base58check")]
+    Base58,
+
+    #[value(name = "mnemo-words")]
     MnemoWords,
+
+    #[value(name = "mnemo-bip39")]
     MnemoBip39,
 }
 
@@ -88,11 +100,9 @@ fn main() -> Result<()> {
             passphrase,
             passphrase_file,
             r#in,
-            in_stdin,
             out,
-            out_stdout,
         } => {
-            let input = read_input(r#in, in_stdin)?;
+            let input = read_input(r#in)?;
             let passphrase = read_passphrase(passphrase, passphrase_file)?;
 
             let packets = safeparts_core::split_secret(&input, k, n, passphrase.as_deref())
@@ -100,103 +110,144 @@ fn main() -> Result<()> {
 
             let encoded: Vec<String> = packets
                 .iter()
-                .map(|p| match encoding {
-                    CliEncoding::Base58check => {
-                        ascii::encode_packet(p, ascii::Encoding::Base58check)
-                            .map_err(|e| anyhow!(e))
-                    }
-                    CliEncoding::Base64url => {
-                        ascii::encode_packet(p, ascii::Encoding::Base64url).map_err(|e| anyhow!(e))
-                    }
-                    CliEncoding::MnemoWords => {
-                        mnemo_words::encode_packet(p).map_err(|e| anyhow!(e))
-                    }
-                    CliEncoding::MnemoBip39 => {
-                        mnemo_bip39::encode_packet(p).map_err(|e| anyhow!(e))
-                    }
-                })
+                .map(|p| encode_packet_cli(p, encoding))
                 .collect::<Result<Vec<_>>>()?;
 
             let output = encoded.join("\n") + "\n";
-            write_output_text(out, out_stdout, &output)?;
+            write_output_text(out, &output)?;
         }
 
         Commands::Combine {
-            from,
+            encoding,
             passphrase,
             passphrase_file,
             r#in,
-            in_stdin,
             out,
-            out_stdout,
         } => {
-            let input = read_input(r#in, in_stdin)?;
+            let input = read_input(r#in)?;
             let input_str = String::from_utf8(input).context("shares input must be UTF-8")?;
             let passphrase = read_passphrase(passphrase, passphrase_file)?;
 
-            let packets = match from {
-                CliEncoding::MnemoWords | CliEncoding::MnemoBip39 => {
-                    let lines: Vec<&str> = input_str
-                        .lines()
-                        .map(str::trim)
-                        .filter(|l| !l.is_empty())
-                        .collect();
-                    if lines.is_empty() {
-                        return Err(anyhow!("no shares provided"));
-                    }
-
-                    lines
-                        .into_iter()
-                        .map(|line| match from {
-                            CliEncoding::MnemoWords => {
-                                mnemo_words::decode_packet(line).map_err(|e| anyhow!(e))
-                            }
-                            CliEncoding::MnemoBip39 => {
-                                mnemo_bip39::decode_packet(line).map_err(|e| anyhow!(e))
-                            }
-                            CliEncoding::Base58check | CliEncoding::Base64url => {
-                                unreachable!("handled in other match arm")
-                            }
-                        })
-                        .collect::<Result<Vec<_>>>()?
-                }
-                CliEncoding::Base58check | CliEncoding::Base64url => {
-                    let tokens: Vec<&str> = input_str.split_whitespace().collect();
-                    if tokens.is_empty() {
-                        return Err(anyhow!("no shares provided"));
-                    }
-
-                    let encoding = match from {
-                        CliEncoding::Base58check => ascii::Encoding::Base58check,
-                        CliEncoding::Base64url => ascii::Encoding::Base64url,
-                        CliEncoding::MnemoWords | CliEncoding::MnemoBip39 => {
-                            unreachable!("handled above")
-                        }
-                    };
-
-                    tokens
-                        .into_iter()
-                        .map(|t| ascii::decode_packet(t, encoding).map_err(|e| anyhow!(e)))
-                        .collect::<Result<Vec<_>>>()?
-                }
-            };
+            let packets = parse_share_packets(&input_str, encoding)?;
 
             let secret = safeparts_core::combine_shares(&packets, passphrase.as_deref())
                 .map_err(|e| anyhow!(e))
                 .context("combine failed")?;
 
-            write_output_bytes(out, out_stdout, &secret)?;
+            write_output_bytes(out, &secret)?;
         }
     }
 
     Ok(())
 }
 
-fn read_input(path: Option<PathBuf>, in_stdin: bool) -> Result<Vec<u8>> {
-    match (path, in_stdin) {
-        (Some(_p), true) => Err(anyhow!("use either --in or --in-stdin")),
-        (Some(p), false) => fs::read(&p).with_context(|| format!("read input {}", p.display())),
-        (None, _) => {
+fn encode_packet_cli(packet: &SharePacket, encoding: CliEncoding) -> Result<String> {
+    match encoding {
+        CliEncoding::Base58 => {
+            ascii::encode_packet(packet, ascii::Encoding::Base58check).map_err(|e| anyhow!(e))
+        }
+        CliEncoding::Base64 => {
+            ascii::encode_packet(packet, ascii::Encoding::Base64url).map_err(|e| anyhow!(e))
+        }
+        CliEncoding::MnemoWords => mnemo_words::encode_packet(packet).map_err(|e| anyhow!(e)),
+        CliEncoding::MnemoBip39 => mnemo_bip39::encode_packet(packet).map_err(|e| anyhow!(e)),
+    }
+}
+
+fn parse_share_packets(input: &str, encoding: Option<CliEncoding>) -> Result<Vec<SharePacket>> {
+    let nonempty_lines: Vec<&str> = input
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty())
+        .collect();
+
+    if nonempty_lines.is_empty() {
+        bail!("no shares provided");
+    }
+
+    match encoding {
+        Some(enc) => decode_share_packets_known(&nonempty_lines, input, enc),
+        None => decode_share_packets_auto(&nonempty_lines, input),
+    }
+}
+
+fn decode_share_packets_known(
+    nonempty_lines: &[&str],
+    full_input: &str,
+    encoding: CliEncoding,
+) -> Result<Vec<SharePacket>> {
+    match encoding {
+        CliEncoding::MnemoWords => nonempty_lines
+            .iter()
+            .map(|line| mnemo_words::decode_packet(line).map_err(|e| anyhow!(e)))
+            .collect::<Result<Vec<_>>>(),
+        CliEncoding::MnemoBip39 => nonempty_lines
+            .iter()
+            .map(|line| mnemo_bip39::decode_packet(line).map_err(|e| anyhow!(e)))
+            .collect::<Result<Vec<_>>>(),
+        CliEncoding::Base64 => {
+            let tokens: Vec<&str> = full_input.split_whitespace().collect();
+            tokens
+                .into_iter()
+                .map(|t| {
+                    ascii::decode_packet(t, ascii::Encoding::Base64url).map_err(|e| anyhow!(e))
+                })
+                .collect::<Result<Vec<_>>>()
+        }
+        CliEncoding::Base58 => {
+            let tokens: Vec<&str> = full_input.split_whitespace().collect();
+            tokens
+                .into_iter()
+                .map(|t| {
+                    ascii::decode_packet(t, ascii::Encoding::Base58check).map_err(|e| anyhow!(e))
+                })
+                .collect::<Result<Vec<_>>>()
+        }
+    }
+}
+
+fn decode_share_packets_auto(
+    nonempty_lines: &[&str],
+    full_input: &str,
+) -> Result<Vec<SharePacket>> {
+    let looks_mnemonic = nonempty_lines
+        .iter()
+        .any(|l| l.contains('/') || l.split_whitespace().count() > 1);
+
+    if looks_mnemonic {
+        let looks_bip39 = nonempty_lines.iter().any(|l| l.contains('/'));
+        return if looks_bip39 {
+            decode_share_packets_known(nonempty_lines, full_input, CliEncoding::MnemoBip39)
+        } else {
+            decode_share_packets_known(nonempty_lines, full_input, CliEncoding::MnemoWords)
+        };
+    }
+
+    let base64_attempt =
+        decode_share_packets_known(nonempty_lines, full_input, CliEncoding::Base64);
+    if base64_attempt.is_ok() {
+        return base64_attempt;
+    }
+
+    let base58_attempt =
+        decode_share_packets_known(nonempty_lines, full_input, CliEncoding::Base58);
+    if base58_attempt.is_ok() {
+        return base58_attempt;
+    }
+
+    bail!("could not detect share encoding; try --encoding");
+}
+
+fn is_dash_path(p: &Path) -> bool {
+    p.as_os_str() == OsStr::new("-")
+}
+
+fn read_input(path: Option<PathBuf>) -> Result<Vec<u8>> {
+    match path {
+        Some(p) if !is_dash_path(p.as_path()) => {
+            fs::read(&p).with_context(|| format!("read input {}", p.display()))
+        }
+        _ => {
             let mut buf = Vec::new();
             io::stdin().read_to_end(&mut buf).context("read stdin")?;
             Ok(buf)
@@ -204,13 +255,12 @@ fn read_input(path: Option<PathBuf>, in_stdin: bool) -> Result<Vec<u8>> {
     }
 }
 
-fn write_output_text(path: Option<PathBuf>, out_stdout: bool, s: &str) -> Result<()> {
-    match (path, out_stdout) {
-        (Some(_), true) => Err(anyhow!("use either --out or --out-stdout")),
-        (Some(p), false) => {
+fn write_output_text(path: Option<PathBuf>, s: &str) -> Result<()> {
+    match path {
+        Some(p) if !is_dash_path(p.as_path()) => {
             fs::write(&p, s).with_context(|| format!("write output {}", p.display()))
         }
-        (None, _) => {
+        _ => {
             io::stdout()
                 .write_all(s.as_bytes())
                 .context("write stdout")?;
@@ -219,13 +269,12 @@ fn write_output_text(path: Option<PathBuf>, out_stdout: bool, s: &str) -> Result
     }
 }
 
-fn write_output_bytes(path: Option<PathBuf>, out_stdout: bool, bytes: &[u8]) -> Result<()> {
-    match (path, out_stdout) {
-        (Some(_), true) => Err(anyhow!("use either --out or --out-stdout")),
-        (Some(p), false) => {
+fn write_output_bytes(path: Option<PathBuf>, bytes: &[u8]) -> Result<()> {
+    match path {
+        Some(p) if !is_dash_path(p.as_path()) => {
             fs::write(&p, bytes).with_context(|| format!("write output {}", p.display()))
         }
-        (None, _) => {
+        _ => {
             io::stdout().write_all(bytes).context("write stdout")?;
             Ok(())
         }
@@ -237,13 +286,16 @@ fn read_passphrase(
     passphrase_file: Option<PathBuf>,
 ) -> Result<Option<Vec<u8>>> {
     match (passphrase, passphrase_file) {
-        (Some(_), Some(_)) => Err(anyhow!("use either --passphrase or --passphrase-file")),
         (Some(p), None) => Ok(Some(p.into_bytes())),
         (None, Some(path)) => {
-            let bytes =
+            let mut bytes =
                 fs::read(&path).with_context(|| format!("read passphrase {}", path.display()))?;
+            while matches!(bytes.last(), Some(b'\n' | b'\r')) {
+                bytes.pop();
+            }
             Ok(Some(bytes))
         }
         (None, None) => Ok(None),
+        (Some(_), Some(_)) => Err(anyhow!("use either --passphrase or --passphrase-file")),
     }
 }

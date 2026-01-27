@@ -23,7 +23,7 @@ You choose a threshold (`k` of `n`):
 - **Threshold secret sharing** (Shamir-style over GF(256), byte-wise).
 - **Integrity-checked reconstruction** via a BLAKE3 tag (detects wrong/corrupted shares).
 - **Multiple human-/machine-friendly encodings** for the same share packet:
-  - `base64url`
+  - `base64` (URL-safe, no padding)
   - `mnemo-words` (BIP-39 word list + CRC16 for error detection)
 - **Optional passphrase protection** (encrypt-before-split): Argon2id → ChaCha20-Poly1305.
 - **Scriptable CLI** (`safeparts`) and a **Rust core library** (`safeparts_core`).
@@ -64,22 +64,27 @@ Format:
 
 The CLI binary is `safeparts` (crate: `crates/safeparts`).
 
+Defaults:
+
+- `split` defaults to `-e base64` (URL-safe, no padding)
+- `combine` auto-detects encoding unless `-e/--encoding` is provided
+
 ### Split a secret
 
 Read secret from stdin and output shares to stdout:
 
-- `echo -n "my secret" | cargo run -q -p safeparts -- split --k 2 --n 3 --encoding base64url --in-stdin --out-stdout`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64`
 
 Mnemonic output (more human-friendly):
 
-- `echo -n "my secret" | cargo run -q -p safeparts -- split --k 2 --n 3 --encoding mnemo-words --in-stdin --out-stdout`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e mnemo-words`
 
 
 ### Combine shares
 
 Provide at least `k` shares on stdin:
 
-- `printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine --from base64url --in-stdin --out-stdout`
+- `printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine`
 
 For `mnemo-words`, each share is typically a full line (because the share contains spaces).
 
@@ -87,15 +92,15 @@ For `mnemo-words`, each share is typically a full line (because the share contai
 
 Split with a passphrase:
 
-- `echo -n "my secret" | cargo run -q -p safeparts -- split --k 2 --n 3 --encoding base64url --passphrase "correct horse" --in-stdin --out-stdout`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64 -p "correct horse"`
 
 Combine with a passphrase:
 
-- `printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine --from base64url --passphrase "correct horse" --in-stdin --out-stdout`
+- `printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine -p "correct horse"`
 
 You can also use a file:
 
-- `--passphrase-file path/to/passphrase.txt`
+- `--passphrase-file path/to/passphrase.txt` (or `-P path/to/passphrase.txt`)
 
 Note: `--passphrase <text>` may leak into shell history. Prefer `--passphrase-file` in many environments.
 
