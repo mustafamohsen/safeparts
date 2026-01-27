@@ -72,6 +72,9 @@ enum Commands {
         #[arg(short = 'o', long, value_name = "FILE")]
         out: Option<PathBuf>,
     },
+
+    /// Launch the interactive terminal UI.
+    Tui,
 }
 
 #[derive(Clone, Copy, Debug, clap::ValueEnum)]
@@ -136,6 +139,30 @@ fn main() -> Result<()> {
 
             write_output_bytes(out, &secret)?;
         }
+
+        Commands::Tui => {
+            launch_tui()?;
+        }
+    }
+
+    Ok(())
+}
+
+fn launch_tui() -> Result<()> {
+    let exe_suffix = std::env::consts::EXE_SUFFIX;
+    let current = std::env::current_exe().context("resolve current executable")?;
+
+    let candidate = current.with_file_name(format!("safeparts-tui{exe_suffix}"));
+
+    let mut cmd = if candidate.exists() {
+        std::process::Command::new(candidate)
+    } else {
+        std::process::Command::new(format!("safeparts-tui{exe_suffix}"))
+    };
+
+    let status = cmd.status().context("launch safeparts-tui")?;
+    if !status.success() {
+        bail!("safeparts-tui exited with status {status}");
     }
 
     Ok(())

@@ -69,6 +69,22 @@ Defaults:
 - `split` defaults to `-e base64` (URL-safe, no padding)
 - `combine` auto-detects encoding unless `-e/--encoding` is provided
 
+### Terminal UI (TUI)
+
+An interactive terminal UI is available via the `safeparts-tui` binary (crate: `crates/safeparts_tui`).
+
+- Run directly: `cargo run -q -p safeparts_tui`
+- Or via the CLI launcher: `cargo run -q -p safeparts -- tui`
+
+Key shortcuts:
+
+- `Enter`: run split/combine
+- `Ctrl+L`: load secret/share file(s)
+- `Ctrl+S`: save (one file per share, or recovered secret)
+- `Ctrl+C`: copy (UTF-8 if possible, else base64)
+- `Ctrl+Q`: quit
+- `?`: help overlay
+
 ### Split a secret
 
 Read secret from stdin and output shares to stdout:

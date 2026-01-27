@@ -4,6 +4,7 @@ members = [
   "crates/safeparts_core",
   "crates/safeparts",
   "crates/safeparts_wasm",
+  "crates/safeparts_tui",
 ]
 
 [workspace.package]
