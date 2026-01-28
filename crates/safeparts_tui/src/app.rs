@@ -193,10 +193,14 @@ impl App {
     }
 
     fn expire_status(&mut self) {
-        if let Some(status) = self.status.as_ref() {
-            if status.at.elapsed() > Duration::from_secs(3) {
-                self.status = None;
-            }
+        let should_expire = self
+            .status
+            .as_ref()
+            .map(|status| status.at.elapsed() > Duration::from_secs(3))
+            .unwrap_or(false);
+
+        if should_expire {
+            self.status = None;
         }
     }
 
@@ -914,7 +918,7 @@ impl App {
         f.render_widget(preview, right[2]);
     }
 
-    fn split_settings_table(&self) -> Table {
+    fn split_settings_table(&self) -> Table<'_> {
         let rows = vec![
             settings_row(
                 "k",
@@ -1031,7 +1035,7 @@ impl App {
         f.render_widget(base64_view, right[2]);
     }
 
-    fn combine_settings_table(&self) -> Table {
+    fn combine_settings_table(&self) -> Table<'_> {
         let rows = vec![
             settings_row(
                 "encoding",
