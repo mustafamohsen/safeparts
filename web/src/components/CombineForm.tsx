@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { Strings } from "../i18n";
 import { ensureWasm } from "../wasm";
@@ -52,6 +52,40 @@ function parseSharesFromBox(text: string): string[] {
     .filter(Boolean);
 }
 
+function detectEncodingFromText(text: string): Encoding | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+
+  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return null;
+
+  const allBase64Urlish = tokens.every((t) => /^[A-Za-z0-9_-]+$/.test(t));
+  const allLowerWords = tokens.every((t) => /^[a-z]+$/.test(t));
+
+  const lens = tokens
+    .map((t) => t.length)
+    .sort((a, b) => a - b);
+  const medianLen = lens[Math.floor(lens.length / 2)] ?? 0;
+
+  const hasBase64Hints = tokens.some((t) => /[-_0-9A-Z]/.test(t));
+
+  // Base64url shares are typically a single long token, or multiple long tokens
+  // if the user pasted multiple shares separated by whitespace.
+  if (
+    allBase64Urlish &&
+    (hasBase64Hints || medianLen >= 16 || (tokens.length === 1 && medianLen >= 24))
+  ) {
+    return "base64url";
+  }
+
+  // Mnemo-words shares are many short lowercase words.
+  if (allLowerWords && tokens.length >= 6 && medianLen <= 12) {
+    return "mnemo-words";
+  }
+
+  return null;
+}
+
 function createId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
     return crypto.randomUUID();
@@ -73,6 +107,44 @@ export function CombineForm({ strings }: CombineFormProps) {
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const [encodingFlash, setEncodingFlash] = useState(false);
+  const pasteRequestedRef = useRef(false);
+  const flashTimeoutRef = useRef<number | null>(null);
+
+  const triggerEncodingFlash = useCallback(() => {
+    setEncodingFlash(true);
+    if (flashTimeoutRef.current !== null) {
+      window.clearTimeout(flashTimeoutRef.current);
+    }
+    flashTimeoutRef.current = window.setTimeout(() => {
+      setEncodingFlash(false);
+    }, 1100);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (flashTimeoutRef.current !== null) {
+        window.clearTimeout(flashTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!pasteRequestedRef.current) return;
+    pasteRequestedRef.current = false;
+
+    const firstNonEmpty = shareBoxes.find((b) => b.value.trim().length > 0);
+    if (!firstNonEmpty) return;
+
+    const detected = detectEncodingFromText(firstNonEmpty.value);
+    if (!detected) return;
+
+    if (detected !== encoding) {
+      setEncoding(detected);
+      triggerEncodingFlash();
+    }
+  }, [shareBoxes, encoding, triggerEncodingFlash]);
 
   const shares = useMemo(
     () => shareBoxes.flatMap((b) => parseSharesFromBox(b.value)),
@@ -148,7 +220,9 @@ export function CombineForm({ strings }: CombineFormProps) {
             <select
               value={encoding}
               onChange={(e) => setEncoding(e.target.value as Encoding)}
-              className="input mt-2"
+              className={`input mt-2 transition-colors duration-1000 ease-out ${
+                encodingFlash ? "border-emerald-300/70 bg-emerald-500/10" : ""
+              }`}
             >
               <option value="base64url">Letters (base64url)</option>
               <option value="mnemo-words">Words (mnemo-words)</option>
@@ -202,6 +276,9 @@ export function CombineForm({ strings }: CombineFormProps) {
                     dir="ltr"
                     value={box.value}
                     onChange={(e) => setShareBoxValue(box.id, e.target.value)}
+                    onPaste={() => {
+                      pasteRequestedRef.current = true;
+                    }}
                     rows={3}
                     placeholder={strings.sharePlaceholder}
                     className={`input mt-2 resize-y font-mono text-xs leading-relaxed ${
