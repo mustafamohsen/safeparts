@@ -27,7 +27,9 @@ export default defineConfig({
 				src: './src/assets/logo.svg',
 				alt: 'Safeparts',
 			},
-			favicon: '/help/favicon.svg',
+			// Starlight prefixes the configured `base` to this path.
+			// Use a root-relative path so the final URL becomes `/help/favicon.svg`.
+			favicon: '/favicon.svg',
 			social: [
 				{
 					icon: 'github',
