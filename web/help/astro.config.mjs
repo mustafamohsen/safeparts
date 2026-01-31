@@ -93,7 +93,7 @@ for (const a of document.querySelectorAll('a[href]')) {
 				{
 					label: 'Reference',
 					translations: { ar: 'مراجع' },
-					items: [{ slug: 'encodings' }, { slug: 'troubleshooting' }],
+					items: [{ slug: 'encodings' }, { slug: 'security' }, { slug: 'troubleshooting' }],
 				},
 			],
 		}),

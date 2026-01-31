@@ -1,0 +1,53 @@
+---
+title: Security
+description: What Safeparts does (and does not) do to keep secrets safe.
+---
+
+Safeparts is designed so your *secret material* can stay on your device while you
+generate recovery shares.
+
+## Web app properties
+
+- No cookies.
+- No analytics/tracking.
+- Secret splitting/combining runs locally (WASM).
+- Open source and self-hostable.
+
+:::note
+Starlight (this docs site) and the web UI may store non-secret preferences in
+`localStorage` (e.g., theme). This is not a cookie.
+:::
+
+## What "local" means here
+
+Safeparts does not send your secret to a server for processing.
+
+However, data can still leave your device when you choose to:
+
+- Copy/paste shares into other apps.
+- Save shares to synced folders.
+- Share your screen / paste into chat.
+
+:::caution
+Treat shares like the secret itself. If an attacker obtains `k` shares, they can
+reconstruct.
+:::
+
+## Integrity and passphrases
+
+- Safeparts includes an integrity tag (BLAKE3) so mismatched/corrupted shares fail.
+- If you use a passphrase, Safeparts encrypts before splitting (Argon2id -> ChaCha20-Poly1305).
+
+## Self-hosting
+
+To self-host the full site (app + docs) as one static bundle:
+
+```bash
+cd web
+bun install
+bun run build:wasm
+bun run build
+bun run help:build
+```
+
+Publish `web/dist/`.
