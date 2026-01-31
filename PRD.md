@@ -2,192 +2,203 @@
 
 ## Title
 
-**Safeparts** — Arbitrary String ⇄ Threshold Secret Shares ⇄ Human-Friendly Mnemonics
+**Safeparts** - Threshold secret sharing toolkit (Rust core + CLI + TUI + Web UI + Help site)
 
 ---
 
 ## 1. Purpose & Scope
 
-This project delivers a cross-platform tool and library for **splitting arbitrary secrets** into threshold-protected shares using **SSSS Secret Sharing** (SSS over GF(256)), and representing those shares in **human-friendly encodings** (ASCII/Base58/Base64 or BIP-39 word mnemonics). The system must support both **Rust CLI/library implementation** and optional **React-based frontend** for usability.
+Safeparts is a cross-platform tool and library for splitting arbitrary secrets into
+threshold-protected recovery shares (k-of-n). Shares are stored separately and can
+be combined to reconstruct the original secret.
 
-**Use cases:**
+The project ships as a single repo with multiple deliverables:
 
-* Secure backup of cryptographic keys, API tokens, wallet seeds, or arbitrary data.
-* Distribution of secrets across trusted parties.
-* Recovery with threshold authentication.
-* Usable by both developers (CLI) and non-technical users (web UI).
+- Rust core library: `crates/safeparts_core/`
+- CLI: `crates/safeparts/` (`safeparts`)
+- TUI: `crates/safeparts_tui/` (`safeparts-tui`) + a `safeparts tui` launcher
+- WASM bindings for the browser: `crates/safeparts_wasm/`
+- Web UI (Vite + React): `web/`
+- Help website (Astro Starlight, i18n): `web/help/`
+
+Primary use cases:
+
+- Backing up recovery keys, API tokens, secrets manager master keys, or any arbitrary
+  bytes.
+- Social recovery (distribute shares across trusted parties).
+- Separation of duties (require multiple people to reconstruct).
+- Geographic separation (reduce "single location" failure).
+
+Non-goals:
+
+- This is not a full secrets manager.
+- This is not a wallet/seed product. Mnemonics are an encoding for share packets.
 
 ---
 
 ## 2. Functional Requirements
 
-### 2.1 Secret Splitting
+### 2.1 Core: Split / Combine
 
-* Input: arbitrary byte string (from stdin, file, or text entry).
-* Apply SSSS Secret Sharing (GF(256), per-byte polynomial).
-* Parameters: threshold `k`, total shares `n` (1 ≤ k ≤ n ≤ 255).
-* Output: `n` share packets containing:
+- Input: arbitrary bytes.
+- Algorithm: Shamir-style secret sharing over GF(256).
+- Parameters: `k` and `n` with `1 <= k <= n <= 255`.
+- Output: `n` share packets with:
+  - set ID (random)
+  - `k`, `n`, share index `x`
+  - payload bytes
+  - optional crypto parameters
+- Integrity: BLAKE3 tag ensures reconstruction fails for corrupted/mismatched shares.
+- Optional encryption: encrypt-before-split using Argon2id -> ChaCha20-Poly1305.
 
-  * Metadata (set ID, k, n, x, secret length, flags).
-  * Payload (the per-share Y values).
-  * Integrity: BLAKE3(secret) appended before splitting.
-* Optional: Pre-encrypt secret with passphrase (`Argon2id` → `ChaCha20-Poly1305`).
+### 2.2 Encodings
 
-### 2.2 Encoding Options
+Safeparts defines a binary share packet format and supports multiple reversible
+text encodings.
 
-* **ASCII/BaseXX**:
+Implemented encodings in the Rust toolchain:
 
-  * Base58Check
-  * Base64URL (no padding)
-* **Mnemonic modes**:
+- `base64` / `base64url`: URL-safe, no padding
+- `base58` / `base58check`: Base58 with checksum
+- `mnemo-words`: single sentence using the BIP-39 word list as an alphabet + CRC16
+- `mnemo-bip39`: valid BIP-39 mnemonics, may be multiple phrases per share
 
-  * `mnemo-bip39`: Chunk packets into valid BIP-39 entropy blocks (16/20/24/28/32 bytes), output multiple real BIP-39 sentences per share.
-  * `mnemo-words`: Single sentence per share, using BIP-39 wordlist as generic 2048-ary alphabet, with CRC16.
-* Each encoding is reversible.
+Web UI currently supports:
 
-### 2.3 Reconstruction
+- `base64url`
+- `mnemo-words`
 
-* Input: ≥k shares in any supported encoding.
-* Validate metadata consistency.
-* Apply Lagrange interpolation to reconstruct the blob.
-* Verify BLAKE3 tag (threshold-protected integrity).
-* If passphrase was used: decrypt using Argon2id + ChaCha20-Poly1305.
-* Output: exact original string/bytes.
+(The CLI/TUI support the full encoding set.)
 
-### 2.4 Error Handling
+### 2.3 CLI
 
-* Insufficient shares (\<k) → fail with explicit error.
-* Wrong/forged share → fail at BLAKE3 check.
-* Mnemonic typo → detected via BIP-39 checksum (mnemo-bip39) or CRC16 (mnemo-words).
-* Wrong passphrase → fail at AEAD authentication.
+The CLI is non-interactive by default and script-friendly.
 
-### 2.5 CLI UX
+Commands:
 
 ```bash
-safeparts split -k 3 -n 5 -e mnemo-bip39
-safeparts combine -o recovered.bin
+safeparts split -k 2 -n 3 -e mnemo-words
+safeparts combine --encoding base64
+safeparts tui
 ```
 
-* `split`: produce shares in selected encoding.
-* `combine`: reconstruct from shares.
-* Input via files or stdin.
-* Output to stdout or files.
-* Passphrase prompts when enabled.
+Requirements:
 
-### 2.6 React UI
+- `split` reads from stdin by default, or `--in <file>`.
+- `combine` reads shares from stdin by default, or `--in <file>`.
+- `--out <file>` writes output to a file; otherwise stdout.
+- Passphrase is provided via `--passphrase` or `--passphrase-file`.
+- `combine` supports encoding auto-detection when `--encoding` is omitted.
 
-* Web-based tool for non-technical users.
-* **Split workflow:**
+### 2.4 TUI
 
-  * Input string (text area / file upload).
-  * Choose k/n, encoding, passphrase.
-  * Generate shares (display as Base58 or mnemonic wordlists).
-  * Copy/export shares (QR codes optional).
-* **Combine workflow:**
+The TUI provides an interactive workflow for:
 
-  * Paste/import shares (auto-detect encoding).
-  * Validate threshold.
-  * Prompt for passphrase if required.
-  * Show recovered secret (download as file or display).
+- entering a secret
+- selecting `k`, `n`, encoding, passphrase
+- splitting and copying shares
+- pasting shares and reconstructing
+
+Requirements:
+
+- Keyboard-first operation.
+- Clipboard support (system clipboard when possible; OSC52 fallback where supported).
+- Load/save secrets and shares from/to files.
+
+### 2.5 Web UI
+
+The Web UI is a static site built with Vite + React and uses WASM bindings for all
+cryptographic operations.
+
+Requirements:
+
+- No backend required.
+- Split and combine happen locally in the browser (WASM).
+- Share encoding auto-detection when pasting shares in the combine UI.
+- i18n: English + Arabic (RTL) UI.
+
+### 2.6 Help Website
+
+Safeparts includes a documentation site built with Astro Starlight.
+
+Requirements:
+
+- Served under `/help/` on the same domain as the main app.
+- i18n: English + Arabic (RTL).
+- Includes docs for the Web UI, CLI, TUI, build/run instructions, encodings, and
+  security notes.
 
 ---
 
 ## 3. Non-Functional Requirements
 
-* **Security:**
+Security:
 
-  * Threshold secrecy: \<k shares reveal nothing.
-  * Integrity guaranteed by threshold-protected BLAKE3.
-  * Optional AEAD passphrase adds a second factor.
-  * Zeroize secrets in memory (`zeroize` crate in Rust).
-* **Performance:**
+- Threshold secrecy: fewer than `k` shares reveal nothing about the secret.
+- Integrity: reconstruction fails when shares are corrupted or mismatched.
+- Optional passphrase encryption uses modern KDF + AEAD.
+- Zeroize secret material where practical (`zeroize`).
+- Minimize sensitive logging. Treat shares and reconstructed secrets as secrets.
 
-  * Linear in secret length.
-  * Support secrets from a few bytes to several MB.
-* **Portability:**
+Local-first:
 
-  * Rust library is cross-platform.
-  * React frontend uses WASM bindings to Rust core (via `wasm-pack`).
-* **Usability:**
+- Web UI runs entirely client-side.
+- No cookies or analytics are required for core functionality.
 
-  * Mnemonics are copyable, printable, or QR-rendered.
-  * CLI supports piping and scripting.
-* **Compatibility:**
+Portability:
 
-  * BIP-39 mnemonics must use official wordlists.
-  * Optional import/export of classic `ssss` share strings.
+- Rust components support Linux, macOS, and Windows.
+- Web and docs build into a single static bundle for easy self-hosting.
 
 ---
 
-## 4. Technical Design (Rust)
+## 4. Repository & Build Model
 
-* **Core crate (`safeparts_core`):**
+Rust:
 
-  * `gf256.rs`: field arithmetic.
-  * `sss.rs`: split/combine algorithms.
-  * `packet.rs`: versioned share packet format.
-  * `ascii.rs`: Base58/Base64 encoders.
-  * `mnemo.rs`: mnemonic encoding/decoding.
-  * `crypto.rs`: BLAKE3, Argon2id, ChaCha20-Poly1305, zeroization.
-* **CLI crate (`safeparts`):**
+- CI runs `cargo fmt`, `cargo clippy`, and `cargo test`.
 
-  * Uses `clap` for commands.
-  * Split/combine subcommands.
-  * File/stdin/stdout I/O.
-* **Tests:**
+Web:
 
-  * Round-trip invariants.
-  * Mnemonic typo detection.
-  * AEAD passphrase correctness.
+- Package manager: Bun.
+- WASM build step is required before the Web UI works.
 
----
+```bash
+cd web
+bun install
+bun run build:wasm
+bun run build
+```
 
-## 5. Technical Design (React)
+Help site:
 
-* **Frontend stack:** React + TypeScript + Tailwind (or shadcn/ui for consistency).
-* **WASM integration:**
+```bash
+cd web
+bun run help:build
+```
 
-  * Expose `split_secret` and `combine_shares` via `wasm-bindgen`.
-  * Build Rust core to WASM with `wasm-pack build --target web`.
-  * JS/TS wrapper for ergonomic calls.
-* **Components:**
+Deployment:
 
-  * `SplitForm`: form inputs (string, k, n, encoding, passphrase).
-  * `ShareList`: display resulting shares (copy, download, QR).
-  * `CombineForm`: input multiple shares (text areas, file upload).
-  * `ResultView`: show reconstructed secret.
-* **UX:**
-
-  * Client-only, no backend needed.
-  * Input validation + error feedback.
-  * Light/dark theme.
+- Netlify builds and publishes `web/dist/`.
+- The docs build output is placed in `web/dist/help/`.
 
 ---
 
-## 6. Milestones
+## 5. Current Status vs Backlog
 
-1. **MVP CLI (Rust):** split/combine, ASCII shares, BLAKE3 integrity.
-2. Add mnemonic encodings (bip39-valid + wordlist-only).
-3. Add AEAD passphrase.
-4. WASM export of Rust core.
-5. Basic React UI with split/combine flows.
-6. Advanced UX (QR codes, error correction suggestions).
+Implemented:
 
----
+- Core split/combine + integrity + optional passphrase encryption.
+- Base64url, Base58check, mnemo-words, mnemo-bip39 encodings in Rust.
+- CLI + TUI.
+- WASM bindings.
+- Web UI (split/combine) with encoding auto-detection.
+- Help website under `/help/` with English/Arabic.
 
-## 7. Risks & Mitigations
+Backlog / future ideas (not required for current release):
 
-* **Mnemonic compatibility confusion:** clarify that mnemo-bip39 is not a wallet seed; it’s encoding shares.
-* **Passphrase key derivation cost:** use Argon2id with safe defaults.
-* **Long secrets → many BIP-39 sentences:** mitigate with wordlist-only mode or QR export.
-* **User transcription errors:** checksum/CRC, fuzzy matching in React UI.
-
----
-
-## 8. Success Metrics
-
-* CLI round-trip tests pass across all encodings.
-* React UI can split/combine secrets fully in-browser.
-* Encoding formats are reversible and robust.
-* At least 90% of test users succeed in manual share transcription/reconstruction with no errors.
+- Web UI support for Base58check and mnemo-bip39.
+- QR code export.
+- Optional import/export compatibility with other tools.
+- Improved cross-platform packaging (installers, signed releases).
 
