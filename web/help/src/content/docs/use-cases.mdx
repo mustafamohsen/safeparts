@@ -3,35 +3,62 @@ title: Use cases
 description: Common scenarios where k-of-n recovery shares reduce risk.
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Safeparts is most useful when you want **recovery to require collaboration** or
-**geographic separation**.
+Safeparts is most useful when you want **recovery to require collaboration** (social
+control) or **separation** (so one place/device compromise doesn't end the story).
 
-<CardGrid stagger>
-	<Card title="Personal social recovery" icon="users">
-		Split your password manager recovery key across trusted people so any single
-		compromise doesn't expose it.
-	</Card>
-	<Card title="Break-glass access" icon="key">
-		Store an emergency infra credential so ops + security must cooperate to use it.
-	</Card>
-	<Card title="Physical separation" icon="map">
-		Put shares in different locations (home, office, safe deposit box) to reduce
-		loss risk.
-	</Card>
-	<Card title="Multi-device backup" icon="laptop">
-		Keep shares on different devices/vendors to avoid one account taking you down.
-	</Card>
-	<Card title="Process-driven recovery" icon="list">
-		Build an incident procedure: who holds which shares, and how reconstruction is
-		authorized.
-	</Card>
-	<Card title="Secure handoffs" icon="swap">
-		Hand partial access to collaborators without giving any single party the full
-		secret.
-	</Card>
-</CardGrid>
+<Tabs>
+<TabItem label="Personal">
+
+### Social recovery
+
+Split a password manager recovery key across trusted people.
+
+- Good default: `k=2, n=3`
+- Why: one compromise can't unlock it; any two can help you recover.
+
+### Physical separation
+
+Store shares in different locations (home, office, safe deposit box).
+
+- Good default: `k=2, n=3` or `k=3, n=5`
+- Why: fire/theft at one location doesn't destroy recovery.
+
+### Multi-device backup
+
+Keep shares on different devices/vendors (e.g., one offline, one hardware-encrypted,
+one paper).
+
+- Good default: `k=2, n=3`
+- Why: losing a single device/account doesn't lock you out.
+
+</TabItem>
+<TabItem label="Teams">
+
+### Break-glass access
+
+Store an emergency infrastructure credential so ops + security must cooperate.
+
+- Good default: `k=2, n=3` or `k=3, n=5`
+- Why: turns risky "superuser" secrets into an auditable, human process.
+
+### Process-driven recovery
+
+Define who holds which shares, where they live, and how reconstruction is approved.
+
+- Good default: `k=3, n=5`
+- Why: reduces single points of failure while keeping recovery realistic.
+
+### Secure handoffs
+
+Give collaborators partial custody without any single party holding the whole secret.
+
+- Good default: depends on trust model
+- Why: enables shared responsibility without over-sharing.
+
+</TabItem>
+</Tabs>
 
 ## Practical guidance
 

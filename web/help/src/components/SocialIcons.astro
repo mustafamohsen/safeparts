@@ -1,0 +1,64 @@
+---
+import config from 'virtual:starlight/user-config';
+import { Icon } from '@astrojs/starlight/components';
+
+const links = config.social || [];
+
+const appLink = {
+	label: 'Open app',
+	href: '/',
+	icon: 'external',
+};
+---
+
+{
+	(links.length > 0 || appLink) && (
+		<>
+			<a
+				href={appLink.href}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="sl-flex app-link"
+				aria-label={appLink.label}
+				title={appLink.label}
+			>
+				<span class="sr-only">{appLink.label}</span>
+				<Icon name={appLink.icon} />
+			</a>
+			{links.map(({ label, href, icon }) => (
+				<a
+					href={href}
+					target="_blank"
+					rel="me noopener noreferrer"
+					class="sl-flex"
+					aria-label={label}
+					title={label}
+				>
+					<span class="sr-only">{label}</span>
+					<Icon name={icon} />
+				</a>
+			))}
+		</>
+	)
+}
+
+<style>
+	@layer starlight.core {
+		a {
+			color: var(--sl-color-text-accent);
+			padding: 0.5em;
+			margin: -0.5em;
+		}
+		a:hover {
+			opacity: 0.8;
+		}
+
+		/* Slightly more visible than plain icons, but still minimal. */
+		.app-link {
+			color: var(--sl-color-text);
+		}
+		.app-link:hover {
+			color: var(--sl-color-text-accent);
+		}
+	}
+</style>

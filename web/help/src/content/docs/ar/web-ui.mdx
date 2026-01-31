@@ -8,7 +8,9 @@ import { LinkButton, Steps } from '@astrojs/starlight/components';
 واجهة الويب موجودة في الصفحة الرئيسية (`/`). تستخدم WASM بحيث تتم عمليات التقسيم/الاستعادة
 محلياً داخل المتصفح.
 
-<LinkButton href="/" icon="external">افتح تطبيق الويب</LinkButton>
+<LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
+	افتح تطبيق الويب
+</LinkButton>
 
 :::note
 لا يتم رفع أي بيانات تلقائياً. البيانات لا تغادر جهازك إلا عند النسخ/اللصق أو حفظ الملفات

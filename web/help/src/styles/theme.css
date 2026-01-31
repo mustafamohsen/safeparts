@@ -87,8 +87,23 @@ starlight-theme-select {
 }
 
 /* Subtle rounding similar to the app. */
-.sl-markdown-content :where(pre, code),
 .card,
 .sl-link-card {
   border-radius: 1rem;
+}
+
+/* Expressive Code frames include a header; round the container, not the <pre>. */
+.expressive-code .frame {
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.expressive-code .frame > .header {
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+}
+
+.expressive-code .frame > pre {
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
 }

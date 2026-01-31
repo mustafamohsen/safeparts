@@ -31,8 +31,35 @@ export default defineConfig({
 				},
 			],
 			customCss: ['./src/styles/theme.css'],
+			components: {
+				SocialIcons: './src/components/SocialIcons.astro',
+			},
 			head: [
 				{ tag: 'meta', attrs: { name: 'color-scheme', content: 'dark' } },
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					content: `
+const isExternal = (href) => href.startsWith('http://') || href.startsWith('https://');
+
+for (const a of document.querySelectorAll('a[href]')) {
+  const href = a.getAttribute('href');
+  if (!href) continue;
+  if (href.startsWith('#')) continue;
+  if (href.startsWith('mailto:') || href.startsWith('tel:')) continue;
+
+  const isNonDocsRootPath = href.startsWith('/') && !href.startsWith('/help');
+  if (isExternal(href) || isNonDocsRootPath) {
+    a.setAttribute('target', '_blank');
+    const rel = a.getAttribute('rel') ?? '';
+    const relParts = new Set(rel.split(/\s+/).filter(Boolean));
+    relParts.add('noopener');
+    relParts.add('noreferrer');
+    a.setAttribute('rel', Array.from(relParts).join(' '));
+  }
+}
+`,
+				},
 				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
 				{
 					tag: 'link',
