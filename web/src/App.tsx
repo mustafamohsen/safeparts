@@ -64,36 +64,6 @@ function GitHubIcon() {
   );
 }
 
-function HelpIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-4 w-4"
-      aria-hidden="true"
-    >
-      <path
-        d="M3.5 5.5c0-1.1.9-2 2-2H19a1 1 0 0 1 1 1v14.2a.3.3 0 0 1-.48.24 7.4 7.4 0 0 0-4.52-1.44H5.5a2 2 0 0 1-2-2v-10Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 5.5v12"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7.5 8h3M7.5 11h3M14 8h2.5M14 11h2.5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 function ShieldIcon() {
   return (
     <svg
@@ -173,11 +143,11 @@ export function App() {
             <div className="dir-row flex-wrap items-center gap-2">
               <a
                 href={helpUrl}
-                className="grid h-10 w-10 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                className="grid h-10 px-3 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-xs font-semibold tracking-wide uppercase text-slate-200 transition hover:bg-white/5"
                 aria-label={strings.help}
                 title={strings.help}
               >
-                <HelpIcon />
+                {strings.help}
               </a>
               <a
                 href="https://github.com/mustafamohsen/safeparts"
