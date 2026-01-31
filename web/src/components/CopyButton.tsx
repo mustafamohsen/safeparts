@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useAnnouncement } from '../context/LiveRegionContext'
 
 type CopyButtonProps = {
   value: string
   copyLabel: string
   copiedLabel: string
   className?: string
+  announceCopied?: string
 }
 
 function CopyIcon() {
@@ -62,8 +64,9 @@ async function copyToClipboard(text: string) {
   document.body.removeChild(textarea)
 }
 
-export function CopyButton({ value, copyLabel, copiedLabel, className }: CopyButtonProps) {
+export function CopyButton({ value, copyLabel, copiedLabel, className, announceCopied }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
+  const { announce } = useAnnouncement()
 
   useEffect(() => {
     if (!copied) return
@@ -75,6 +78,9 @@ export function CopyButton({ value, copyLabel, copiedLabel, className }: CopyBut
     try {
       await copyToClipboard(value)
       setCopied(true)
+      if (announceCopied) {
+        announce(announceCopied, 'polite')
+      }
     } catch {
       // ignore
     }
