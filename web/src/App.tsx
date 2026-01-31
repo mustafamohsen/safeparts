@@ -145,7 +145,7 @@ export function App() {
                 href={helpUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="grid h-10 px-3 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-xs font-semibold tracking-wide uppercase text-slate-200 transition hover:bg-white/5"
+                className="grid h-11 min-w-[44px] px-3 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-xs font-semibold tracking-wide uppercase text-slate-200 transition hover:bg-white/5"
                 aria-label={strings.help}
                 title={strings.help}
               >
@@ -155,7 +155,7 @@ export function App() {
                 href="https://github.com/mustafamohsen/safeparts"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                className="grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
                 aria-label={strings.github}
                 title={strings.github}
               >
@@ -164,22 +164,24 @@ export function App() {
               <div className="dir-row items-center gap-1 rounded-xl border border-emerald-500/15 bg-black/35 p-1">
                 <button
                   type="button"
-                  className={`grid h-8 w-8 place-items-center rounded-lg text-sm transition ${
+                  className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
                     lang === "en" ? "bg-white/10" : "hover:bg-white/5"
                   }`}
                   onClick={() => setLang("en")}
                   aria-label={strings.english}
+                  aria-pressed={lang === "en"}
                   title={strings.english}
                 >
                   EN
                 </button>
                 <button
                   type="button"
-                  className={`grid h-8 w-8 place-items-center rounded-lg text-sm transition ${
+                  className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
                     lang === "ar" ? "bg-white/10" : "hover:bg-white/5"
                   }`}
                   onClick={() => setLang("ar")}
                   aria-label={strings.arabic}
+                  aria-pressed={lang === "ar"}
                   title={strings.arabic}
                 >
                   AR

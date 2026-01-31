@@ -83,7 +83,7 @@ export function CopyButton({ value, copyLabel, copiedLabel, className }: CopyBut
   return (
     <button
       type="button"
-      className={`btn-secondary px-3 py-1.5 text-xs ${className ? className : ''}`}
+      className={`btn-secondary px-3 py-2.5 text-xs min-h-[44px] min-w-[44px] ${className ? className : ''}`}
       onClick={onCopy}
     >
       {copied ? <CheckIcon /> : <CopyIcon />}
