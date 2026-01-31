@@ -1,0 +1,32 @@
+---
+title: TUI
+description: Interactive terminal UI for hands-on splitting and recovery.
+---
+
+The TUI binary is `safeparts-tui` (crate: `crates/safeparts_tui`).
+
+Run directly:
+
+```bash
+cargo run -q -p safeparts_tui
+```
+
+Or via the CLI launcher:
+
+```bash
+cargo run -q -p safeparts -- tui
+```
+
+## Key shortcuts
+
+- `Enter`: run split/combine
+- `Ctrl+L`: load secret/share file(s)
+- `Ctrl+S`: save (one file per share, or recovered secret)
+- `Ctrl+C`: copy (UTF-8 if possible, else base64)
+- `Ctrl+Q`: quit
+- `?`: help overlay
+
+:::note
+Clipboard support uses your system clipboard when available, and falls back to
+OSC52 escape sequences for terminals that support it (useful over SSH/tmux).
+:::

@@ -1,0 +1,61 @@
+---
+title: Safeparts Help
+description: Learn what Safeparts is, when to use it, and how to run the Web UI, CLI, and TUI.
+template: splash
+hero:
+  tagline: Split a sensitive secret into recovery shares and reconstruct it with k of n.
+  image:
+    file: ../../assets/logo.svg
+  actions:
+    - text: Web UI guide
+      link: web-ui/
+      icon: right-arrow
+    - text: CLI guide
+      link: cli/
+      icon: open-book
+    - text: Build & run
+      link: build-and-run/
+      icon: setting
+    - text: Open the app
+      link: /
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Start here
+
+<CardGrid stagger>
+	<Card title="What is Safeparts?" icon="open-book">
+		A quick mental model of threshold secret sharing, integrity checks, and the
+		formats Safeparts supports.
+		
+		[Read the overview](project/)
+	</Card>
+	<Card title="Common use cases" icon="stars">
+		When it helps, when it doesn't, and how to think about trust and storage.
+		
+		[Browse use cases](use-cases/)
+	</Card>
+	<Card title="Use it in your browser" icon="window">
+		Split and combine locally via WASM. Nothing is uploaded unless you choose to.
+		
+		[Web UI guide](web-ui/)
+	</Card>
+	<Card title="Use it in a terminal" icon="terminal">
+		Scriptable CLI for pipelines, and a TUI for interactive workflows.
+		
+		[CLI](cli/) · [TUI](tui/)
+	</Card>
+	<Card title="Build & run anywhere" icon="wrench">
+		Linux/macOS/Windows steps for the CLI, TUI, and web UI.
+		
+		[Build & run](build-and-run/)
+	</Card>
+</CardGrid>
+
+:::caution
+ Safeparts shares are sensitive. Don't paste them into chat, tickets, or logs. Use
+synthetic examples when documenting or debugging.
+:::

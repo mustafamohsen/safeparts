@@ -1,0 +1,38 @@
+---
+title: Troubleshooting
+description: Common issues when building and using Safeparts.
+---
+
+## Web UI says `WASM module not found`
+
+Build the WASM package and reload:
+
+```bash
+cd web
+bun run build:wasm
+bun run dev
+```
+
+On Windows, see the Windows notes in [Build & run](../build-and-run/).
+
+## CLI combine can't detect the encoding
+
+If auto-detect fails, specify it explicitly:
+
+```bash
+safeparts combine --encoding mnemo-words
+```
+
+## Reconstruction fails integrity checks
+
+This usually means one of:
+
+- At least one share is mistyped/corrupted.
+- Shares are from different sets (metadata mismatch).
+- Wrong passphrase (if encryption was used).
+
+## Clipboard doesn't work in the TUI
+
+Some environments restrict clipboard access. Safeparts-tui will fall back to OSC52
+copy sequences when it can; if that still doesn't work, use the save-to-file shortcut
+and copy from your terminal/editor.

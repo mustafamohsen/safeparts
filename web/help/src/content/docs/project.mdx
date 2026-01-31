@@ -1,0 +1,50 @@
+---
+title: Project overview
+description: What Safeparts does, how k-of-n recovery works, and what to watch out for.
+---
+
+## What Safeparts is
+
+Safeparts helps you split a sensitive secret into multiple **recovery shares** so no
+single person, device, or location holds the whole thing.
+
+You choose a threshold (**k of n**):
+
+- With fewer than `k` shares, an attacker learns nothing useful about the secret.
+- With any `k` shares, you can reconstruct the original secret.
+
+Safeparts ships as:
+
+- A **Web UI** (this repo’s `web/` app) that runs the split/combine logic locally via WASM.
+- A scriptable **CLI** (`safeparts`).
+- An interactive **TUI** (`safeparts-tui`).
+
+## How it stays safe
+
+Safeparts shares are more than just “chunks” of data:
+
+- **Threshold secrecy** via Shamir-style secret sharing over GF(256).
+- **Integrity check**: a BLAKE3 tag is included so reconstruction fails if shares are wrong/corrupted.
+- **Optional passphrase protection**: encrypt-before-split (Argon2id -> ChaCha20-Poly1305).
+
+:::note
+Mnemonic formats use the BIP-39 word list for readability and typo detection.
+They are **not wallet seeds**.
+:::
+
+:::caution
+Shares are sensitive artifacts. Treat them like the original secret:
+
+- Don’t store all shares together.
+- Don’t paste shares into chat, tickets, or logs.
+- Prefer printing / offline storage for long-term recovery plans.
+:::
+
+## What it’s good for (and not)
+
+Safeparts is a good fit when you want to reduce single points of failure (one vault,
+one person, one laptop) and you can manage operational discipline around storage and
+recovery.
+
+It is not a replacement for access control, auditing, or a full secrets manager.
+It’s a building block.

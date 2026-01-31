@@ -1,0 +1,53 @@
+---
+title: CLI
+description: Scriptable split/combine workflows for pipelines and automation.
+---
+
+The CLI binary is `safeparts` (crate: `crates/safeparts`).
+
+:::note
+Avoid `--passphrase <text>` in shells that persist history. Prefer `--passphrase-file`.
+:::
+
+## Quick examples
+
+Split a secret from stdin:
+
+```bash
+echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64
+```
+
+Mnemonic output (more human-friendly):
+
+```bash
+echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e mnemo-words
+```
+
+Combine from stdin (any `k` shares):
+
+```bash
+printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine
+```
+
+Split with passphrase:
+
+```bash
+echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64 -p "correct horse"
+```
+
+Combine with passphrase:
+
+```bash
+printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine -p "correct horse"
+```
+
+## Encodings
+
+`split -e/--encoding` supports:
+
+- `base64` (URL-safe, no padding)
+- `base58`
+- `mnemo-words`
+- `mnemo-bip39`
+
+`combine` can auto-detect if you omit `--encoding`.

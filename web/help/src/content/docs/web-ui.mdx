@@ -1,0 +1,40 @@
+---
+title: Web UI
+description: Split and combine secrets locally in your browser.
+---
+
+import { LinkButton, Steps } from '@astrojs/starlight/components';
+
+The web UI lives at the site root (`/`). It uses WASM bindings so split/combine runs
+locally in your browser.
+
+<LinkButton href="/" icon="external">Open the web app</LinkButton>
+
+:::note
+Nothing is uploaded by default. The only time data leaves your device is when you
+copy/paste, save files, or deploy a modified build.
+:::
+
+## Split a secret
+
+<Steps>
+  1. Enter the secret in the **Secret** box.
+  2. Choose `k` (minimum shares to recover) and `n` (total shares to create).
+  3. Choose a share format.
+  4. Optionally set a passphrase (encrypt-before-split).
+  5. Click **Split** and copy each share to a separate storage location.
+</Steps>
+
+## Combine shares
+
+<Steps>
+  1. Set the share format (or paste a share and let the UI auto-detect).
+  2. Paste at least `k` shares.
+  3. Enter the passphrase if shares were created with one.
+  4. Click **Combine**.
+</Steps>
+
+:::caution
+Avoid reconstructing secrets on shared machines, and avoid copying recovered secrets
+into tools that sync by default.
+:::

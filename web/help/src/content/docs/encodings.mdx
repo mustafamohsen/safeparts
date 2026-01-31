@@ -1,0 +1,38 @@
+---
+title: Encodings
+description: How shares are represented (machine-friendly and human-friendly).
+---
+
+Safeparts produces and consumes **share packets**. Encodings are just different ways
+to represent the same packet bytes.
+
+## Machine-friendly
+
+### `base64` (base64url)
+
+- URL-safe (`-` and `_`)
+- No padding
+- Good for copy/paste and scripts
+
+### `base58`
+
+- Avoids ambiguous characters
+- Often nicer for manual transcription than base64
+
+## Human-friendly
+
+### `mnemo-words`
+
+- A single sentence of lowercase words
+- Uses the BIP-39 English word list as a 2048-symbol alphabet
+- Includes CRC16 to detect many typos
+
+### `mnemo-bip39`
+
+- Uses full BIP-39-valid sentences (with the standard checksum)
+- A single share may become multiple sentences, depending on payload size
+
+:::caution
+Mnemonic shares are **not wallet seeds** and should not be imported into wallet apps.
+They are an encoding for Safeparts share packets.
+:::

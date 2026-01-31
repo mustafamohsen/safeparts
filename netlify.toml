@@ -1,10 +1,25 @@
 [build]
   base = "web"
   publish = "dist"
-  command = "curl https://sh.rustup.rs -sSf | sh -s -- -y && . $HOME/.cargo/env && rustup target add wasm32-unknown-unknown && npm install && npm run build:wasm && npm run build"
+  command = "curl https://sh.rustup.rs -sSf | sh -s -- -y && . $HOME/.cargo/env && rustup target add wasm32-unknown-unknown && curl -fsSL https://bun.sh/install | bash && export PATH=\"$HOME/.bun/bin:$PATH\" && bun install && bun run build:wasm && bun run build && cd help && bun install && bun run build"
 
 [build.environment]
   NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/help"
+  to = "/help/"
+  status = 301
+
+[[redirects]]
+  from = "/help/ar"
+  to = "/help/ar/"
+  status = 301
+
+[[redirects]]
+  from = "/help/*"
+  to = "/help/404.html"
+  status = 404
 
 [[redirects]]
   from = "/*"

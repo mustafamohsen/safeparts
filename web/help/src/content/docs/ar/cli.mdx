@@ -1,0 +1,54 @@
+---
+title: CLI
+description: واجهة سطر أوامر قابلة للأتمتة للتقسيم والاستعادة.
+---
+
+ملف التنفيذ هو `safeparts` (الحزمة: `crates/safeparts`).
+
+:::note
+تجنّب استخدام `--passphrase <text>` في الطرفيات التي تحتفظ بسجل الأوامر. فضّل
+`--passphrase-file`.
+:::
+
+## أمثلة سريعة
+
+تقسيم سر من stdin:
+
+```bash
+echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64
+```
+
+إخراج بكلمات (أسهل للبشر):
+
+```bash
+echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e mnemo-words
+```
+
+استعادة من stdin (أي `k` حصص):
+
+```bash
+printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine
+```
+
+تقسيم مع عبارة مرور:
+
+```bash
+echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64 -p "correct horse"
+```
+
+استعادة مع عبارة مرور:
+
+```bash
+printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine -p "correct horse"
+```
+
+## الصيغ (Encodings)
+
+`split -e/--encoding` يدعم:
+
+- `base64` (URL-safe, بدون padding)
+- `base58`
+- `mnemo-words`
+- `mnemo-bip39`
+
+أمر `combine` يستطيع اكتشاف الصيغة تلقائياً إذا لم تكتب `--encoding`.

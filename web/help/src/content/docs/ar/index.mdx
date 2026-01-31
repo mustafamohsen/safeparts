@@ -1,0 +1,61 @@
+---
+title: مساعدة Safeparts
+description: تعرّف على Safeparts ومتى تستخدمه وكيف تشغّل واجهة الويب وواجهة CLI وواجهة TUI.
+template: splash
+hero:
+  tagline: قسّم سراً حساساً إلى حصص استعادة، ثم أعد تركيبه باستخدام k من n.
+  image:
+    file: ../../../assets/logo.svg
+  actions:
+    - text: دليل واجهة الويب
+      link: web-ui/
+      icon: right-arrow
+    - text: دليل CLI
+      link: cli/
+      icon: open-book
+    - text: البناء والتشغيل
+      link: build-and-run/
+      icon: setting
+    - text: افتح التطبيق
+      link: /
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## ابدأ هنا
+
+<CardGrid stagger>
+	<Card title="ما هو Safeparts؟" icon="open-book">
+		نظرة سريعة على فكرة الاستعادة باستخدام k من n، والتحقق من السلامة، والصيغ التي
+		يدعمها Safeparts.
+		
+		[اقرأ النظرة العامة](project/)
+	</Card>
+	<Card title="حالات استخدام شائعة" icon="stars">
+		متى يساعد، ومتى لا يساعد، وكيف تفكر في الثقة والتخزين.
+		
+		[تصفّح الحالات](use-cases/)
+	</Card>
+	<Card title="استخدمه في المتصفح" icon="window">
+		قسّم واستعد محلياً عبر WASM. لا يتم رفع أي شيء إلا إذا اخترت ذلك.
+		
+		[دليل واجهة الويب](web-ui/)
+	</Card>
+	<Card title="استخدمه في الطرفية" icon="terminal">
+		واجهة CLI قابلة للأتمتة، وواجهة TUI تفاعلية للعمل اليدوي.
+		
+		[CLI](cli/) · [TUI](tui/)
+	</Card>
+	<Card title="شغّله على أي منصة" icon="wrench">
+		خطوات Linux/macOS/Windows لبناء وتشغيل CLI وTUI وواجهة الويب.
+		
+		[البناء والتشغيل](build-and-run/)
+	</Card>
+</CardGrid>
+
+:::caution
+حصص Safeparts بيانات حساسة. لا تلصقها في الدردشة أو التذاكر أو السجلات. عند كتابة
+توثيق أو تصحيح أخطاء، استخدم أمثلة اصطناعية.
+:::

@@ -1,0 +1,122 @@
+---
+title: Build & run
+description: Cross-platform build instructions for the CLI, TUI, and Web UI.
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+Safeparts is a Rust workspace with an optional WASM-powered web UI.
+
+## Prerequisites
+
+- Rust stable (rustup recommended) (+ `rustfmt`, `clippy`)
+- Bun 1.3+ (recommended for the web UI)
+
+## CLI + TUI (Rust)
+
+<Tabs>
+  <TabItem label="Linux">
+
+```bash
+rustup component add rustfmt clippy
+cargo build
+cargo test --all-features
+```
+
+Build release binaries:
+
+```bash
+cargo build -p safeparts --release
+cargo build -p safeparts_tui --release
+```
+
+  </TabItem>
+  <TabItem label="macOS">
+
+```bash
+rustup component add rustfmt clippy
+cargo build
+cargo test --all-features
+```
+
+If you hit terminal permission issues, ensure your terminal app has access to the
+keyboard/input monitoring features it requires.
+
+  </TabItem>
+  <TabItem label="Windows">
+
+```powershell
+rustup component add rustfmt clippy
+cargo build
+cargo test --all-features
+```
+
+Release builds:
+
+```powershell
+cargo build -p safeparts --release
+cargo build -p safeparts_tui --release
+```
+
+  </TabItem>
+</Tabs>
+
+## Web UI (Vite + React + WASM)
+
+The web UI lives in `web/` and expects a WASM build step.
+
+<Steps>
+  1. Install JS deps.
+  2. Build WASM bindings.
+  3. Start the dev server.
+</Steps>
+
+<Tabs>
+  <TabItem label="Linux/macOS">
+
+```bash
+cd web
+bun install
+rustup target add wasm32-unknown-unknown
+bun run build:wasm
+bun run dev
+```
+
+  </TabItem>
+  <TabItem label="Windows">
+
+The repo's `bun run build:wasm` script uses `bash -lc`. On Windows, use one of:
+
+- WSL (recommended), run the Linux steps.
+- Git Bash (if available) so `bash` exists on PATH.
+
+Or run the WASM build manually:
+
+```powershell
+rustup target add wasm32-unknown-unknown
+cargo install wasm-pack --locked --version 0.13.1
+cargo install wasm-bindgen-cli --locked --version 0.2.108
+
+cd web
+wasm-pack build ..\crates\safeparts_wasm --mode no-install --target web --out-dir .\src\wasm_pkg
+bun install
+bun run dev
+```
+
+  </TabItem>
+</Tabs>
+
+## Help site (this docs)
+
+This Starlight site lives in `web/help/` and is deployed under `/help/`.
+
+```bash
+cd web/help
+bun install
+bun run dev
+```
+
+Then open:
+
+- `http://localhost:4321/help/`
+- `http://localhost:4321/help/ar/`

@@ -64,6 +64,30 @@ function GitHubIcon() {
   );
 }
 
+function HelpIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path
+        d="M6 4.5c0-.55.45-1 1-1h10c.55 0 1 .45 1 1V19a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 7h6M9 10.5h6M9 14h4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function ShieldIcon() {
   return (
     <svg
@@ -92,6 +116,9 @@ function ShieldIcon() {
 export function App() {
   const [tab, setTab] = useState<Tab>("split");
   const [lang, setLang] = useState<Lang>(() => getInitialLang());
+
+  const helpUrl =
+    import.meta.env.VITE_HELP_URL ?? (lang === "ar" ? "/help/ar/" : "/help/");
 
   const strings = STRINGS[lang];
 
@@ -138,6 +165,14 @@ export function App() {
             </div>
 
             <div className="dir-row flex-wrap items-center gap-2">
+              <a
+                href={helpUrl}
+                className="grid h-10 w-10 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                aria-label={strings.help}
+                title={strings.help}
+              >
+                <HelpIcon />
+              </a>
               <a
                 href="https://github.com/mustafamohsen/safeparts"
                 target="_blank"
