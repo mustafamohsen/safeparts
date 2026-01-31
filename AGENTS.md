@@ -101,17 +101,17 @@ If the repo ends up structured differently, prefer the actual layout over this.
 
 **Package manager**
 
-- No lockfile is committed yet; default to npm.
-- Install deps: `npm install`
+- No lockfile is committed yet; default to bun.
+- Install deps: `bun install`
 
 **WASM build (required before UI works)**
 
-- From `web/`: `npm run build:wasm`
+- From `web/`: `bun run build:wasm`
 
 **Run / Build**
 
-- Dev server (from `web/`): `npm run dev`
-- Production build (from `web/`): `npm run build`
+- Dev server (from `web/`): `bun run dev`
+- Production build (from `web/`): `bun run build`
 
 **Notes**
 

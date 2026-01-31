@@ -127,9 +127,9 @@ A minimal web UI exists under `web/` and uses `crates/safeparts_wasm` (WASM) to 
 Run locally:
 
 - `cd web`
-- `npm install`
-- `npm run build:wasm`
-- `npm run dev`
+- `bun install`
+- `bun run build:wasm`
+- `bun run dev`
 
 Generated WASM output goes to `web/src/wasm_pkg/` (gitignored).
 
