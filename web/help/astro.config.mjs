@@ -36,6 +36,9 @@ export default defineConfig({
 			},
 			head: [
 				{ tag: 'meta', attrs: { name: 'color-scheme', content: 'dark' } },
+				{ tag: 'meta', attrs: { name: 'theme-color', content: '#000000' } },
+				{ tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
+				{ tag: 'link', attrs: { rel: 'manifest', href: '/site.webmanifest' } },
 				{
 					tag: 'script',
 					attrs: { type: 'module' },
