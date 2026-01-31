@@ -47,6 +47,10 @@ html[lang='ar'] {
     'Segoe UI Emoji';
 }
 
+:root:lang(ar) {
+  --sl-font: 'IBM Plex Sans Arabic';
+}
+
 /* Match the web app's "atmosphere" without hurting readability. */
 body {
   background: hsl(0 0% 0%);
