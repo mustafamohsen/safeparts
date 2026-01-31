@@ -73,13 +73,19 @@ function HelpIcon() {
       aria-hidden="true"
     >
       <path
-        d="M6 4.5c0-.55.45-1 1-1h10c.55 0 1 .45 1 1V19a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5Z"
+        d="M3.5 5.5c0-1.1.9-2 2-2H19a1 1 0 0 1 1 1v14.2a.3.3 0 0 1-.48.24 7.4 7.4 0 0 0-4.52-1.44H5.5a2 2 0 0 1-2-2v-10Z"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinejoin="round"
       />
       <path
-        d="M9 7h6M9 10.5h6M9 14h4"
+        d="M12 5.5v12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7.5 8h3M7.5 11h3M14 8h2.5M14 11h2.5"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
