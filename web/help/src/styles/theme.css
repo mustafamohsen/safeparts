@@ -23,6 +23,35 @@
   --sl-color-accent: hsl(160 84% 39%);
   --sl-color-accent-high: hsl(158 82% 86%);
 
+  /*
+    Starlight uses semantic color scales for callouts (note/info/warning/etc)
+    and badges. If the theme resolves to `data-theme='light'` (common on mobile
+    when the OS is in light mode), Starlight's defaults make these surfaces very
+    bright against our always-dark background.
+
+    We define these scales explicitly so callouts remain readable and consistent
+    across devices, regardless of the selected theme.
+  */
+  --sl-color-blue-low: hsl(204 70% 14%);
+  --sl-color-blue: hsl(204 88% 48%);
+  --sl-color-blue-high: hsl(204 92% 86%);
+
+  --sl-color-green-low: hsl(142 60% 14%);
+  --sl-color-green: hsl(142 71% 45%);
+  --sl-color-green-high: hsl(141 75% 86%);
+
+  --sl-color-orange-low: hsl(28 70% 14%);
+  --sl-color-orange: hsl(28 90% 52%);
+  --sl-color-orange-high: hsl(30 94% 86%);
+
+  --sl-color-red-low: hsl(0 62% 14%);
+  --sl-color-red: hsl(0 84% 60%);
+  --sl-color-red-high: hsl(0 93% 86%);
+
+  --sl-color-purple-low: hsl(265 55% 14%);
+  --sl-color-purple: hsl(265 82% 62%);
+  --sl-color-purple-high: hsl(266 92% 88%);
+
   --sl-color-text: hsl(215 20% 82%);
   --sl-color-text-accent: hsl(158 82% 86%);
   --sl-color-bg: hsl(0 0% 0%);
@@ -87,6 +116,61 @@ body::after {
 /* Starlight renders a theme picker by default; we keep docs consistent with the app. */
 starlight-theme-select {
   display: none !important;
+}
+
+/*
+  Starlight can still set `data-theme="light"` automatically based on the
+  user's OS preference. Since the docs are designed to visually match the main
+  (always-dark) web app, we restate our dark palette for the light theme too.
+  This keeps callouts (info/warning/etc) and other surfaces consistent on mobile.
+*/
+:root[data-theme='light'] {
+  color-scheme: dark;
+
+  --sl-color-white: hsl(0 0% 100%);
+  --sl-color-black: hsl(0 0% 0%);
+
+  --sl-color-gray-1: hsl(215 20% 92%);
+  --sl-color-gray-2: hsl(215 16% 80%);
+  --sl-color-gray-3: hsl(215 14% 62%);
+  --sl-color-gray-4: hsl(215 14% 44%);
+  --sl-color-gray-5: hsl(215 18% 18%);
+  --sl-color-gray-6: hsl(215 22% 12%);
+  --sl-color-gray-7: hsl(215 26% 8%);
+
+  --sl-color-accent-low: hsl(163 70% 14%);
+  --sl-color-accent: hsl(160 84% 39%);
+  --sl-color-accent-high: hsl(158 82% 86%);
+
+  --sl-color-blue-low: hsl(204 70% 14%);
+  --sl-color-blue: hsl(204 88% 48%);
+  --sl-color-blue-high: hsl(204 92% 86%);
+
+  --sl-color-green-low: hsl(142 60% 14%);
+  --sl-color-green: hsl(142 71% 45%);
+  --sl-color-green-high: hsl(141 75% 86%);
+
+  --sl-color-orange-low: hsl(28 70% 14%);
+  --sl-color-orange: hsl(28 90% 52%);
+  --sl-color-orange-high: hsl(30 94% 86%);
+
+  --sl-color-red-low: hsl(0 62% 14%);
+  --sl-color-red: hsl(0 84% 60%);
+  --sl-color-red-high: hsl(0 93% 86%);
+
+  --sl-color-purple-low: hsl(265 55% 14%);
+  --sl-color-purple: hsl(265 82% 62%);
+  --sl-color-purple-high: hsl(266 92% 88%);
+
+  --sl-color-text: hsl(215 20% 82%);
+  --sl-color-text-accent: hsl(158 82% 86%);
+  --sl-color-bg: hsl(0 0% 0%);
+  --sl-color-bg-nav: hsl(0 0% 0% / 0.72);
+  --sl-color-bg-sidebar: hsl(0 0% 0% / 0.72);
+  --sl-color-bg-inline-code: hsl(215 18% 16%);
+  --sl-color-hairline: hsl(160 84% 39% / 0.16);
+  --sl-color-hairline-light: hsl(160 84% 39% / 0.12);
+  --sl-color-hairline-shade: hsl(0 0% 0%);
 }
 
 /* Subtle rounding similar to the app. */

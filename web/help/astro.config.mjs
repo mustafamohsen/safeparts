@@ -45,6 +45,22 @@ export default defineConfig({
 				{ tag: 'meta', attrs: { name: 'color-scheme', content: 'dark' } },
 				{ tag: 'meta', attrs: { name: 'theme-color', content: '#000000' } },
 				{
+					tag: 'script',
+					content: `
+;(() => {
+  // Keep docs consistent with the main app (dark-only). Some mobile browsers
+  // default to light mode which makes callouts (note/warning/etc) too bright.
+  try {
+    if (!localStorage.getItem('starlight-theme')) {
+      localStorage.setItem('starlight-theme', 'dark');
+    }
+  } catch {
+    // ignore
+  }
+})();
+`,
+				},
+				{
 					tag: 'link',
 					attrs: { rel: 'apple-touch-icon', href: '/help/apple-touch-icon.png' },
 				},
