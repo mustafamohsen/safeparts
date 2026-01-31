@@ -143,6 +143,8 @@ export function App() {
             <div className="dir-row flex-wrap items-center gap-2">
               <a
                 href={helpUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="grid h-10 px-3 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-xs font-semibold tracking-wide uppercase text-slate-200 transition hover:bg-white/5"
                 aria-label={strings.help}
                 title={strings.help}
