@@ -22,7 +22,7 @@ export default defineConfig({
 				src: './src/assets/logo.svg',
 				alt: 'Safeparts',
 			},
-			favicon: '/favicon.svg',
+			favicon: '/logo.svg',
 			social: [
 				{
 					icon: 'github',
