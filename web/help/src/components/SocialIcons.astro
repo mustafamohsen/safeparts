@@ -21,8 +21,8 @@ const appLink = {
 				aria-label={appLink.label}
 				title={appLink.label}
 			>
+				<img src="/logo.svg" alt="" class="app-mark" width="18" height="18" />
 				<span class="app-text">App</span>
-				<Icon name="external" />
 			</a>
 			{links.map(({ label, href, icon }) => (
 				<a
@@ -71,6 +71,11 @@ const appLink = {
 			font-size: var(--sl-text-xs);
 			font-weight: 600;
 			letter-spacing: 0.02em;
+		}
+
+		.app-mark {
+			display: block;
+			filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
 		}
 	}
 </style>
