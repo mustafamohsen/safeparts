@@ -8,13 +8,12 @@
   }
 
   html {
-    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-      "Courier New", monospace;
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   html[lang='ar'] {
-    font-family: "IBM Plex Sans Arabic", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-      "Liberation Mono", "Courier New", monospace;
+    font-family: "IBM Plex Sans Arabic", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
   }
 
   body {
