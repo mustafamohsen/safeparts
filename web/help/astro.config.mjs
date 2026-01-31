@@ -51,9 +51,7 @@ export default defineConfig({
   // Keep docs consistent with the main app (dark-only). Some mobile browsers
   // default to light mode which makes callouts (note/warning/etc) too bright.
   try {
-    if (!localStorage.getItem('starlight-theme')) {
-      localStorage.setItem('starlight-theme', 'dark');
-    }
+    localStorage.setItem('starlight-theme', 'dark');
   } catch {
     // ignore
   }
