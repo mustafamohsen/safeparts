@@ -1,0 +1,99 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version string for naming (e.g. v0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build (${{ matrix.id }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            id: linux
+          - os: windows-latest
+            id: windows
+          - os: macos-13
+            id: macos-x86_64
+          - os: macos-14
+            id: macos-aarch64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Test
+        run: cargo test --all-features
+
+      - name: Build release binaries
+        run: cargo build --release -p safeparts -p safeparts_tui
+
+      - name: Package
+        run: python scripts/release/package.py --version "${RELEASE_VERSION}"
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: safeparts-${{ matrix.id }}
+          path: dist/release/*
+
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist/release
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import hashlib
+          from pathlib import Path
+
+          out_dir = Path('dist/release')
+          archives = sorted([p for p in out_dir.iterdir() if p.suffix in ('.zip',) or p.name.endswith('.tar.gz')])
+
+          def sha256_hex(path: Path) -> str:
+              h = hashlib.sha256()
+              with path.open('rb') as f:
+                  for chunk in iter(lambda: f.read(1024 * 1024), b''):
+                      h.update(chunk)
+              return h.hexdigest()
+
+          sums = out_dir / 'SHA256SUMS.txt'
+          with sums.open('w', encoding='utf-8') as f:
+              for p in archives:
+                  f.write(f"{sha256_hex(p)}  {p.name}\n")
+          print(f"wrote {sums}")
+          PY
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/release/*.tar.gz
+            dist/release/*.zip
+            dist/release/SHA256SUMS.txt
+    env:
+      RELEASE_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}

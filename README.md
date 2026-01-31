@@ -39,6 +39,44 @@ You choose a threshold (`k` of `n`):
 
 ## Install / Build (Rust)
 
+## Install (prebuilt binaries)
+
+Download the latest release from:
+
+- https://github.com/mustafamohsen/safeparts/releases
+
+Each release provides archives containing:
+
+- `safeparts` (CLI)
+- `safeparts-tui` (terminal UI)
+
+Verify the download (optional but recommended):
+
+- Download `SHA256SUMS.txt` from the release.
+- Verify your archive:
+  - Linux: `sha256sum -c SHA256SUMS.txt`
+  - macOS: `shasum -a 256 -c SHA256SUMS.txt`
+  - Windows (PowerShell): `certutil -hashfile <archive> SHA256` (compare to `SHA256SUMS.txt`)
+
+Install (extract the archive and put binaries on your PATH):
+
+- Linux:
+  - `tar -xzf safeparts-<version>-linux-<arch>.tar.gz`
+  - `sudo install -m 755 safeparts-<version>-linux-<arch>/safeparts /usr/local/bin/safeparts`
+  - `sudo install -m 755 safeparts-<version>-linux-<arch>/safeparts-tui /usr/local/bin/safeparts-tui`
+- macOS:
+  - `tar -xzf safeparts-<version>-macos-<arch>.tar.gz`
+  - `sudo install -m 755 safeparts-<version>-macos-<arch>/safeparts /usr/local/bin/safeparts`
+  - `sudo install -m 755 safeparts-<version>-macos-<arch>/safeparts-tui /usr/local/bin/safeparts-tui`
+- Windows:
+  - Extract `safeparts-<version>-windows-<arch>.zip`
+  - Run `safeparts.exe` / `safeparts-tui.exe` directly, or add the folder to PATH
+
+Verify:
+
+- `safeparts --help`
+- `safeparts-tui --help`
+
 Prereqs:
 
 - Rust stable

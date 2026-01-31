@@ -12,6 +12,75 @@ Safeparts مساحة عمل (workspace) بلغة Rust مع واجهة ويب ا�
 - Rust stable (يُفضّل rustup) + `rustfmt` و `clippy`
 - Bun 1.3+ (لواجهة الويب)
 
+## التثبيت (نسخ جاهزة)
+
+يتم نشر نسخ جاهزة لـ Safeparts على GitHub Releases لنظام macOS وLinux وWindows:
+
+- https://github.com/mustafamohsen/safeparts/releases
+
+كل أرشيف يحتوي على:
+
+- `safeparts` (واجهة CLI)
+- `safeparts-tui` (واجهة طرفية)
+
+<Tabs>
+  <TabItem label="Linux">
+
+```bash
+# حمّل أرشيف Linux وملف SHA256SUMS.txt من صفحة الإصدارات.
+tar -xzf safeparts-<version>-linux-<arch>.tar.gz
+
+# اختياري: التحقق من checksum.
+sha256sum -c SHA256SUMS.txt
+
+# تثبيت.
+sudo install -m 755 safeparts-<version>-linux-<arch>/safeparts /usr/local/bin/safeparts
+sudo install -m 755 safeparts-<version>-linux-<arch>/safeparts-tui /usr/local/bin/safeparts-tui
+
+# تحقق.
+safeparts --help
+safeparts-tui --help
+```
+
+  </TabItem>
+  <TabItem label="macOS">
+
+```bash
+# حمّل أرشيف macOS وملف SHA256SUMS.txt من صفحة الإصدارات.
+tar -xzf safeparts-<version>-macos-<arch>.tar.gz
+
+# اختياري: التحقق من checksum.
+shasum -a 256 -c SHA256SUMS.txt
+
+# تثبيت.
+sudo install -m 755 safeparts-<version>-macos-<arch>/safeparts /usr/local/bin/safeparts
+sudo install -m 755 safeparts-<version>-macos-<arch>/safeparts-tui /usr/local/bin/safeparts-tui
+
+# تحقق.
+safeparts --help
+safeparts-tui --help
+```
+
+  </TabItem>
+  <TabItem label="Windows">
+
+```powershell
+# حمّل ملف zip الخاص بـ Windows وملف SHA256SUMS.txt من صفحة الإصدارات.
+# فك الضغط في مسار مثل C:\Tools\safeparts\
+
+# اختياري: التحقق من checksum (قارن الناتج مع SHA256SUMS.txt).
+certutil -hashfile safeparts-<version>-windows-<arch>.zip SHA256
+
+# تشغيل مباشر:
+./safeparts.exe --help
+./safeparts-tui.exe --help
+
+# اختياري: أضف المجلد إلى PATH.
+```
+
+  </TabItem>
+</Tabs>
+
 ## CLI + TUI (Rust)
 
 <Tabs>

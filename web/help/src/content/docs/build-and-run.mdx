@@ -12,6 +12,78 @@ Safeparts is a Rust workspace with an optional WASM-powered web UI.
 - Rust stable (rustup recommended) (+ `rustfmt`, `clippy`)
 - Bun 1.3+ (recommended for the web UI)
 
+## Install (prebuilt binaries)
+
+Safeparts publishes stable binaries for macOS, Linux, and Windows on GitHub Releases.
+
+- https://github.com/mustafamohsen/safeparts/releases
+
+Each archive includes:
+
+- `safeparts` (CLI)
+- `safeparts-tui` (terminal UI)
+
+<Tabs>
+  <TabItem label="Linux">
+
+```bash
+# Download the latest linux archive + SHA256SUMS.txt from the release page.
+tar -xzf safeparts-<version>-linux-<arch>.tar.gz
+
+# Optional: verify checksum.
+sha256sum -c SHA256SUMS.txt
+
+# Install.
+sudo install -m 755 safeparts-<version>-linux-<arch>/safeparts /usr/local/bin/safeparts
+sudo install -m 755 safeparts-<version>-linux-<arch>/safeparts-tui /usr/local/bin/safeparts-tui
+
+# Verify.
+safeparts --help
+safeparts-tui --help
+```
+
+  </TabItem>
+  <TabItem label="macOS">
+
+```bash
+# Download the latest macOS archive + SHA256SUMS.txt from the release page.
+tar -xzf safeparts-<version>-macos-<arch>.tar.gz
+
+# Optional: verify checksum.
+shasum -a 256 -c SHA256SUMS.txt
+
+# Install.
+sudo install -m 755 safeparts-<version>-macos-<arch>/safeparts /usr/local/bin/safeparts
+sudo install -m 755 safeparts-<version>-macos-<arch>/safeparts-tui /usr/local/bin/safeparts-tui
+
+# Verify.
+safeparts --help
+safeparts-tui --help
+```
+
+If you hit Gatekeeper quarantine prompts after downloading, you may need to remove
+the quarantine attribute for the extracted binaries.
+
+  </TabItem>
+  <TabItem label="Windows">
+
+```powershell
+# Download the latest Windows zip + SHA256SUMS.txt from the release page.
+# Extract the zip somewhere like C:\Tools\safeparts\
+
+# Optional: verify checksum (compare output to SHA256SUMS.txt).
+certutil -hashfile safeparts-<version>-windows-<arch>.zip SHA256
+
+# Run directly:
+./safeparts.exe --help
+./safeparts-tui.exe --help
+
+# Optional: add the extracted folder to PATH.
+```
+
+  </TabItem>
+</Tabs>
+
 ## CLI + TUI (Rust)
 
 <Tabs>
