@@ -2,12 +2,13 @@
 import config from 'virtual:starlight/user-config';
 import { Icon } from '@astrojs/starlight/components';
 
+import logoUrl from '../assets/logo.svg';
+
 const links = config.social || [];
 
 const appLink = {
 	label: 'Open app',
 	href: '/',
-	icon: 'external',
 };
 ---
 
@@ -22,8 +23,8 @@ const appLink = {
 				aria-label={appLink.label}
 				title={appLink.label}
 			>
-				<span class="sr-only">{appLink.label}</span>
-				<Icon name={appLink.icon} />
+				<img src={logoUrl} alt="" class="app-mark" width="18" height="18" decoding="async" />
+				<span class="app-text">App</span>
 			</a>
 			{links.map(({ label, href, icon }) => (
 				<a
@@ -56,9 +57,26 @@ const appLink = {
 		/* Slightly more visible than plain icons, but still minimal. */
 		.app-link {
 			color: var(--sl-color-text);
+			gap: 0.5rem;
+			padding: 0.35rem 0.55rem;
+			margin: 0;
+			border-radius: 999px;
+			border: 1px solid var(--sl-color-hairline);
+			background: hsl(0 0% 0% / 0.28);
 		}
 		.app-link:hover {
 			color: var(--sl-color-text-accent);
+			background: hsl(0 0% 100% / 0.06);
+		}
+
+		.app-mark {
+			display: block;
+		}
+
+		.app-text {
+			font-size: var(--sl-text-xs);
+			font-weight: 600;
+			letter-spacing: 0.02em;
 		}
 	}
 </style>
