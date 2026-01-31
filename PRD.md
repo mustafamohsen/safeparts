@@ -202,3 +202,10 @@ Backlog / future ideas (not required for current release):
 - Optional import/export compatibility with other tools.
 - Improved cross-platform packaging (installers, signed releases).
 
+## Git workflow
+
+- Always commit atomically after each meaningful task 
+- Write conventional commits style commit messages
+- Prefer rebase over merge
+- When starting a new feature, create a feature branch
+
