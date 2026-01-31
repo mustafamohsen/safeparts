@@ -8,6 +8,9 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 Safeparts is most useful when you want **recovery to require collaboration** (social
 control) or **separation** (so one place/device compromise doesn't end the story).
 
+This section is about practical patterns. The goal is to end up with a recovery plan
+that is both **secure** and **actually usable** under stress.
+
 <Tabs>
 <TabItem label="Personal">
 
@@ -17,6 +20,7 @@ Split a password manager recovery key across trusted people.
 
 - Good default: `k=2, n=3`
 - Why: one compromise can't unlock it; any two can help you recover.
+- Tip: write down *who holds what* and run a dry-run once.
 
 ### Physical separation
 
@@ -25,6 +29,14 @@ Store shares in different locations (home, office, safe deposit box).
 - Good default: `k=2, n=3` or `k=3, n=5`
 - Why: fire/theft at one location doesn't destroy recovery.
 
+### Travel / device-loss recovery
+
+If you travel a lot or regularly wipe devices, keep shares so a lost phone/laptop
+doesn't become a lockout.
+
+- Good default: `k=2, n=3`
+- Tip: keep one share offline (paper) and one in a different account/vendor.
+
 ### Multi-device backup
 
 Keep shares on different devices/vendors (e.g., one offline, one hardware-encrypted,
@@ -32,6 +44,13 @@ one paper).
 
 - Good default: `k=2, n=3`
 - Why: losing a single device/account doesn't lock you out.
+
+### Paper escrow (personal)
+
+Print a share and store it as "break glass" recovery.
+
+- Good default: `k=2, n=3`
+- Tip: label shares by set, but never include the secret itself.
 
 </TabItem>
 <TabItem label="Teams">
@@ -43,6 +62,14 @@ Store an emergency infrastructure credential so ops + security must cooperate.
 - Good default: `k=2, n=3` or `k=3, n=5`
 - Why: turns risky "superuser" secrets into an auditable, human process.
 
+### Vendor admin / recovery codes
+
+Split root recovery codes (cloud, registrar, email) so one admin account compromise
+doesn't give full control.
+
+- Good default: `k=2, n=3`
+- Tip: store shares out-of-band (not all in the same password manager).
+
 ### Process-driven recovery
 
 Define who holds which shares, where they live, and how reconstruction is approved.
@@ -50,12 +77,26 @@ Define who holds which shares, where they live, and how reconstruction is approv
 - Good default: `k=3, n=5`
 - Why: reduces single points of failure while keeping recovery realistic.
 
+### Separation of duties
+
+Use shares to enforce that "deploy" and "approve" are different roles.
+
+- Good default: `k=2, n=3`
+- Tip: pair this with human logging (ticket + incident note).
+
 ### Secure handoffs
 
 Give collaborators partial custody without any single party holding the whole secret.
 
 - Good default: depends on trust model
 - Why: enables shared responsibility without over-sharing.
+
+### Time-boxed access (operational)
+
+If you need temporary access, reconstruct only when needed and immediately rotate
+the secret afterward.
+
+- Tip: plan rotation ahead of time (new secret -> new shares).
 
 </TabItem>
 </Tabs>
