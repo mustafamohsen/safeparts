@@ -10,6 +10,11 @@ export default defineConfig({
 	outDir: '../dist/help',
 	integrations: [
 		starlight({
+			// Keep these paths correct even when deployed under `base`.
+			// Starlight does not automatically prefix absolute URLs with `base`.
+			// (e.g. `/favicon.svg` would resolve to the domain root, not `/help/favicon.svg`).
+			//
+			// If you change `base`, update the explicit `/help/...` paths below.
 			title: { en: 'Safeparts Help', ar: 'مساعدة Safeparts' },
 			description:
 				'Split a secret into shares and recover it with k of n. Guides for Web, CLI, and TUI.',
@@ -22,7 +27,7 @@ export default defineConfig({
 				src: './src/assets/logo.svg',
 				alt: 'Safeparts',
 			},
-			favicon: '/logo.svg',
+			favicon: '/help/favicon.svg',
 			social: [
 				{
 					icon: 'github',
@@ -37,8 +42,11 @@ export default defineConfig({
 			head: [
 				{ tag: 'meta', attrs: { name: 'color-scheme', content: 'dark' } },
 				{ tag: 'meta', attrs: { name: 'theme-color', content: '#000000' } },
-				{ tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
-				{ tag: 'link', attrs: { rel: 'manifest', href: '/site.webmanifest' } },
+				{
+					tag: 'link',
+					attrs: { rel: 'apple-touch-icon', href: '/help/apple-touch-icon.png' },
+				},
+				{ tag: 'link', attrs: { rel: 'manifest', href: '/help/site.webmanifest' } },
 				{
 					tag: 'script',
 					attrs: { type: 'module' },
