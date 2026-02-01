@@ -289,11 +289,11 @@ export function CombineForm({ strings }: CombineFormProps) {
                         : ""
                     }`}
                     aria-labelledby="shares-label"
-                    aria-describedby={isInvalid ? undefined : "shares-hint"}
+                    aria-describedby={isInvalid ? `share-${box.id}-error` : "shares-hint"}
                     aria-invalid={isInvalid}
                   />
                   {isInvalid && (
-                    <p className="mt-1 text-xs text-rose-400" id={`share-${box.id}-error`}>
+                    <p className="mt-1 text-xs text-rose-400" id={`share-${box.id}-error`} role="alert">
                       {strings.shareRequired}
                     </p>
                   )}

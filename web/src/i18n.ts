@@ -44,6 +44,7 @@ export const STRINGS = {
     sharesInputLabel: "Shares",
     sharesInputHint: "One share per box. You can add more as needed.",
     sharePlaceholder: "Paste a share here…",
+    shareRequired: "Share content is required",
     addShare: "Add share",
     removeShare: "Remove",
 
@@ -100,6 +101,7 @@ export const STRINGS = {
     sharesInputLabel: "الحصص",
     sharesInputHint: "حصة واحدة في كل مربع. أضف المزيد عند الحاجة.",
     sharePlaceholder: "الصق الحصة هنا…",
+    shareRequired: "محتوى الحصة مطلوب",
     addShare: "إضافة حصة",
     removeShare: "حذف",
 
