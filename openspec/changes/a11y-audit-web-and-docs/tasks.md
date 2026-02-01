@@ -1,5 +1,6 @@
 ## 1. Test Harness (Automated A11y)
 
+<<<<<<< HEAD
 - [x] 1.1 Add Playwright test setup under `web/` and choose a stable port strategy for local/CI runs
 - [x] 1.2 Add axe-core integration for Playwright (web app): scan Split and Combine screens and fail on violations
 - [x] 1.3 Add axe-core integration for Playwright (docs): scan `/help/`, a representative content page, and `/help/ar/`
