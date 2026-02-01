@@ -13,19 +13,7 @@ Shares are sensitive. Don't paste real shares into chat, tickets, issues, or log
 When documenting or testing, use synthetic secrets.
 :::
 
-<LinkButton href="#walkthrough-a" variant="secondary" icon="right-arrow">
-	Start personal walkthrough
-</LinkButton>
-
-<LinkButton href="#walkthrough-b" variant="secondary" icon="right-arrow">
-	Start team/enterprise walkthrough
-</LinkButton>
-
-<LinkButton href="#use-case-catalog" variant="minimal" icon="list-format">
-	Browse use case catalog
-</LinkButton>
-
-## Why This Is Worth Doing
+## The Problem
 
 Most people back up a secret by making one copy. That creates a single point of failure:
 
@@ -36,12 +24,10 @@ If the backup is stolen: secret exposed
 If the backup is lost:    secret unrecoverable
 ```
 
-Safeparts helps you avoid both outcomes:
+Safeparts distributes risk across people and places. With k-of-n sharing:
 
-- Reduce compromise risk: one share stolen is not enough.
-- Reduce lockout risk: one share lost is not fatal.
-
-With k-of-n sharing, you distribute risk across people and places:
+- One share stolen is not enough to expose the secret.
+- One share lost is not fatal to recovery.
 
 ```
 Secret -> n shares
@@ -50,23 +36,42 @@ Attacker needs k shares
 You need k shares
 ```
 
-## Pick The Right Tool
+## Understanding k-of-n
 
-The best interface depends on how technical you want the workflow to be and whether you need repeatability.
+- `n` is how many shares you create
+- `k` is how many shares are required to recover
+
+With `k=2, n=3`: you create 3 shares, any 2 can recover, you can lose 1 and still recover.
+
+### Choosing k and n
+
+Pick `k` based on who must approve recovery. Pick `n` based on how many losses you can tolerate.
+
+`n = k + number of shares you can afford to lose`
+
+Practical defaults:
+- Personal use: `k=2, n=3`
+- Teams: `k=3, n=5`
+
+:::tip
+A simple plan people can execute under stress beats a perfect plan nobody follows.
+:::
+
+## Choose Your Interface
 
 <CardGrid>
 	<Card title="Web UI" icon="window">
-		Best for one-off use, non-technical users, and visual workflows.
+		For one-off use and visual workflows.
 		
 		[Read the Web UI guide](web-ui/)
 	</Card>
 	<Card title="CLI" icon="terminal">
-		Best for automation, scripts, and repeatable operational playbooks.
+		For automation and repeatable playbooks.
 		
 		[Read the CLI guide](cli/)
 	</Card>
 	<Card title="TUI" icon="keyboard">
-		Best for interactive terminal workflows (including remote/SSH environments).
+		For interactive terminal workflows.
 		
 		[Read the TUI guide](tui/)
 	</Card>
@@ -76,52 +81,26 @@ The best interface depends on how technical you want the workflow to be and whet
 	Open the web app
 </LinkButton>
 
-## k-of-n In Plain Terms
+## Practice First
 
-- `n` = how many shares you create
-- `k` = how many shares are required to recover
-
-Example: `k=2, n=3`
-
-```
-You create 3 shares.
-Any 2 shares can recover.
-You can lose 1 share and still recover.
-```
-
-### Choosing k and n (practical rule)
-
-Pick `k` based on **who must approve recovery**, then pick `n` based on **how many losses you can tolerate**.
-
-Rule of thumb:
-
-`n = k + (number of shares you can afford to lose)`
-
-Common defaults:
-
-- Individuals / families: `k=2, n=3`
-- Teams / organizations: `k=3, n=5`
-
-:::tip
-Make it usable first. A plan people can execute under stress beats a perfect plan nobody follows.
-:::
-
-## Tutorial: Do One Dry Run First
-
-Before you split a real secret, do a 3-minute rehearsal using a fake secret.
+Before splitting a real secret, do a 3-minute dry run with a fake secret.
 
 <Steps>
 1. Choose an interface (Web UI / CLI / TUI).
 2. Split the secret `example-secret` with `k=2, n=3`.
 3. Immediately recover it using any 2 shares.
-4. If you can do this smoothly, proceed with your real secret.
+4. If recovery works smoothly, proceed with your real secret.
 </Steps>
 
 <a id="walkthrough-a"></a>
 
-## Walkthrough A (Personal): Password manager recovery key (Web UI)
+## Scenario: Password Manager Recovery Key
 
-Use this when you want a simple workflow and you are not scripting anything.
+**Problem**: Your password manager protects hundreds of credentials, but the recovery key is a single point of failure. If you lose it, you're locked out. If someone steals it, they own your digital life.
+
+**Solution**: Split the recovery key so you need cooperation between two locations to recover, but losing one share doesn't lock you out.
+
+**Setup**: `k=2, n=3` using the Web UI
 
 <LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
 	Open the web app
@@ -129,173 +108,159 @@ Use this when you want a simple workflow and you are not scripting anything.
 
 <Steps>
 1. Paste your recovery key into **Secret**.
-2. Choose `k=2` and `n=3`.
+2. Set `k=2` and `n=3`.
 3. Choose an encoding (see [Encodings](encodings/)).
 4. Click **Split**.
-5. Store each share in a different place (example plan below).
-6. Do a dry run: recover using any 2 shares and confirm you get the original key.
+5. Store each share in a different place.
+6. Test recovery with any 2 shares before deleting the original key.
 </Steps>
 
-Example storage plan (`k=2, n=3`):
+Storage plan:
 
 ```
-Share 1: Your safe / deposit box
-Share 2: Trusted person
-Share 3: Separate account/vendor
+Share 1: Your safe or deposit box
+Share 2: Trusted person (family/friend)
+Share 3: Separate encrypted storage service
 
-Recovery requires: you + any one other source
+Recovery requires: you + one other source
+Resilience: lose any one share, still recoverable
 ```
 
 <a id="walkthrough-b"></a>
 
-## Walkthrough B (Team/Enterprise): Break-glass credential (CLI)
+## Scenario: Break-Glass Production Credential
 
-Use this when you need approvals, repeatability, and a written operational playbook.
+**Problem**: Your production database password must be accessible during emergencies, but giving it to one person creates a security risk. Storing it in one vault creates a single point of failure. You need multiple people to approve access.
+
+**Solution**: Split the credential across roles so no single person can access it alone, but any authorized group can recover it during an incident.
+
+**Setup**: `k=3, n=5` using the CLI
 
 <Steps>
-1. Decide a policy: start with `k=3, n=5`.
-2. Split the secret using the CLI.
-3. Distribute shares to roles (not just people).
-4. Write a recovery runbook (who approves, where recovery happens, how to rotate).
-5. Run a tabletop exercise: practice recovery once.
+1. Define your policy (who must approve recovery).
+2. Split the credential using the CLI.
+3. Distribute shares to roles, not individuals.
+4. Write a recovery runbook (approval process, rotation policy).
+5. Run a tabletop exercise to verify the process.
 </Steps>
 
-Split (placeholder secret):
+Split:
 
 ```bash
 echo -n "example-break-glass-secret" | safeparts split -k 3 -n 5
 ```
 
-Distribution pattern (`k=3, n=5`):
+Distribution pattern:
 
 ```
 Share 1: On-call lead (role)
-Share 2: Security (role)
+Share 2: Security team (role)
 Share 3: Engineering manager (role)
-Share 4: Offline safe (physical)
+Share 4: Physical safe (offline)
 Share 5: Off-site encrypted backup
+
+Recovery requires: 3 of 5 shares (multi-party approval)
+Resilience: lose any 2 shares, still recoverable
 ```
 
-Recover (with placeholders):
+Recover:
 
 ```bash
 printf "%s\n%s\n%s\n" "<share1>" "<share2>" "<share3>" | safeparts combine
 ```
 
 :::caution
-After any real break-glass event, rotate the secret and re-split. Treat shares as compromised once they leave normal storage.
+After any break-glass event, rotate the credential and re-split. Treat shares as potentially compromised once used outside normal storage.
 :::
 
-## Walkthrough C (High-safety): Offline / air-gapped recovery (TUI)
+## Scenario: Cryptocurrency Seed Phrase
 
-Use this when you want recovery to happen on a machine that never touches the internet.
+**Problem**: A seed phrase grants complete control of your funds. If it's stolen, your funds are gone. If it's lost, your funds are permanently inaccessible. Storing it digitally risks malware. Storing it on paper creates a single point of failure.
+
+**Solution**: Split the seed phrase and store shares on physical media in separate locations. Recover on an air-gapped machine to avoid network exposure.
+
+**Setup**: `k=3, n=5` using the TUI on an offline machine
 
 <Steps>
-1. Prepare an offline machine (no network).
-2. Run the TUI and choose a setup like `k=3, n=5`.
-3. Record each share on separate media (paper, USB, metal).
-4. Store media in different locations.
-5. Test recovery on the same offline machine.
+1. Prepare an air-gapped machine (no network, never connected).
+2. Run the TUI and set `k=3, n=5`.
+3. Record each share on separate physical media (paper, metal, USB).
+4. Store media in different geographic locations.
+5. Test recovery on the same offline machine before trusting the setup.
 </Steps>
+
+Storage plan:
+
+```
+Share 1: Home safe
+Share 2: Bank deposit box
+Share 3: Trusted family member (different city)
+Share 4: Attorney or executor
+Share 5: Second bank deposit box (different institution)
+
+Recovery requires: 3 of 5 shares (geographic diversity)
+Resilience: lose any 2 shares, still recoverable
+```
 
 <a id="use-case-catalog"></a>
 
-## Use Case Catalog
+## More Scenarios
 
-If you don't need a full walkthrough, pick the closest pattern and adapt it.
+Pick the closest pattern and adapt it to your needs.
 
-1. Password manager recovery key: `k=2,n=3` (Web UI)
-2. Seed phrase backup: `k=3,n=5` (TUI offline)
-3. Digital legacy / estate plan: `k=2,n=4` (Web UI)
-4. Shared household account: `k=2,n=3` (Web UI)
-5. 2FA recovery codes: `k=2,n=3` (Web UI)
-6. Domain/DNS recovery codes: `k=2,n=3` (CLI)
-7. GitHub/GitLab access token: `k=2,n=3` (CLI)
-8. Break-glass production credential: `k=3,n=5` (CLI)
-9. Shared service accounts: `k=2,n=4` (CLI)
-10. Client handoff: `k=2,n=3` (Web UI)
-11. Cofounder continuity: `k=2,n=4` (CLI)
-12. Separation of duties: `k=3,n=5` (CLI)
+### Digital Legacy and Estate Planning
 
-## Examples By Situation
+**Problem**: When you die or become incapacitated, your digital assets become inaccessible if only you know the credentials. Giving credentials to one person during your lifetime creates security and privacy risks.
 
-Each example includes:
+**Solution**: `k=2, n=4` — spouse/partner, executor, attorney, and one backup location. Your family can recover without needing you, but no single person can access while you're alive.
 
-- Suggested `k` and `n`
-- A distribution pattern (who/where)
-- A recommended interface (Web UI / CLI / TUI)
+### Shared Household Accounts
 
-### 1) Password manager recovery key (personal)
+**Problem**: Couples need shared access to important accounts, but one person losing or exposing the credential locks both out or compromises both.
 
-- Suggested: `k=2, n=3`
-- Store: one share with a trusted person, one in a safe/deposit box, one in a separate vault/vendor
-- Interface: Web UI
+**Solution**: `k=2, n=3` — each partner holds one share, third share is sealed offline backup. Either partner can initiate recovery, but needs the other's cooperation or the backup.
 
-### 2) Seed phrase backup (individual)
+### Domain Registrar and DNS Recovery
 
-- Suggested: `k=3, n=5` for high value; `k=2, n=3` for simpler setups
-- Store: separate physical locations; consider one offline paper/metal share
-- Interface: TUI (offline machine) or Web UI
+**Problem**: Losing access to your domain registrar can take your entire web presence offline. Storing credentials in one place creates a business continuity risk.
 
-### 3) Digital legacy / estate planning (family)
+**Solution**: `k=2, n=3` (small business) or `k=3, n=5` (larger teams) — distribute across ops and security roles with one offline share.
 
-- Suggested: `k=2, n=4`
-- Store: spouse/partner + executor/attorney + secure physical location + optional extra trusted person
-- Interface: Web UI
+### GitHub or GitLab Access Tokens
 
-### 4) Shared household account (family)
+**Problem**: Personal access tokens grant broad repository access. Storing them in one password manager creates a single point of failure. Losing the token disrupts automation.
 
-- Suggested: `k=2, n=3`
-- Store: two adults each hold one share; third share is a sealed offline backup
-- Interface: Web UI
+**Solution**: `k=2, n=3` — password manager, CI secret store, and offline backup. Compromise or loss of one location doesn't expose or lose the token.
 
-### 5) 2FA recovery codes (personal)
+### 2FA Recovery Codes
 
-- Suggested: `k=2, n=3`
-- Store: split codes so one compromised password manager does not expose everything
-- Interface: Web UI
+**Problem**: 2FA recovery codes are often stored in the same password manager as the passwords they protect. If the password manager is compromised, both factors are exposed.
 
-### 6) Domain registrar / DNS admin recovery (small business)
+**Solution**: `k=2, n=3` — split the codes so one location being compromised doesn't bypass two-factor protection entirely.
 
-- Suggested: `k=2, n=3` or `k=3, n=5`
-- Store: separate roles (ops + security) and one offline share
-- Interface: CLI (repeatable process) or Web UI (one-off)
+### Shared Service Accounts
 
-### 7) GitHub/GitLab personal access token (developer)
+**Problem**: Teams need access to shared service accounts (email, cloud admin, payment processors), but turnover and single-person access create continuity and security risks.
 
-- Suggested: `k=2, n=3`
-- Store: password manager + CI secret store + offline backup
-- Interface: CLI
+**Solution**: `k=2, n=4` — owner, ops, security, and offline backup. Use CLI for repeatable rotation workflows.
 
-### 8) Break-glass production credential (team)
+### Client Handoff (Agencies)
 
-- Suggested: `k=3, n=5`
-- Store: different people/roles; document a recovery playbook; rotate after use
-- Interface: CLI
+**Problem**: Agencies hold client credentials during projects. At handoff, you need to transfer access securely without exposing credentials via email or chat.
 
-### 9) Shared service accounts (small team)
+**Solution**: `k=2, n=3` — agency vault, client vault, and optional escrow. Use Web UI during handoff meetings for visual confirmation.
 
-- Suggested: `k=2, n=4`
-- Store: owner + ops + security + offline backup
-- Interface: CLI for rotation, Web UI for setup
+### Cofounder Continuity
 
-### 10) Client handoff (agency)
+**Problem**: Startups depend on critical credentials held by cofounders. If one founder leaves or becomes unavailable, continuity is at risk. Giving one founder sole access creates single-person dependency.
 
-- Suggested: `k=2, n=3`
-- Store: agency vault + client vault + optional escrow
-- Interface: Web UI for handoff meeting
+**Solution**: `k=2, n=4` — two founders, legal counsel, and offline backup. Any two parties can recover, but no single founder controls critical infrastructure alone.
 
-### 11) Cofounder continuity (startup)
+### Separation of Duties (Compliance)
 
-- Suggested: `k=2, n=4`
-- Store: two founders + legal counsel + offline backup
-- Interface: CLI for operational repeatability
+**Problem**: Regulations often require that no single person can perform sensitive operations alone. Storing credentials in one system doesn't satisfy separation-of-duty requirements.
 
-### 12) Compliance: separation of duties (enterprise)
-
-- Suggested: `k=2, n=4` or `k=3, n=5`
-- Store: distribute across roles so no single person can recover alone
-- Interface: CLI
+**Solution**: `k=2, n=4` or `k=3, n=5` — distribute shares across roles (engineering, security, compliance, executive). Use CLI for auditable, repeatable processes.
 
 ## Next Steps
 
