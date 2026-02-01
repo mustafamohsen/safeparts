@@ -162,6 +162,32 @@ Note: `--passphrase <text>` may leak into shell history. Prefer `--passphrase-fi
 
 A minimal web UI exists under `web/` and uses `crates/safeparts_wasm` (WASM) to run the split/combine logic locally.
 
+### Docker (recommended for self-hosting)
+
+The easiest way to run the web UI is via Docker:
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/mustafamohsen/safeparts:latest
+
+# Run on port 8080
+docker run -p 8080:80 ghcr.io/mustafamohsen/safeparts:latest
+```
+
+Then open http://localhost:8080
+
+Available tags:
+- `latest` - Latest build from main branch
+- `vX.Y.Z` - Specific release version (e.g., `v1.0.0`)
+- `sha-<commit>` - Specific commit from main branch
+
+The Docker image includes:
+- Web UI at `/`
+- Documentation at `/help/`
+- Both English and Arabic locales
+
+### Local development
+
 Run locally:
 
 - `cd web`

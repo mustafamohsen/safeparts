@@ -1,0 +1,34 @@
+# Build artifacts
+target/
+dist/
+node_modules/
+src/wasm_pkg/
+
+# Development files
+.git/
+.github/
+.vscode/
+.idea/
+
+# Test files
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Documentation source (already in help/)
+*.md
+!README.md
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

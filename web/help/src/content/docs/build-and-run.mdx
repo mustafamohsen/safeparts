@@ -178,6 +178,62 @@ bun run dev
   </TabItem>
 </Tabs>
 
+## Docker (Web UI + Docs)
+
+The easiest way to run the complete web UI and documentation is via Docker.
+
+<Tabs>
+  <TabItem label="Docker Hub / ghcr.io">
+
+**Pull and run the pre-built image:**
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/mustafamohsen/safeparts:latest
+
+# Run on port 8080
+docker run -p 8080:80 ghcr.io/mustafamohsen/safeparts:latest
+```
+
+Then open:
+- Web UI: `http://localhost:8080`
+- Docs: `http://localhost:8080/help`
+
+**Available tags:**
+- `latest` - Latest build from main branch
+- `vX.Y.Z` - Specific release version (e.g., `v1.0.0`)
+- `sha-<commit>` - Specific commit hash from main
+
+  </TabItem>
+  <TabItem label="Build locally">
+
+**Build the Docker image from source:**
+
+```bash
+# From repository root
+docker build -t safeparts-web -f web/Dockerfile .
+
+# Run on port 8080
+docker run -p 8080:80 safeparts-web
+```
+
+The build includes:
+- Rust toolchain + WASM compilation
+- Vite build (web app)
+- Astro build (docs)
+- nginx serving both
+
+Build time: ~20-30 minutes on first build (cached for subsequent builds).
+
+  </TabItem>
+</Tabs>
+
+**What's included:**
+- Complete web UI with WASM-powered secret splitting
+- Full documentation site (English + Arabic)
+- Optimized nginx configuration with security headers
+- Self-contained image (~40-50MB)
+
 ## Help site (this docs)
 
 This Starlight site lives in `web/help/` and is deployed under `/help/`.
