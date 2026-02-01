@@ -24,10 +24,29 @@ jobs:
       - name: Tests
         run: cargo test --all-features
 
+  help_build:
+    name: help build
+    runs-on: ubuntu-latest
+    needs: rust
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: cd web/help && bun install
+
+      - name: Build help
+        run: cd web/help && bun run build
+
   netlify_build:
     name: netlify build hook
     runs-on: ubuntu-latest
-    needs: rust
+    needs: help_build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Trigger Netlify build
