@@ -1,0 +1,305 @@
+---
+title: Getting Started
+description: A tutorial-style guide focused on value and real-world use cases.
+---
+
+import { Card, CardGrid, LinkButton, Steps } from '@astrojs/starlight/components';
+
+Safeparts splits one sensitive secret into multiple **recovery shares**.
+Later, you can recover the original secret using **k of n** shares.
+
+:::caution
+Shares are sensitive. Don't paste real shares into chat, tickets, issues, or logs.
+When documenting or testing, use synthetic secrets.
+:::
+
+<LinkButton href="#walkthrough-a" variant="secondary" icon="right-arrow">
+	Start personal walkthrough
+</LinkButton>
+
+<LinkButton href="#walkthrough-b" variant="secondary" icon="right-arrow">
+	Start team/enterprise walkthrough
+</LinkButton>
+
+<LinkButton href="#use-case-catalog" variant="minimal" icon="list-format">
+	Browse use case catalog
+</LinkButton>
+
+## Why This Is Worth Doing
+
+Most people back up a secret by making one copy. That creates a single point of failure:
+
+```
+Secret -> One backup
+
+If the backup is stolen: secret exposed
+If the backup is lost:    secret unrecoverable
+```
+
+Safeparts helps you avoid both outcomes:
+
+- Reduce compromise risk: one share stolen is not enough.
+- Reduce lockout risk: one share lost is not fatal.
+
+With k-of-n sharing, you distribute risk across people and places:
+
+```
+Secret -> n shares
+
+Attacker needs k shares
+You need k shares
+```
+
+## Pick The Right Tool
+
+The best interface depends on how technical you want the workflow to be and whether you need repeatability.
+
+<CardGrid>
+	<Card title="Web UI" icon="window">
+		Best for one-off use, non-technical users, and visual workflows.
+		
+		[Read the Web UI guide](web-ui/)
+	</Card>
+	<Card title="CLI" icon="terminal">
+		Best for automation, scripts, and repeatable operational playbooks.
+		
+		[Read the CLI guide](cli/)
+	</Card>
+	<Card title="TUI" icon="keyboard">
+		Best for interactive terminal workflows (including remote/SSH environments).
+		
+		[Read the TUI guide](tui/)
+	</Card>
+</CardGrid>
+
+<LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
+	Open the web app
+</LinkButton>
+
+## k-of-n In Plain Terms
+
+- `n` = how many shares you create
+- `k` = how many shares are required to recover
+
+Example: `k=2, n=3`
+
+```
+You create 3 shares.
+Any 2 shares can recover.
+You can lose 1 share and still recover.
+```
+
+### Choosing k and n (practical rule)
+
+Pick `k` based on **who must approve recovery**, then pick `n` based on **how many losses you can tolerate**.
+
+Rule of thumb:
+
+`n = k + (number of shares you can afford to lose)`
+
+Common defaults:
+
+- Individuals / families: `k=2, n=3`
+- Teams / organizations: `k=3, n=5`
+
+:::tip
+Make it usable first. A plan people can execute under stress beats a perfect plan nobody follows.
+:::
+
+## Tutorial: Do One Dry Run First
+
+Before you split a real secret, do a 3-minute rehearsal using a fake secret.
+
+<Steps>
+1. Choose an interface (Web UI / CLI / TUI).
+2. Split the secret `example-secret` with `k=2, n=3`.
+3. Immediately recover it using any 2 shares.
+4. If you can do this smoothly, proceed with your real secret.
+</Steps>
+
+<a id="walkthrough-a"></a>
+
+## Walkthrough A (Personal): Password manager recovery key (Web UI)
+
+Use this when you want a simple workflow and you are not scripting anything.
+
+<LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
+	Open the web app
+</LinkButton>
+
+<Steps>
+1. Paste your recovery key into **Secret**.
+2. Choose `k=2` and `n=3`.
+3. Choose an encoding (see [Encodings](encodings/)).
+4. Click **Split**.
+5. Store each share in a different place (example plan below).
+6. Do a dry run: recover using any 2 shares and confirm you get the original key.
+</Steps>
+
+Example storage plan (`k=2, n=3`):
+
+```
+Share 1: Your safe / deposit box
+Share 2: Trusted person
+Share 3: Separate account/vendor
+
+Recovery requires: you + any one other source
+```
+
+<a id="walkthrough-b"></a>
+
+## Walkthrough B (Team/Enterprise): Break-glass credential (CLI)
+
+Use this when you need approvals, repeatability, and a written operational playbook.
+
+<Steps>
+1. Decide a policy: start with `k=3, n=5`.
+2. Split the secret using the CLI.
+3. Distribute shares to roles (not just people).
+4. Write a recovery runbook (who approves, where recovery happens, how to rotate).
+5. Run a tabletop exercise: practice recovery once.
+</Steps>
+
+Split (placeholder secret):
+
+```bash
+echo -n "example-break-glass-secret" | safeparts split -k 3 -n 5
+```
+
+Distribution pattern (`k=3, n=5`):
+
+```
+Share 1: On-call lead (role)
+Share 2: Security (role)
+Share 3: Engineering manager (role)
+Share 4: Offline safe (physical)
+Share 5: Off-site encrypted backup
+```
+
+Recover (with placeholders):
+
+```bash
+printf "%s\n%s\n%s\n" "<share1>" "<share2>" "<share3>" | safeparts combine
+```
+
+:::caution
+After any real break-glass event, rotate the secret and re-split. Treat shares as compromised once they leave normal storage.
+:::
+
+## Walkthrough C (High-safety): Offline / air-gapped recovery (TUI)
+
+Use this when you want recovery to happen on a machine that never touches the internet.
+
+<Steps>
+1. Prepare an offline machine (no network).
+2. Run the TUI and choose a setup like `k=3, n=5`.
+3. Record each share on separate media (paper, USB, metal).
+4. Store media in different locations.
+5. Test recovery on the same offline machine.
+</Steps>
+
+<a id="use-case-catalog"></a>
+
+## Use Case Catalog
+
+If you don't need a full walkthrough, pick the closest pattern and adapt it.
+
+1. Password manager recovery key: `k=2,n=3` (Web UI)
+2. Seed phrase backup: `k=3,n=5` (TUI offline)
+3. Digital legacy / estate plan: `k=2,n=4` (Web UI)
+4. Shared household account: `k=2,n=3` (Web UI)
+5. 2FA recovery codes: `k=2,n=3` (Web UI)
+6. Domain/DNS recovery codes: `k=2,n=3` (CLI)
+7. GitHub/GitLab access token: `k=2,n=3` (CLI)
+8. Break-glass production credential: `k=3,n=5` (CLI)
+9. Shared service accounts: `k=2,n=4` (CLI)
+10. Client handoff: `k=2,n=3` (Web UI)
+11. Cofounder continuity: `k=2,n=4` (CLI)
+12. Separation of duties: `k=3,n=5` (CLI)
+
+## Examples By Situation
+
+Each example includes:
+
+- Suggested `k` and `n`
+- A distribution pattern (who/where)
+- A recommended interface (Web UI / CLI / TUI)
+
+### 1) Password manager recovery key (personal)
+
+- Suggested: `k=2, n=3`
+- Store: one share with a trusted person, one in a safe/deposit box, one in a separate vault/vendor
+- Interface: Web UI
+
+### 2) Seed phrase backup (individual)
+
+- Suggested: `k=3, n=5` for high value; `k=2, n=3` for simpler setups
+- Store: separate physical locations; consider one offline paper/metal share
+- Interface: TUI (offline machine) or Web UI
+
+### 3) Digital legacy / estate planning (family)
+
+- Suggested: `k=2, n=4`
+- Store: spouse/partner + executor/attorney + secure physical location + optional extra trusted person
+- Interface: Web UI
+
+### 4) Shared household account (family)
+
+- Suggested: `k=2, n=3`
+- Store: two adults each hold one share; third share is a sealed offline backup
+- Interface: Web UI
+
+### 5) 2FA recovery codes (personal)
+
+- Suggested: `k=2, n=3`
+- Store: split codes so one compromised password manager does not expose everything
+- Interface: Web UI
+
+### 6) Domain registrar / DNS admin recovery (small business)
+
+- Suggested: `k=2, n=3` or `k=3, n=5`
+- Store: separate roles (ops + security) and one offline share
+- Interface: CLI (repeatable process) or Web UI (one-off)
+
+### 7) GitHub/GitLab personal access token (developer)
+
+- Suggested: `k=2, n=3`
+- Store: password manager + CI secret store + offline backup
+- Interface: CLI
+
+### 8) Break-glass production credential (team)
+
+- Suggested: `k=3, n=5`
+- Store: different people/roles; document a recovery playbook; rotate after use
+- Interface: CLI
+
+### 9) Shared service accounts (small team)
+
+- Suggested: `k=2, n=4`
+- Store: owner + ops + security + offline backup
+- Interface: CLI for rotation, Web UI for setup
+
+### 10) Client handoff (agency)
+
+- Suggested: `k=2, n=3`
+- Store: agency vault + client vault + optional escrow
+- Interface: Web UI for handoff meeting
+
+### 11) Cofounder continuity (startup)
+
+- Suggested: `k=2, n=4`
+- Store: two founders + legal counsel + offline backup
+- Interface: CLI for operational repeatability
+
+### 12) Compliance: separation of duties (enterprise)
+
+- Suggested: `k=2, n=4` or `k=3, n=5`
+- Store: distribute across roles so no single person can recover alone
+- Interface: CLI
+
+## Next Steps
+
+- Learn formats: [Encodings](encodings/)
+- Review safety notes: [Security](security/)
+- Step-by-step usage: [Web UI](web-ui/) / [CLI](cli/) / [TUI](tui/)
+- If something looks wrong: [Troubleshooting](troubleshooting/)

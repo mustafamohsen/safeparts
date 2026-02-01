@@ -101,11 +101,11 @@ for (const a of document.querySelectorAll('a[href]')) {
 					},
 				},
 			],
-			sidebar: [
+				sidebar: [
 				{
 					label: 'Start Here',
 					translations: { ar: 'ابدأ هنا' },
-					items: [{ slug: 'project' }, { slug: 'use-cases' }],
+					items: [{ slug: 'project' }, { slug: 'getting-started' }],
 				},
 				{
 					label: 'Interfaces',
