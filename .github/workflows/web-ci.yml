@@ -48,8 +48,12 @@ jobs:
         run: bun run build
         working-directory: web
 
+      - name: Install docs deps
+        run: bun install
+        working-directory: web/help
+
       - name: Build docs
-        run: bunx astro build
+        run: bun run build
         working-directory: web/help
 
       - name: Install Playwright browsers
