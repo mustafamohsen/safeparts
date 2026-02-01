@@ -36,4 +36,4 @@
 ## 7. Commit and PR
 
 - [x] 7.1 Commit changes (docs + nav)
-- [ ] 7.2 Push branch and open PR
+- [x] 7.2 Push branch and open PR
