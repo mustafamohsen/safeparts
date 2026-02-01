@@ -1,0 +1,970 @@
+---
+title: Getting Started
+description: A practical guide to secret sharing with Safeparts. Learn by doing, with examples for individuals, families, teams, and organizations.
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+Safeparts splits a secret into shares. Recover it later with any **k** of **n** shares.
+This guide walks you through the concept, helps you choose the right tool, and provides
+real-world examples you can adapt to your situation.
+
+:::tip
+New to secret sharing? Start with [Why Secret Sharing?](#why-secret-sharing) to understand
+the problem Safeparts solves.
+:::
+
+## Why Secret Sharing?
+
+<Tabs>
+<TabItem label="English">
+
+The problem with traditional backups is that **one copy = one point of failure**.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Traditional backup:                                     │
+│                                                         │
+│     Secret ──────────▶ Backup #1                        │
+│                                                         │
+│  If backup #1 is compromised → you're exposed           │
+│  If backup #1 is lost → you're locked out               │
+└─────────────────────────────────────────────────────────┘
+```
+
+With secret sharing, no single location holds everything:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Secret sharing (k-of-n):                               │
+│                                                         │
+│     Secret ──┬──▶ Share 1                               │
+│              ├──▶ Share 2                               │
+│              ├──▶ Share 3                               │
+│              └──▶ Share 4                               │
+│                                                         │
+│  Example: k=2, n=4                                      │
+│  • Need any 2 shares to recover                         │
+│  • Lose 2 shares → still recoverable                    │
+│  • Attacker needs 2 shares → much harder                │
+└─────────────────────────────────────────────────────────┘
+```
+
+This matters because:
+
+- **No single point of failure**: Losing one share doesn't lock you out
+- **No single point of compromise**: Stealing one share doesn't expose the secret
+- **Flexibility**: Choose how many shares are needed vs. how many backups you want
+
+</TabItem>
+<TabItem label="العربية">
+
+المشكلة في النسخ الاحتياطية التقليدية هي أن **نسخة واحدة = نقطة فشل واحدة**.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  النسخ الاحتياطي التقليدي:                              │
+│                                                         │
+│     السر ──────────▶ نسخة احتياطية #1                   │
+│                                                         │
+│  إذا سُرقت النسخة الاحتياطية → أنت مكشوف                │
+│  إذا ضاعت النسخة الاحتياطية → أنت محبوس                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+مع مشاركة السر، لا يحتوي موقع واحد على كل شيء:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  مشاركة السر (k-of-n):                                  │
+│                                                         │
+│     السر ──┬──▶ مشاركة 1                                │
+│              ├──▶ مشاركة 2                              │
+│              ├──▶ مشاركة 3                              │
+│              └──▶ مشاركة 4                              │
+│                                                         │
+│  مثال: k=2، n=4                                         │
+│  • تحتاج أي 2 مشاركات للاسترداد                         │
+│  • فقدان 2 مشاركات → لا يزال قابلاً للاسترداد           │
+│  • المخترق يحتاج 2 مشاركات → أصعب بكثير                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+هذا مهم لأن:
+
+- **لا نقطة فشل واحدة**: فقدان مشاركة واحدة لا يحبسك
+- **لا نقطة اختراق واحدة**: سرقة مشاركة واحدة لا تكشف السر
+- **مرونة**: اختر عدد المشاركات المطلوبة مقابل عدد النسخ الاحتياطية
+
+</TabItem>
+</Tabs>
+
+## The k-of-n Mental Model
+
+<Tabs>
+<TabItem label="English">
+
+Think of it like a bank vault with multiple keys.
+
+| Parameter | Meaning |
+|-----------|---------|
+| **k** | Minimum shares needed to open the vault |
+| **n** | Total keys created |
+
+```
+k=2, n=3: You get 3 keys. Any 2 can open the vault.
+
+┌────────────┐     ┌────────────┐     ┌────────────┐
+│   Key #1   │     │   Key #2   │     │   Key #3   │
+└────────────┘     └────────────┘     └────────────┘
+       │                │                │
+       └────────────────┴────────────────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │   Vault     │  ← Opens with ANY 2 keys
+              └─────────────┘
+```
+
+**How to choose k and n:**
+
+| k | n | Trade-off |
+|---|---|-----------|
+| 2 | 3 | Easy recovery, moderate security (good default) |
+| 2 | 4 | Easy recovery, more backup locations |
+| 3 | 5 | Balanced security and recovery (good for teams) |
+| 3 | 7 | High security, requires more collaboration |
+
+**Rule of thumb:** `n = k + (number of backups you can afford to lose)`
+
+</TabItem>
+<TabItem label="العربية">
+
+فكر في ذلك كخزينة مصرفية مع مفاتيح متعددة.
+
+| المعامل | المعنى |
+|---------|--------|
+| **k** | الحد الأدنى من المشاركات المطلوبة لفتح الخزينة |
+| **n** | إجمالي المفاتيح المنشأة |
+
+```
+k=2، n=3: تحصل على 3 مفاتيح. أي 2 يمكنهما فتح الخزينة.
+
+┌────────────┐     ┌────────────┐     ┌────────────┐
+│  المفتاح #1 │     │  المفتاح #2 │     │  المفتاح #3 │
+└────────────┘     └────────────┘     └────────────┘
+       │                │                │
+       └────────────────┴────────────────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │   الخزينة   │  ← تفتح مع أي مفتاحين
+              └─────────────┘
+```
+
+**كيف تختار k و n:**
+
+| k | n | المفاضلة |
+|---|---|----------|
+| 2 | 3 | استرداد سهل، أمان معتدل (افتراضي جيد) |
+| 2 | 4 | استرداد سهل، مواقع نسخ احتياطي أكثر |
+| 3 | 5 | أمان متوازن واسترداد (جيد للفرق) |
+| 3 | 7 | أمان عالي، يتطلب تعاوناً أكثر |
+
+**قاعدة بسيطة:** `n = k + (عدد النسخ الاحتياطية التي يمكنك تحمل خسارتها)`
+
+</TabItem>
+</Tabs>
+
+## Your Tool, Your Choice
+
+<Tabs>
+<TabItem label="English">
+
+<Tabs>
+<TabItem label="Web UI">
+
+**Best for:** One-time tasks, non-technical users, visual feedback, no installation
+
+```
+✓ No installation required
+✓ Visual share cards for easy copying
+✓ Auto-detects share format when combining
+✓ Works offline after first load
+```
+
+**When to use:** First-time users, personal recovery keys, occasional use
+
+**Try it:** Open [safeparts.app](https://safeparts.app)
+
+</TabItem>
+<TabItem label="CLI">
+
+**Best for:** Automation, scripting, CI/CD pipelines, technical users
+
+```
+✓ Scriptable and repeatable
+✓ Pipe-friendly for automation
+✓ Can integrate into rotation scripts
+✓ Fast for experienced users
+```
+
+**When to use:** DevOps workflows, regular rotation, batch operations
+
+**Install:** `cargo install safeparts` or download from [GitHub](https://github.com/mustafamohsen/safeparts)
+
+</TabItem>
+<TabItem label="TUI">
+
+**Best for:** Interactive terminal workflows, power users, offline/air-gapped machines
+
+```
+✓ Keyboard-driven interface
+✓ Interactive share management
+✓ No browser or GUI required
+✓ Works on remote servers via SSH
+```
+
+**When to use:** Terminal enthusiasts, air-gapped environments, quick interactive tasks
+
+**Run:** `safeparts tui`
+
+</TabItem>
+</Tabs>
+
+</TabItem>
+<TabItem label="العربية">
+
+<Tabs>
+<TabItem label="الواجهة الويب">
+
+**الأفضل لـ:** مهام لمرة واحدة، مستخدمين غير تقنيين، تغذية مرئية، بدون تثبيت
+
+```
+✓ لا يتطلب تثبيت
+✓ بطاقات مشاركة مرئية سهلة النسخ
+✓ يكتشف تلقائياً صيغة المشاركة عند الدمج
+✓ يعمل دون اتصال بعد التحميل الأول
+```
+
+**متى تستخدم:** المستخدمون لأول مرة، مفاتيح الاسترداد الشخصية، الاستخدام العرضي
+
+**جرّبها:** افتح [safeparts.app](https://safeparts.app)
+
+</TabItem>
+<TabItem label="سطر الأوامر">
+
+**الأفضل لـ:** الأتمتة، البرمجة النصية، خطوط CI/CD، المستخدمين التقنيين
+
+```
+✓ قابل للبرمجة وقابل للتكرار
+✓ صديق للأنبوب للأتمتة
+✓ يمكن دمجه في نصوص التدوير
+✓ سريع للمستخدمين ذوي الخبرة
+```
+
+**متى تستخدم:** سير عمل DevOps، التدوير المنتظم، عمليات الدفع
+
+**ثبّت:** `cargo install safeparts` أو حمل من [GitHub](https://github.com/mustafamohsen/safeparts)
+
+</TabItem>
+<TabItem label="واجهة المحطة">
+
+**الأفضل لـ:** سير عمل تفاعلي في المحطة، المستخدمين المتقدمين، الأجهزة المعزولة
+
+```
+✓ واجهة تعتمد لوحة المفاتيح
+✓ إدارة مشاركة تفاعلية
+✓ لا يتطلب متصفح أو واجهة رسومية
+✓ يعمل على الخوادم البعيدة عبر SSH
+```
+
+**متى تستخدم:** هواة المحطة، البيئات المعزولة، المهام التفاعلية السريعة
+
+**شغّل:** `safeparts tui`
+
+</TabItem>
+</Tabs>
+
+</TabItem>
+</Tabs>
+
+## Quick Start: Split Your First Secret
+
+<Tabs>
+<TabItem label="English">
+
+<Steps>
+1. Choose your tool (Web UI, CLI, or TUI)
+2. Enter your secret
+3. Set k=2 and n=3 (good default for most cases)
+4. Choose an encoding format
+5. Click "Split" or run the command
+6. Save each share to a different location
+7. Test recovery with a subset of shares
+</Steps>
+
+**Try it now with the Web UI:**
+
+Open [safeparts.app](https://safeparts.app) in your browser.
+
+**Or with the CLI:**
+
+```bash
+# Split a secret
+echo -n "my-secret-key" | safeparts split -k 2 -n 3
+
+# Output:
+# Share 1: B58:dGhpcyBpcyBteSBzZWNyZXQga2V5...
+# Share 2: B58:b3RoZXIgc2hhcmUgc2VhcmNoZWQ...
+# Share 3: B58:YW5vdGhlciBzaGFyZSBsb29r...
+```
+
+</TabItem>
+<TabItem label="العربية">
+
+<Steps>
+1. اختر أداتك (الواجهة الويب، سطر الأوامر، أو واجهة المحطة)
+2. أدخل سرّك
+3. اضبط k=2 و n=3 (افتراضي جيد لمعظم الحالات)
+4. اختر صيغة الترميز
+5. انقر على "تقسيم" أو شغّل الأمر
+6. احفظ كل مشاركة في موقع مختلف
+7. جرب الاسترداد مع مجموعة فرعية من المشاركات
+</Steps>
+
+**جرّبه الآن مع الواجهة الويب:**
+
+افتح [safeparts.app](https://safeparts.app) في متصفحك.
+
+**أو مع سطر الأوامر:**
+
+```bash
+# قسّم سراً
+echo -n "مفتاح-سري" | safeparts split -k 2 -n 3
+
+# الناتج:
+# المشاركة 1: B58:dGhpcyBpcyBteSBzZWNyZXQga2V5...
+# المشاركة 2: B58:b3RoZXIgc2hhcmUgc2VhcmNoZWQ...
+# المشاركة 3: B58:YW5vdGhlciBzaGFyZSBsb29r...
+```
+
+</TabItem>
+</Tabs>
+
+## Examples by Situation
+
+<Tabs>
+<TabItem label="English">
+
+### Personal: Password Manager Recovery Key
+
+**Scenario:** Your password manager (1Password, Bitwarden, etc.) gave you a recovery key.
+Where do you store it safely?
+
+**Configuration:** k=2, n=3
+
+**Distribution:**
+- Share 1: Stored with trusted family member
+- Share 2: In your home safe or bank deposit box
+- Share 3: With your lawyer (optional, for estate planning)
+
+**Tool:** Web UI (quick, no install, visual cards)
+
+**Why this works:**
+- Lose your safe key? Family member has you covered
+- Family member's house burns down? You + lawyer can recover
+- Nobody can access your account alone
+
+---
+
+### Personal: Cryptocurrency Seed Phrase
+
+**Scenario:** Your 12 or 24-word seed phrase needs secure backup.
+
+**Configuration:**
+
+Option A (large holdings): k=3, n=5
+- Share 1: Hardware wallet metal backup (home)
+- Share 2: Bank deposit box (different city)
+- Share 3: Trusted family member (different country)
+- Share 4: Your encrypted cloud backup
+- Share 5: Another trusted person
+
+Option B (travel-friendly): k=2, n=3
+- Share 1: With you (encrypted on phone, not synced)
+- Share 2: Home safe
+- Share 3: Trusted person back home
+
+**Tool:** Web UI (works offline) or TUI (air-gapped machine)
+
+**Tip:** Consider passphrase encryption for seed phrases.
+
+---
+
+### Personal: Digital Legacy / Estate Planning
+
+**Scenario:** You want family to access accounts if something happens to you.
+
+**Configuration:** k=2, n=4
+
+**Distribution:**
+- Share 1: Spouse or partner
+- Share 2: Adult child or sibling
+- Share 3: Attorney or executor
+- Share 4: Secure physical location (safe, deposit box)
+
+**Include with shares:**
+- A document explaining what Safeparts is
+- List of who holds which share
+- Instructions for reconstruction
+
+**Tool:** Web UI, then print/share cards
+
+**Important:** Recipients need to understand the system. Consider a family meeting to explain.
+
+---
+
+### Family: Shared Streaming Account
+
+**Scenario:** Family shares Netflix/Hulu/Disney+ and wants emergency access.
+
+**Configuration:** k=2, n=3
+
+**Distribution:**
+- Share 1: Parent 1's phone notes (encrypted)
+- Share 2: Parent 2's password manager
+- Share 3: Physical location (written on paper, in safe)
+
+**Tool:** Web UI, encode as mnemonic words for readability
+
+---
+
+### Developer: Personal Access Tokens
+
+**Scenario:** CI/CD pipelines use your personal access tokens (GitHub, GitLab).
+
+**Configuration:** k=2, n=3
+
+**Distribution:**
+- Share 1: Personal password manager
+- Share 2: CI/CD secrets manager (GitHub Secrets, GitLab CI Variables)
+- Share 3: Offline backup (encrypted file or paper)
+
+**Tool:** CLI - designed for automation
+
+**Scripted recovery:**
+```bash
+printf "%s\n%s\n" "$SHARE1" "$SHARE2" | safeparts combine > token.txt
+```
+
+---
+
+### DevOps: Break-Glass Access
+
+**Scenario:** Production access credentials for emergencies only.
+
+**Configuration:** k=3, n=5 (for sensitive infrastructure)
+
+**Distribution:**
+- Share 1: Lead DevOps engineer
+- Share 2: Engineering Manager
+- Share 3: Security Officer
+- Share 4: Physical safe in office
+- Share 5: Off-site encrypted backup
+
+**Process:**
+1. Emergency occurs
+2. Ticket filed with justification
+3. 3 share holders verify and provide shares
+4. On-call engineer reconstructs
+5. Access used, documented, then revoked
+6. Rotate credentials immediately after
+
+**Tool:** CLI + documented approval workflow
+
+---
+
+### Small Business: Shared Service Accounts
+
+**Scenario:** Company email, social media, analytics accounts shared by team.
+
+**Configuration:** k=2, n=4
+
+**Distribution:**
+- Share 1: Managing partner
+- Share 2: Operations manager
+- Share 3: Onboarding partner
+- Share 4: Company password manager (1Password Business, etc.)
+
+**On employee departure:**
+1. Rotate password
+2. Re-split with same k/n configuration
+
+**Tool:** CLI for rotation scripts, Web UI for ad-hoc
+
+---
+
+### Agency: Client Website Access
+
+**Scenario:** You manage access to client sites (WP admin, hosting panels).
+
+**Configuration:** k=2, n=3 per client
+
+**Distribution:**
+- Share 1: Your agency password manager
+- Share 2: Client's preferred secure storage
+- Share 3: Escrow with mutual trusted party (optional)
+
+**On hand-off:**
+1. Reconstruct with any 2 shares
+2. Transfer ownership to client
+3. Delete shares or re-split with new configuration
+
+**Tool:** Web UI for client hand-off meetings
+
+---
+
+### Startup: Cofounder Access
+
+**Scenario:** Multiple founders need access to critical systems.
+
+**Configuration:**
+
+Core secrets (highly sensitive): k=2, n=4
+- Share 1: Founder 1's personal secure storage
+- Share 2: Founder 2's personal secure storage
+- Share 3: Company secure storage (VC setup)
+- Share 4: Legal counsel escrow
+
+Day-to-day access (less sensitive): k=2, n=3 among active team members
+
+**Tool:** CLI for automation, Web UI for initial setup
+
+---
+
+### Enterprise: Credential Rotation Policy
+
+**Scenario:** Regular rotation of service accounts with audit requirements.
+
+**Configuration:** k=2, n=3 with automated weekly/monthly rotation
+
+**Scripted rotation flow:**
+1. CI job triggers rotation
+2. Pulls current shares from secrets manager
+3. Combines to get credential
+4. Rotates credential at source
+5. Re-splits and updates all share locations
+6. Audit log created
+
+**Example rotation script:**
+```bash
+#!/bin/bash
+safeparts combine -s vault -s backup-vault -p "${ROTATION_PASS}" > cred.txt
+new_cred=$(rotate_credential "$(cat cred.txt)")
+echo -n "$new_cred" | safeparts split -k 2 -n 3 -o vault -o backup-vault -o offline
+```
+
+**Tool:** CLI - designed for this
+
+---
+
+### Compliance: Separation of Duties
+
+**Scenario:** Audit requires no single person can deploy to production.
+
+**Configuration:** k=2, n=4 for deployment credentials
+
+**Distribution:**
+- Share 1: Lead Developer
+- Share 2: Security Engineer
+- Share 3: DevOps Engineer
+- Share 4: Emergency break-glass (Board/CISO)
+
+**Process:** Any 2 of 3 technical roles must cooperate for deployment
+**Emergency access:** Board/CISO share + incident documentation
+
+**Tool:** CLI with approval workflow integration
+
+---
+
+### Journalist / Activist: Source Protection
+
+**Scenario:** Protecting communication methods or document sources.
+
+**Configuration:** k=3, n=5 (high-security)
+
+**Distribution:**
+- Different countries (if possible)
+- Different storage types (encrypted USB, paper, memory)
+- Different people with different profiles
+
+**Important:** Never store shares digitally together. Use mnemonic words for paper backups.
+
+**Tool:** TUI for air-gapped machines, Web UI for offline use
+
+</TabItem>
+<TabItem label="العربية">
+
+### شخصي: مفتاح استرداد مدير كلمات المرور
+
+**السيناريو:** مدير كلمات المرور (1Password، Bitwarden، إلخ) أعطاك مفتاح استرداد.
+أين تخزّنه بأمان؟
+
+**الإعداد:** k=2، n=3
+
+**التوزيع:**
+- المشاركة 1: مخزّنة مع أحد أفراد العائلة الموثوقين
+- المشاركة 2: في خزنتك المنزلية أو خزانة بنكية
+- المشاركة 3: مع محاميك (اختياري، للتخطيط التركاتي)
+
+**الأداة:** الواجهة الويب (سريعة، بدون تثبيت، بطاقات مرئية)
+
+**لماذا يعمل هذا:**
+- تفقد مفتاح الخزينة؟ أحد أفراد العائلة يساعدك
+- يحترق منزل أحد أفراد العائلة؟ أنت + المحامي يمكنكما الاسترداد
+- لا أحد يستطيع الوصول لحسابك بمفرده
+
+---
+
+### شخصي: عبارة عملة مشفرة
+
+**السيناريو:** عبارة 12 أو 24 كلمة لعملتك المشفرة تحتاج نسخاً احتياطية آمنة.
+
+**الإعداد:**
+
+الخيار أ (مبالغ كبيرة): k=3، n=5
+- المشاركة 1: نسخة معدنية من المحفظة (المنزل)
+- المشاركة 2: خزانة بنكية (مدينة مختلفة)
+- المشاركة 3: فرد عائلة موثوق (بلد مختلف)
+- المشاركة 4: نسختك الاحتياطية السحابية المشفرة
+- المشاركة 5: شخص موثوق آخر
+
+الخيار ب (صديق للسفر): k=2، n=3
+- المشاركة 1: معك (مشفر على الهاتف، غير متزامن)
+- المشاركة 2: خزنتك المنزلية
+- المشاركة 3: شخص موثوق في بلدك
+
+**الأداة:** الواجهة الويب (تعمل دون اتصال) أو واجهة المحطة (آلة معزولة)
+
+**نصيحة:** فكّر في تشفير عبارة المرور للعبارات.
+
+---
+
+### شخصي: التخطيط التركاتي الرقمي
+
+**السيناريو:** تريد العائلة الوصول للحسابات إذا حدث لك شيء.
+
+**الإعداد:** k=2، n=4
+
+**التوزيع:**
+- المشاركة 1: الزوج/الزوجة
+- المشاركة 2: طفل بالغ أو أخ/أخت
+- المشاركة 3: محامٍ أو منفذ
+- المشاركة 4: موقع فيزيائي آمن (خزنة، خزانة وديعة)
+
+**أرفق مع المشاركات:**
+- وثيقة تشرح ما هو Safeparts
+- قائمة بمن يحمل أي مشاركة
+- تعليمات لإعادة البناء
+
+**الأداة:** الواجهة الويب، ثم اطبع/شارك البطاقات
+
+**مهم:** المستلمون يحتاجون لفهم النظام. فكّر في اجتماع عائلي للشرح.
+
+---
+
+### عائلة: حساب بث مشترك
+
+**السيناريو:** العائلة تشارك Netflix/Hulu/Disney+ وتريد وصولاً طارئاً.
+
+**الإعداد:** k=2، n=3
+
+**التوزيع:**
+- المشاركة 1: ملاحظات الهاتف للوالد الأول (مشفرة)
+- المشاركة 2: مدير كلمات المرور للوالد الثاني
+- المشاركة 3: موقع فيزيائي (مكتوب على ورقة، في خزنة)
+
+**الأداة:** الواجهة الويب، رمّز كلمات للتوضيح
+
+---
+
+### مطور: رموز الوصول الشخصية
+
+**السيناريو:** خطوط CI/CD تستخدم رموز وصولك الشخصية (GitHub، GitLab).
+
+**الإعداد:** k=2، n=3
+
+**التوزيع:**
+- المشاركة 1: مدير كلمات المرور الشخصي
+- المشاركة 2: مدير أسرار CI/CD (GitHub Secrets، GitLab CI Variables)
+- Participation 3: نسخ احتياطية دون اتصال (ملف مشفر أو ورقة)
+
+**الأداة:** سطر الأوامر - مصمم للأتمتة
+
+**الاسترداد البرمجي:**
+```bash
+printf "%s\n%s\n" "$SHARE1" "$SHARE2" | safeparts combine > token.txt
+```
+
+---
+
+### DevOps: وصول طوارئ
+
+**السيناريو:** بيانات اعتماد الإنتاج للطوارئ فقط.
+
+**الإعداد:** k=3، n=5 (للبنية التحتية الحساسة)
+
+**التوزيع:**
+- المشاركة 1: مهندس DevOps الأول
+- المشاركة 2: مدير الهندسة
+- المشاركة 3: مسؤول الأمان
+- المشاركة 4: خزنة في المكتب
+- المشاركة 5: نسخ احتياطية مشفرة خارج الموقع
+
+**العملية:**
+1. تحدث حالة طوارئ
+2. تذكرة مفتوحة مع التبرير
+3. 3 حاملي مشاركة يتحققون ويوفرون المشاركات
+4. المهندس المناوب يعيد البناء
+5. الوصول مستخدم، موثق، ثم ملغى
+6. تدوير بيانات الاعتماد فوراً بعد ذلك
+
+**الأداة:** سطر الأوامر + عملية موثقة للموافقة
+
+---
+
+### شركة صغيرة: حسابات خدمات مشتركة
+
+**السيناريو:** حسابات بريد الشركة، وسائل التواصل، التحليلات مشتركة بين الفريق.
+
+**الإعداد:** k=2، n=4
+
+**التوزيع:**
+- المشاركة 1: الشريك الإداري
+- المشاركة 2: مدير العمليات
+- المشاركة 3: شريك التدريب
+- المشاركة 4: مدير كلمات مرور الشركة (1Password Business، إلخ)
+
+**عند مغادرة موظف:**
+1. دوّر كلمة المرور
+2. أعد التقسيم بنفس إعداد k/n
+
+**الأداة:** سطر الأوامر لنصوص التدوير، الواجهة الويب للعمليات الخاصة
+
+---
+
+### وكالة: وصول مواقع العملاء
+
+**السيناريو:** تدير وصول مواقع العملاء (WP admin، لوحات الاستضافة).
+
+**الإعداد:** k=2، n=3 لكل عميل
+
+**التوزيع:**
+- المشاركة 1: مدير كلمات مرور وكالتك
+- المشاركة 2: التخزين الآمن المفضل للعميل
+- المشاركة 3: ضمان لدى طرف ثالث موثوق (اختياري)
+
+**عند التسليم:**
+1. أعيد البناء من أي 2 مشاركات
+2. انقل الملكية للعميل
+3. احذف المشاركات أو أعد التقسيم بإعداد جديد
+
+**الأداة:** الواجهة الويب لاجتماعات تسليم العملاء
+
+---
+
+### شركة ناشئة: وصول المؤسسين
+
+**السيناريو:** عدة مؤسسين يحتاجون الوصول للأنظمة الحرجة.
+
+**الإعداد:**
+
+أسرار الشركة الأساسية (حساسة جداً): k=2، n=4
+- المشاركة 1: التخزين الآمن الشخصي للمؤسس 1
+- المشاركة 2: التخزين الآمن الشخصي للمؤسس 2
+- المشاركة 3: التخزين الآمن للشركة (إعداد VC)
+- المشاركة 4: ضمان المحامي
+
+الوصول اليومي التشغيلي (أقل حساسية): k=2، n=3 بين أعضاء الفريق النشطين
+
+**الأداة:** سطر الأوامر للأتمتة، الواجهة الويب للإعداد الأولي
+
+---
+
+### مؤسسة: سياسة تدوير الاعتمادات
+
+**السيناريو:** تدوير دوري لحسابات الخدمة مع متطلبات تدقيق.
+
+**الإعداد:** k=2، n=3 مع تدوير آلي أسبوعي/شهري
+
+**التدفق البرمجي للتدوير:**
+1. وظيفة CI تطلق التدوير
+2. تسحب المشاركات الحالية من مدير الأسرار
+3. تدمج للحصول على الاعتماد
+4. تُدوّر الاعتماد في المصدر
+5. تُعيد التقسيم وتحدّث كل مواقع المشاركة
+6. سجل التدقيق يُنشأ
+
+**مثال نص التدوير:**
+```bash
+#!/bin/bash
+safeparts combine -s vault -s backup-vault -p "${ROTATION_PASS}" > cred.txt
+new_cred=$(rotate_credential "$(cat cred.txt)")
+echo -n "$new_cred" | safeparts split -k 2 -n 3 -o vault -o backup-vault -o offline
+```
+
+**الأداة:** سطر الأوامر - مصمم لهذا
+
+---
+
+### امتثال: فصل المهام
+
+**السيناريو:** التدقيق يتطلب ألا يستطيع شخص واحد النشر للإنتاج.
+
+**الإعداد:** k=2، n=4 لبيانات اعتماد النشر
+
+**التوزيع:**
+- المشاركة 1: المطور الأول
+- المشاركة 2: مهندس الأمان
+- المشاركة 3: مهندس DevOps
+- المشاركة 4: طوارئ (مجلس الإدارة/CISO)
+
+**العملية:** أي 2 من 3 أدوار تقنية يجب أن يتعاونوا للنشر
+**الوصول الطارئ:** مشاركة مجلس الإدارة/CISO + توثيق الحادث
+
+**الأداة:** سطر الأوامر مع دمج سير عمل الموافقة
+
+---
+
+### صحفي / ناشط: حماية المصادر
+
+**السيناريو:** حماية طرق الاتصال أو مصادر الوثائق.
+
+**الإعداد:** k=3، n=5 (أمان عالي)
+
+**التوزيع:**
+- بلدان مختلفة (إن أمكن)
+- أنواع تخزين مختلفة (USB مشفر، ورقة، ذاكرة)
+- أشخاص مختلفون بملفات تعريف مختلفة
+
+**مهم:** لا تخزن المشاركات رقمياً معاً أبداً. استخدم كلمات memorization للنسخ الورقية.
+
+**الأداة:** واجهة المحطة للآلات المعزولة، الواجهة الويب للاستخدام دون اتصال
+
+</TabItem>
+</Tabs>
+
+## Best Practices
+
+<Tabs>
+<TabItem label="English">
+
+:::tip[DO]
+- **Test recovery BEFORE you need it** - Practice with a fake secret first
+- **Label shares by set and index** - "Safeparts Set A - Share 1/3"
+- **Document distribution** - Write down who holds what (not the shares themselves)
+- **Use mnemo-words for humans** - Easier to transcribe accurately
+- **Consider passphrase encryption** - For high-value secrets
+- **Balance k against realistic recovery** - Can k people realistically gather?
+:::
+
+:::caution[DON'T]
+- **Store all shares in one place** - Defeats the purpose
+- **Use the same location for k shares** - One theft/loss = compromised
+- **Send shares via email/chat** - These are logged and compromiseable
+- **Use low k for high-value secrets** - k=1 is just regular backup
+- **Forget to rotate after incidents** - If a share might be compromised, rotate
+- **Use your phone's notes app** - Phones are frequently lost or inspected
+:::
+
+</TabItem>
+<TabItem label="العربية">
+
+:::tip[افعل]
+- **جرب الاسترداد قبل أن تحتاجه** - تدرب مع سر مزيف أولاً
+- **سمّ المشاركات بالمجموعة والفهرس** - "Safeparts مجموعة أ - مشاركة 1/3"
+- **وثّق التوزيع** - اكتب من يحمل ماذا (وليس المشاركات نفسها)
+- **استخدم كلمات memorization للبشر** - أسهل للنسخ بدقة
+- **فكّر في تشفير عبارة المرور** - للأسرار عالية القيمة
+- **وازن k مقابل الاسترداد الواقعي** - هل يمكن لـ k أشخاص أن يجتمعوا فعلياً؟
+:::
+
+:::caution[لا تفعل]
+- **تخزّن كل المشاركات في مكان واحد** - يهدر الغرض
+- **استخدم نفس الموقع لـ k مشاركات** - سرقة/فقدان واحدة = اختراق
+- **ترسل المشاركات عبر بريد/دردشة** - هذه مُسجّلة وقابلة للاختراق
+- **استخدم k منخفض للأسرار عالية القيمة** - k=1 هو مجرد نسخ احتياطي عادي
+- **تنسى التدوير بعد الحوادث** - إذا كانت مشاركة معرضة للاختراق، دوّرها
+- **تستخدم تطبيق ملاحظات هاتفك** - الهواتف غالباً تُفقد أو تُفحص
+:::
+
+</TabItem>
+</Tabs>
+
+## Common Mistakes
+
+<Tabs>
+<TabItem label="English">
+
+| Mistake | Why It's a Problem | Fix |
+|---------|-------------------|-----|
+| "I'll remember where I put them" | Memory fails; death/disability happens | Write down the distribution plan |
+| "k=1 is convenient" | That's just regular backup | Use k≥2 |
+| "n=k means I need all shares" | One lost share = lockout | Set n > k |
+| "All shares on different clouds" | If all clouds are phished simultaneously, you're exposed | Use different types of storage |
+| "I'll use my phone's notes app" | Phones are lost, stolen, inspected daily | Use encrypted storage |
+
+</TabItem>
+<TabItem label="العربية">
+
+| الخطأ | لماذا هو مشكلة | الإصلاح |
+|-------|---------------|----------|
+| "سأتذكر أين وضعتها" | الذاكرة تفشل؛ الموت/الإعاقة يحدث | اكتب خطة التوزيع |
+| "k=1 مناسب" | هذا مجرد نسخ احتياطي عادي | استخدم k≥2 |
+| "n=k يعني أحتاج كل المشاركات" | مشاركة واحدة مفقودة = إغلاق | اضبط n > k |
+| "كل المشاركات على سحابات مختلفة" | إذا تم اختراق كل السحابات، أنت مكشوف | استخدم أنواع تخزين مختلفة |
+| "سأستخدم تطبيق ملاحظات هاتفي" | تُفقد الهواتف وتُسرق وتُفحص يومياً | استخدم تخزيناً مشفراً |
+
+</TabItem>
+</Tabs>
+
+## Next Steps
+
+<Tabs>
+<TabItem label="English">
+
+1. **Choose your first use case** - Start with one scenario from this guide
+2. **Try the Web UI** - Visit [safeparts.app](https://safeparts.app) and split a test secret
+3. **Install the CLI** - `cargo install safeparts` for automation
+4. **Read the interface guides:**
+   - [Web UI](/web-ui/) - Visual split/combine
+   - [CLI](/cli/) - Scriptable workflows
+   - [TUI](/tui/) - Interactive terminal
+5. **Explore the reference:**
+   - [Encodings](/encodings/) - Base64, Base58, Mnemonic
+   - [Security](/security/) - Cryptography details
+   - [Troubleshooting](/troubleshooting/) - Common issues
+
+</TabItem>
+<TabItem label="العربية">
+
+1. **اختر حالة الاستخدام الأولى** - ابدأ بسيناريو واحد من هذا الدليل
+2. **جرّب الواجهة الويب** - زر [safeparts.app](https://safeparts.app) وقسّم سراً تجريبياً
+3. **ثبّت سطر الأوامر** - `cargo install safeparts` للأتمتة
+4. **قرأ أدلة الواجهات:**
+   - [الواجهة الويب](/ar/web-ui/) - تقسيم/دمج مرئي
+   - [سطر الأوامر](/ar/cli/) - سير عمل قابل للبرمجة
+   - [واجهة المحطة](/ar/tui/) - محطة تفاعلية
+5. **استكشف المرجع:**
+   - [الترمجات](/ar/encodings/) - Base64، Base58، Mnemonic
+   - [الأمان](/ar/security/) - تفاصيل التشفير
+   - [استكشاف الأخطاء](/ar/troubleshooting/) - المشاكل الشائعة
+
+</TabItem>
+</Tabs>
+
+:::tip
+Have a use case not covered here? [Open an issue](https://github.com/mustafamohsen/safeparts/issues)
+or contribute to this guide!
+:::
