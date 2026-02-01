@@ -23,10 +23,16 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
 
       - name: Install WASM build deps
         run: |
-          rustup target add wasm32-unknown-unknown
           cargo install wasm-pack --locked --version 0.13.1
           cargo install wasm-bindgen-cli --locked --version 0.2.108
 
@@ -46,17 +52,15 @@ jobs:
         run: bunx astro build
         working-directory: web/help
 
-      - name: Install Playwright
-        run: bun add -D @playwright/test && bun run test:a11y:install
+      - name: Install Playwright browsers
+        run: bun run test:a11y:install
         working-directory: web
 
-      - name: Start dev server and run a11y tests
+      - name: Run a11y tests
         run: |
           bun run dev &
-          SERVER_PID=$!
-          sleep 10
-          bun run test:a11y || true
-          kill $SERVER_PID 2>/dev/null || true
+          sleep 5
+          bun run test:a11y
         working-directory: web
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:5173

@@ -14,10 +14,29 @@ on:
 permissions:
   contents: write
 
+env:
+  RELEASE_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+
 jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Test
+        run: cargo test --all-features
+
   build:
     name: build (${{ matrix.id }})
     runs-on: ${{ matrix.os }}
+    needs: test
     strategy:
       fail-fast: false
       matrix:
@@ -37,14 +56,14 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Test
-        run: cargo test --all-features
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
 
       - name: Build release binaries
         run: cargo build --release -p safeparts -p safeparts_tui
 
       - name: Package
-        run: python scripts/release/package.py --version "${RELEASE_VERSION}"
+        run: python scripts/release/package.py --version "${{ env.RELEASE_VERSION }}"
 
       - name: Upload packaged artifact
         uses: actions/upload-artifact@v4
@@ -95,5 +114,3 @@ jobs:
             dist/release/*.tar.gz
             dist/release/*.zip
             dist/release/SHA256SUMS.txt
-    env:
-      RELEASE_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
