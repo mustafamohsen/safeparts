@@ -1,0 +1,166 @@
+---
+title: Getting Started
+description: A tutorial guide to Safeparts, with practical examples for individuals and teams.
+---
+
+import { Card, CardGrid, LinkButton } from '@astrojs/starlight/components';
+
+Safeparts turns one sensitive secret into multiple **recovery shares**. You can recover the
+original secret later with **k of n** shares.
+
+:::caution
+Shares are sensitive. Don’t paste real shares into chat, tickets, issues, or logs.
+When documenting or testing, use synthetic secrets.
+:::
+
+## What Problem Does This Solve?
+
+Most people back up a secret by making one copy. That creates a single point of failure:
+
+```
+Secret -> One backup
+
+If the backup is stolen: secret exposed
+If the backup is lost:    secret unrecoverable
+```
+
+With Safeparts, you can distribute risk across people and places:
+
+```
+Secret -> n shares
+
+Attacker needs k shares
+You need k shares
+```
+
+## Pick The Right Interface
+
+<CardGrid>
+	<Card title="Web UI" icon="window">
+		Best for one-off use, non-technical users, and visual workflows.
+		
+		[Read the Web UI guide](web-ui/)
+	</Card>
+	<Card title="CLI" icon="terminal">
+		Best for automation, scripts, and repeatable operational playbooks.
+		
+		[Read the CLI guide](cli/)
+	</Card>
+	<Card title="TUI" icon="keyboard">
+		Best for interactive terminal workflows (including remote/SSH environments).
+		
+		[Read the TUI guide](tui/)
+	</Card>
+</CardGrid>
+
+<LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
+	Open the web app
+</LinkButton>
+
+## The k-of-n Mental Model
+
+- `n` = how many shares you create
+- `k` = how many shares are required to recover
+
+Example: `k=2, n=3`
+
+```
+You create 3 shares.
+Any 2 shares can recover.
+You can lose 1 share and still recover.
+```
+
+### Choosing k and n (practical rule)
+
+Pick `k` based on **who must approve recovery**, then pick `n` based on **how many losses you can tolerate**.
+
+Rule of thumb:
+
+`n = k + (number of shares you can afford to lose)`
+
+## Examples By Situation
+
+Each example includes:
+
+- Suggested `k` and `n`
+- A distribution pattern (who/where)
+- A recommended interface (Web UI / CLI / TUI)
+
+### 1) Password manager recovery key (personal)
+
+- Suggested: `k=2, n=3`
+- Store: one share with a trusted person, one in a safe/deposit box, one in a separate vault/vendor
+- Interface: Web UI
+
+### 2) Seed phrase backup (individual)
+
+- Suggested: `k=3, n=5` for high value; `k=2, n=3` for simpler setups
+- Store: separate physical locations; consider one offline paper/metal share
+- Interface: TUI (offline machine) or Web UI
+
+### 3) Digital legacy / estate planning (family)
+
+- Suggested: `k=2, n=4`
+- Store: spouse/partner + executor/attorney + secure physical location + optional extra trusted person
+- Interface: Web UI
+
+### 4) Shared household account (family)
+
+- Suggested: `k=2, n=3`
+- Store: two adults each hold one share; third share is a sealed offline backup
+- Interface: Web UI
+
+### 5) 2FA recovery codes (personal)
+
+- Suggested: `k=2, n=3`
+- Store: split codes so one compromised password manager does not expose everything
+- Interface: Web UI
+
+### 6) Domain registrar / DNS admin recovery (small business)
+
+- Suggested: `k=2, n=3` or `k=3, n=5`
+- Store: separate roles (ops + security) and one offline share
+- Interface: CLI (repeatable process) or Web UI (one-off)
+
+### 7) GitHub/GitLab personal access token (developer)
+
+- Suggested: `k=2, n=3`
+- Store: password manager + CI secret store + offline backup
+- Interface: CLI
+
+### 8) Break-glass production credential (team)
+
+- Suggested: `k=3, n=5`
+- Store: different people/roles; document a recovery playbook; rotate after use
+- Interface: CLI
+
+### 9) Shared service accounts (small team)
+
+- Suggested: `k=2, n=4`
+- Store: owner + ops + security + offline backup
+- Interface: CLI for rotation, Web UI for setup
+
+### 10) Client handoff (agency)
+
+- Suggested: `k=2, n=3`
+- Store: agency vault + client vault + optional escrow
+- Interface: Web UI for handoff meeting
+
+### 11) Cofounder continuity (startup)
+
+- Suggested: `k=2, n=4`
+- Store: two founders + legal counsel + offline backup
+- Interface: CLI for operational repeatability
+
+### 12) Compliance: separation of duties (enterprise)
+
+- Suggested: `k=2, n=4` or `k=3, n=5`
+- Store: distribute across roles so no single person can recover alone
+- Interface: CLI
+
+## Next Steps
+
+- Learn formats: [Encodings](encodings/)
+- Review safety notes: [Security](security/)
+- Step-by-step usage: [Web UI](web-ui/) · [CLI](cli/) · [TUI](tui/)
+- If something looks wrong: [Troubleshooting](troubleshooting/)
