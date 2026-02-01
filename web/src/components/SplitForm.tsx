@@ -83,19 +83,21 @@ export function SplitForm({ strings }: SplitFormProps) {
 
       <div className="mt-6 grid grid-cols-1 gap-4">
         <label className="block">
-          <span className="field-label">{strings.secretLabel}</span>
-          <span className="field-hint mt-1 block">{strings.secretHint}</span>
+          <span className="field-label" id="secret-label">{strings.secretLabel}</span>
+          <span className="field-hint mt-1 block" id="secret-hint">{strings.secretHint}</span>
           <textarea
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
             rows={4}
             className="input mt-3 min-h-[120px] resize-y font-mono text-xs leading-relaxed"
+            aria-labelledby="secret-label"
+            aria-describedby="secret-hint"
           />
         </label>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label className="block">
-            <span className="field-label block sm:min-h-10">
+            <span className="field-label block sm:min-h-10" id="k-label">
               {strings.kLabel}
             </span>
             <input
@@ -105,11 +107,12 @@ export function SplitForm({ strings }: SplitFormProps) {
               value={k}
               onChange={(e) => setK(clampK(Number(e.target.value), n))}
               className="input mt-2"
+              aria-labelledby="k-label"
             />
           </label>
 
           <label className="block">
-            <span className="field-label block sm:min-h-10">
+            <span className="field-label block sm:min-h-10" id="n-label">
               {strings.nLabel}
             </span>
             <input
@@ -123,17 +126,19 @@ export function SplitForm({ strings }: SplitFormProps) {
                 setK((prevK) => clampK(prevK, nextN));
               }}
               className="input mt-2"
+              aria-labelledby="n-label"
             />
           </label>
 
           <label className="block">
-            <span className="field-label block sm:min-h-10">
+            <span className="field-label block sm:min-h-10" id="encoding-label">
               {strings.encodingLabel}
             </span>
             <select
               value={encoding}
               onChange={(e) => setEncoding(e.target.value as Encoding)}
               className="input mt-2"
+              aria-labelledby="encoding-label"
             >
               <option value="base64url">Letters (base64url)</option>
               <option value="mnemo-words">Words (mnemo-words)</option>
@@ -142,12 +147,13 @@ export function SplitForm({ strings }: SplitFormProps) {
         </div>
 
         <label className="block">
-          <span className="field-label">{strings.passphraseLabel}</span>
+          <span className="field-label" id="passphrase-label">{strings.passphraseLabel}</span>
           <input
             value={passphrase}
             onChange={(e) => setPassphrase(e.target.value)}
             className="input mt-2"
             autoComplete="new-password"
+            aria-labelledby="passphrase-label"
           />
         </label>
 
@@ -162,7 +168,11 @@ export function SplitForm({ strings }: SplitFormProps) {
           </button>
         </div>
 
-        {error ? <div className="alert-error">{error}</div> : null}
+        {error ? (
+          <div className="alert-error" role="alert" aria-live="assertive">
+            {error}
+          </div>
+        ) : null}
       </div>
 
       {shares.length > 0 ? (

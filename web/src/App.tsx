@@ -3,8 +3,11 @@ import { useEffect, useState } from "react";
 import logoUrl from "./assets/logo.svg";
 
 import { CombineForm } from "./components/CombineForm";
+import { LiveRegion } from "./components/LiveRegion";
 import { SplitForm } from "./components/SplitForm";
 import { EncryptedText } from "./components/ui/encrypted-text";
+import { LiveRegionProvider } from "./context/LiveRegionContext";
+import { useLiveRegion } from "./hooks/useLiveRegion";
 import { STRINGS, type Lang } from "./i18n";
 
 type Tab = "split" | "combine";
@@ -92,6 +95,7 @@ function ShieldIcon() {
 export function App() {
   const [tab, setTab] = useState<Tab>("split");
   const [lang, setLang] = useState<Lang>(() => getInitialLang());
+  const { announcements, announce } = useLiveRegion();
 
   const helpUrl =
     import.meta.env.VITE_HELP_URL ?? (lang === "ar" ? "/help/ar/" : "/help/");
@@ -107,124 +111,142 @@ export function App() {
     <div className="relative isolate min-h-screen overflow-hidden">
       <Background />
 
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:py-10">
-        <header className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <img
-                src={logoUrl}
-                alt="Safeparts"
-                className="h-10 w-10 shrink-0"
-                width={40}
-                height={40}
-                decoding="async"
-              />
-              <div className="text-start">
-                <h1 className="text-xl font-semibold tracking-tight text-emerald-100">
-                  {strings.appName}
-                </h1>
-                {lang === "en" ? (
-                  <EncryptedText
-                    className="mt-0.5 block text-xs"
-                    text={strings.tagline}
-                    revealDelayMs={20}
-                    flipDelayMs={20}
-                    encryptedClassName="text-emerald-300/40"
-                    revealedClassName="text-slate-300"
-                  />
-                ) : (
-                  <p className="mt-0.5 text-xs text-slate-300">
-                    {strings.tagline}
-                  </p>
-                )}
+      <LiveRegionProvider announce={announce}>
+        <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:py-10">
+          <header className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <img
+                  src={logoUrl}
+                  alt="Safeparts"
+                  className="h-10 w-10 shrink-0"
+                  width={40}
+                  height={40}
+                  decoding="async"
+                />
+                <div className="text-start">
+                  <h1 className="text-xl font-semibold tracking-tight text-emerald-100">
+                    {strings.appName}
+                  </h1>
+                  {lang === "en" ? (
+                    <EncryptedText
+                      className="mt-0.5 block text-xs"
+                      text={strings.tagline}
+                      revealDelayMs={20}
+                      flipDelayMs={20}
+                      encryptedClassName="text-emerald-300/40"
+                      revealedClassName="text-slate-300"
+                    />
+                  ) : (
+                    <p className="mt-0.5 text-xs text-slate-300">
+                      {strings.tagline}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="dir-row flex-wrap items-center gap-2">
+                <a
+                  href={helpUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="grid h-11 min-w-[44px] px-3 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-xs font-semibold tracking-wide uppercase text-slate-200 transition hover:bg-white/5"
+                  aria-label={strings.help}
+                  title={strings.help}
+                >
+                  {strings.help}
+                </a>
+                <a
+                  href="https://github.com/mustafamohsen/safeparts"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                  aria-label={strings.github}
+                  title={strings.github}
+                >
+                  <GitHubIcon />
+                </a>
+                <div className="dir-row items-center gap-1 rounded-xl border border-emerald-500/15 bg-black/35 p-1">
+                  <button
+                    type="button"
+                    className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
+                      lang === "en" ? "bg-white/10" : "hover:bg-white/5"
+                    }`}
+                    onClick={() => setLang("en")}
+                    aria-label={strings.english}
+                    aria-pressed={lang === "en"}
+                    title={strings.english}
+                  >
+                    EN
+                  </button>
+                  <button
+                    type="button"
+                    className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
+                      lang === "ar" ? "bg-white/10" : "hover:bg-white/5"
+                    }`}
+                    onClick={() => setLang("ar")}
+                    aria-label={strings.arabic}
+                    aria-pressed={lang === "ar"}
+                    title={strings.arabic}
+                  >
+                    AR
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="dir-row flex-wrap items-center gap-2">
-              <a
-                href={helpUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="grid h-10 px-3 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-xs font-semibold tracking-wide uppercase text-slate-200 transition hover:bg-white/5"
-                aria-label={strings.help}
-                title={strings.help}
-              >
-                {strings.help}
-              </a>
-              <a
-                href="https://github.com/mustafamohsen/safeparts"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="grid h-10 w-10 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
-                aria-label={strings.github}
-                title={strings.github}
-              >
-                <GitHubIcon />
-              </a>
-              <div className="dir-row items-center gap-1 rounded-xl border border-emerald-500/15 bg-black/35 p-1">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <nav className="pill w-fit" role="tablist" aria-label={lang === "en" ? "Operation mode" : "وضع التشغيل"}>
                 <button
                   type="button"
-                  className={`grid h-8 w-8 place-items-center rounded-lg text-sm transition ${
-                    lang === "en" ? "bg-white/10" : "hover:bg-white/5"
-                  }`}
-                  onClick={() => setLang("en")}
-                  aria-label={strings.english}
-                  title={strings.english}
+                  role="tab"
+                  aria-selected={tab === "split"}
+                  aria-controls="split-panel"
+                  id="split-tab"
+                  className={`pill-btn ${tab === "split" ? "pill-btn-active" : "pill-btn-inactive"}`}
+                  onClick={() => setTab("split")}
                 >
-                  EN
+                  {strings.splitTab}
                 </button>
                 <button
                   type="button"
-                  className={`grid h-8 w-8 place-items-center rounded-lg text-sm transition ${
-                    lang === "ar" ? "bg-white/10" : "hover:bg-white/5"
-                  }`}
-                  onClick={() => setLang("ar")}
-                  aria-label={strings.arabic}
-                  title={strings.arabic}
+                  role="tab"
+                  aria-selected={tab === "combine"}
+                  aria-controls="combine-panel"
+                  id="combine-tab"
+                  className={`pill-btn ${tab === "combine" ? "pill-btn-active" : "pill-btn-inactive"}`}
+                  onClick={() => setTab("combine")}
                 >
-                  AR
+                  {strings.combineTab}
                 </button>
+              </nav>
+
+              <div className="dir-row items-center gap-2 rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2 text-xs text-slate-200">
+                <ShieldIcon />
+                <span>{strings.privacyNote}</span>
               </div>
             </div>
-          </div>
+          </header>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <nav className="pill w-fit">
-              <button
-                type="button"
-                className={`pill-btn ${tab === "split" ? "pill-btn-active" : "pill-btn-inactive"}`}
-                onClick={() => setTab("split")}
-              >
-                {strings.splitTab}
-              </button>
-              <button
-                type="button"
-                className={`pill-btn ${tab === "combine" ? "pill-btn-active" : "pill-btn-inactive"}`}
-                onClick={() => setTab("combine")}
-              >
-                {strings.combineTab}
-              </button>
-            </nav>
+          <main className="flex flex-col gap-6">
+            {tab === "split" ? (
+              <div role="tabpanel" id="split-panel" aria-labelledby="split-tab">
+                <SplitForm strings={strings} />
+              </div>
+            ) : (
+              <div role="tabpanel" id="combine-panel" aria-labelledby="combine-tab">
+                <CombineForm strings={strings} />
+              </div>
+            )}
+          </main>
 
-            <div className="dir-row items-center gap-2 rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2 text-xs text-slate-200">
-              <ShieldIcon />
-              <span>{strings.privacyNote}</span>
-            </div>
-          </div>
-        </header>
+          <footer className="dir-row flex-wrap items-center justify-between gap-2 text-start text-xs text-slate-400">
+            <div>MIT Licensed</div>
+          </footer>
 
-        <main className="flex flex-col gap-6">
-          {tab === "split" ? (
-            <SplitForm strings={strings} />
-          ) : (
-            <CombineForm strings={strings} />
-          )}
-        </main>
-
-        <footer className="dir-row flex-wrap items-center justify-between gap-2 text-start text-xs text-slate-400">
-          <div>MIT Licensed</div>
-        </footer>
-      </div>
+          <LiveRegion announcements={announcements} />
+        </div>
+      </LiveRegionProvider>
     </div>
   );
 }

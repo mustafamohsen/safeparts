@@ -48,6 +48,7 @@
 
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black;
   }
 
   .btn-primary {
@@ -67,7 +68,8 @@
   }
 
   .pill-btn {
-    @apply rounded-lg px-3 py-1.5 text-xs font-medium transition;
+    @apply rounded-lg px-4 py-2.5 text-xs font-medium transition min-h-[44px];
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black;
   }
 
   .pill-btn-active {
@@ -88,5 +90,18 @@
 
   .dir-row {
     display: flex;
+  }
+
+  /* Screen reader only - visually hidden but accessible to assistive tech */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 }

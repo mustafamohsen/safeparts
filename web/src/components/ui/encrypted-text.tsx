@@ -65,6 +65,14 @@ export function EncryptedText({
   useEffect(() => {
     if (!isInView) return
 
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) {
+      // Skip animation entirely - show final text immediately
+      setRevealCount(text.length)
+      return
+    }
+
     const initial = text ? generateGibberishPreservingSpaces(text, charset) : ''
     scrambleCharsRef.current = initial.split('')
     startTimeRef.current = performance.now()
@@ -110,10 +118,22 @@ export function EncryptedText({
     }
   }, [isInView, text, revealDelayMs, charset, flipDelayMs])
 
+  // Use aria-hidden during animation to prevent screen readers from reading scrambled text
+  // Instead, we use aria-label with the final text for screen readers
+  const isAnimating = revealCount < text.length
+
   if (!text) return null
 
   return (
-    <motion.span ref={ref} className={cn(className)} aria-label={text}>
+    <motion.span
+      ref={ref}
+      className={cn(className)}
+      aria-hidden={isAnimating ? 'true' : undefined}
+      aria-label={isAnimating ? undefined : text}
+    >
+      <span aria-hidden="true" className="sr-only">
+        {text}
+      </span>
       {text.split('').map((char, index) => {
         const isRevealed = index < revealCount
         const displayChar = isRevealed

@@ -216,13 +216,14 @@ export function CombineForm({ strings }: CombineFormProps) {
       <div className="mt-6 grid grid-cols-1 gap-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block text-start">
-            <span className="field-label">{strings.encodingLabel}</span>
+            <span className="field-label" id="encoding-label">{strings.encodingLabel}</span>
             <select
               value={encoding}
               onChange={(e) => setEncoding(e.target.value as Encoding)}
               className={`input mt-2 transition-colors duration-1000 ease-out ${
                 encodingFlash ? "border-emerald-300/70 bg-emerald-500/10" : ""
               }`}
+              aria-labelledby="encoding-label"
             >
               <option value="base64url">Letters (base64url)</option>
               <option value="mnemo-words">Words (mnemo-words)</option>
@@ -230,12 +231,13 @@ export function CombineForm({ strings }: CombineFormProps) {
           </label>
 
           <label className="block text-start">
-            <span className="field-label">{strings.passphraseLabel}</span>
+            <span className="field-label" id="passphrase-label">{strings.passphraseLabel}</span>
             <input
               value={passphrase}
               onChange={(e) => setPassphrase(e.target.value)}
               className="input mt-2"
               autoComplete="new-password"
+              aria-labelledby="passphrase-label"
             />
           </label>
         </div>
@@ -243,8 +245,8 @@ export function CombineForm({ strings }: CombineFormProps) {
         <div>
           <div className="dir-row items-start justify-between gap-3">
             <div className="text-start">
-              <div className="field-label">{strings.sharesInputLabel}</div>
-              <div className="field-hint mt-1">{strings.sharesInputHint}</div>
+              <div className="field-label" id="shares-label">{strings.sharesInputLabel}</div>
+              <div className="field-hint mt-1" id="shares-hint">{strings.sharesInputHint}</div>
             </div>
           </div>
 
@@ -261,7 +263,7 @@ export function CombineForm({ strings }: CombineFormProps) {
 
                     <button
                       type="button"
-                      className="btn-ghost h-9 w-9 px-0"
+                      className="btn-ghost h-11 w-11 px-0 min-h-[44px]"
                       onClick={() => removeShareBox(box.id)}
                       disabled={shareBoxes.length <= 2}
                       aria-label={strings.removeShare}
@@ -281,12 +283,20 @@ export function CombineForm({ strings }: CombineFormProps) {
                     }}
                     rows={3}
                     placeholder={strings.sharePlaceholder}
-                    className={`input mt-2 resize-y font-mono text-xs leading-relaxed ${
+                    className={`input mt-2 resize-y font-mono text-xs leading-relaxous ${
                       isInvalid
                         ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
                         : ""
                     }`}
+                    aria-labelledby="shares-label"
+                    aria-describedby={isInvalid ? `share-${box.id}-error` : "shares-hint"}
+                    aria-invalid={isInvalid}
                   />
+                  {isInvalid && (
+                    <p className="mt-1 text-xs text-rose-400" id={`share-${box.id}-error`} role="alert">
+                      {strings.shareRequired}
+                    </p>
+                  )}
                 </div>
               );
             })}
@@ -314,7 +324,11 @@ export function CombineForm({ strings }: CombineFormProps) {
           </button>
         </div>
 
-        {error ? <div className="alert-error">{error}</div> : null}
+        {error ? (
+          <div className="alert-error" role="alert" aria-live="assertive">
+            {error}
+          </div>
+        ) : null}
       </div>
 
       {secret ? (
