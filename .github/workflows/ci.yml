@@ -41,7 +41,7 @@ jobs:
         run: cd web/help && bun install
 
       - name: Build help
-        run: cd web/help && bun run build
+        run: cd web/help && bunx astro build
 
   netlify_build:
     name: netlify build hook
