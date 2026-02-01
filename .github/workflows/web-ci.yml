@@ -46,6 +46,21 @@ jobs:
         run: bun run help:build
         working-directory: web
 
+      - name: Install Playwright
+        run: bun add -D @playwright/test && bun run test:a11y:install
+        working-directory: web
+
+      - name: Start dev server and run a11y tests
+        run: |
+          bun run dev &
+          SERVER_PID=$!
+          sleep 10
+          bun run test:a11y || true
+          kill $SERVER_PID 2>/dev/null || true
+        working-directory: web
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:5173
+
   netlify_build:
     name: netlify build hook
     runs-on: ubuntu-latest
