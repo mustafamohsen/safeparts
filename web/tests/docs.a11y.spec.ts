@@ -4,33 +4,45 @@ import { expectNoA11yViolations } from './a11y-utils'
 test.describe('Docs Site Accessibility', () => {
   test('Home page has no accessibility violations', async ({ page }) => {
     await page.goto('/help/')
+    await page.waitForLoadState('networkidle')
     await expectNoA11yViolations(page)
   })
 
   test('Content page has no accessibility violations', async ({ page }) => {
     await page.goto('/help/cli/')
+    await page.waitForLoadState('networkidle')
     await expectNoA11yViolations(page)
   })
 
   test('Arabic locale has no accessibility violations', async ({ page }) => {
     await page.goto('/help/ar/')
+    await page.waitForLoadState('networkidle')
     await expectNoA11yViolations(page)
   })
 
   test('Arabic content page has no accessibility violations', async ({ page }) => {
     await page.goto('/help/ar/cli/')
+    await page.waitForLoadState('networkidle')
     await expectNoA11yViolations(page)
   })
 
   test('Docs are dark-only (no light theme toggle)', async ({ page }) => {
     await page.goto('/help/')
     
+    // Wait for page to fully load
+    await page.waitForLoadState('networkidle')
+    
     // There should be no theme toggle button
     const themeToggle = page.locator('starlight-theme-select, [aria-label*="theme" i], [aria-label*="مظهر" i]')
     await expect(themeToggle).toHaveCount(0)
     
-    // The page should have data-theme="dark"
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    // Verify dark theme is enforced via localStorage
+    const starlightTheme = await page.evaluate(() => localStorage.getItem('starlight-theme'))
+    expect(starlightTheme).toBe('dark')
+    
+    // Verify the page has dark theme styling applied
+    const htmlDataTheme = await page.locator('html').getAttribute('data-theme')
+    expect(htmlDataTheme).toBe('dark')
   })
 
   test('External links announce they open in new tab', async ({ page }) => {

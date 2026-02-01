@@ -22,14 +22,25 @@ test.describe('Web App Accessibility', () => {
   })
 
   test('Language toggle is accessible', async ({ page }) => {
-    const langToggle = page.getByRole('button', { name: /english|العربية/i })
+    // Test both language toggle buttons
+    const enButton = page.getByRole('button', { name: 'English' })
+    const arButton = page.getByRole('button', { name: 'العربية' })
     
-    // Should be keyboard focusable
-    await langToggle.focus()
-    await expect(langToggle).toBeFocused()
+    // Both should be keyboard focusable
+    await enButton.focus()
+    await expect(enButton).toBeFocused()
     
-    // Should have aria-pressed to indicate state
-    await expect(langToggle).toHaveAttribute('aria-pressed')
+    await arButton.focus()
+    await expect(arButton).toBeFocused()
+    
+    // Both should have aria-pressed to indicate state
+    await expect(enButton).toHaveAttribute('aria-pressed')
+    await expect(arButton).toHaveAttribute('aria-pressed')
+    
+    // Exactly one should be pressed
+    const enPressed = await enButton.getAttribute('aria-pressed')
+    const arPressed = await arButton.getAttribute('aria-pressed')
+    expect([enPressed, arPressed].filter(p => p === 'true')).toHaveLength(1)
   })
 
   test('Tab navigation follows logical order', async ({ page }) => {

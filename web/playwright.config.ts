@@ -26,10 +26,20 @@ export default defineConfig({
   ],
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
-    : {
-        command: 'bun run dev',
-        url: 'http://localhost:5173',
-        reuseExistingServer: !process.env.CI,
-        timeout: 120000,
-      },
+    : [
+        // Start the Vite dev server for the main web app
+        {
+          command: 'bun run dev',
+          url: 'http://localhost:5173',
+          reuseExistingServer: !process.env.CI,
+          timeout: 120000,
+        },
+        // Start the Starlight dev server for the docs site
+        {
+          command: 'cd help && bun run dev',
+          url: 'http://localhost:4321',
+          reuseExistingServer: !process.env.CI,
+          timeout: 120000,
+        },
+      ],
 })
