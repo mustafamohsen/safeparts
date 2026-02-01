@@ -43,8 +43,8 @@ jobs:
         working-directory: web
 
       - name: Build docs
-        run: bun run help:build
-        working-directory: web
+        run: bunx astro build
+        working-directory: web/help
 
       - name: Install Playwright
         run: bun add -D @playwright/test && bun run test:a11y:install
