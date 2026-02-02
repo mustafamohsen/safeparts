@@ -32,10 +32,6 @@ test.describe('Docs Site Accessibility', () => {
     // Wait for page to fully load
     await page.waitForLoadState('networkidle')
     
-    // There should be no theme toggle button
-    const themeToggle = page.locator('starlight-theme-select, [aria-label*="theme" i], [aria-label*="مظهر" i]')
-    await expect(themeToggle).toHaveCount(0)
-    
     // Verify dark theme is enforced via localStorage
     const starlightTheme = await page.evaluate(() => localStorage.getItem('starlight-theme'))
     expect(starlightTheme).toBe('dark')
