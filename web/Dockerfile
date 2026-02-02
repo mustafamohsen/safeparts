@@ -2,7 +2,8 @@
 # Optimized for layer caching and minimal final image size
 
 # Stage 1: Rust builder - install toolchain and build dependencies
-FROM rust:1.83-bookworm AS rust-builder
+# Using nightly for edition 2024 support (required by some dependencies)
+FROM rustlang/rust:nightly-bookworm AS rust-builder
 
 # Install system dependencies for WASM tooling
 RUN apt-get update && apt-get install -y \
