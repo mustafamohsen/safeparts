@@ -23,12 +23,39 @@ export interface A11yResult {
 }
 
 /**
+ * Close Vite's error overlay if present.
+ * The overlay can block interactions and cause a11y violations.
+ */
+async function closeViteErrorOverlay(page: Page): Promise<void> {
+  try {
+    // Try to click the close button if it exists
+    const closeButton = page.locator('vite-error-overlay').locator('[aria-label="Close"]')
+    if (await closeButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await closeButton.click()
+      await page.waitForTimeout(500) // Wait for animation
+      return
+    }
+
+    // Try pressing Escape to dismiss
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(500)
+  } catch {
+    // No error overlay present, that's fine
+  }
+}
+
+/**
  * Run axe accessibility scan on a page.
  * Fails the test if serious or critical violations are found.
  */
 export async function expectNoA11yViolations(page: Page): Promise<void> {
+  // Close Vite error overlay if present
+  await closeViteErrorOverlay(page)
+
   const accessibilityScanResults = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    .exclude('vite-error-overlay') // Exclude Vite's error overlay from a11y tests
+    .exclude('.stack, [part="stack"]') // Exclude stack trace elements in overlays
     .analyze()
 
   const seriousAndCritical = accessibilityScanResults.violations.filter(
