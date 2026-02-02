@@ -200,11 +200,7 @@ Then open:
 - Web UI: `http://localhost:8080`
 - Docs: `http://localhost:8080/help`
 
-**Available tags:**
-
-- `latest` - Latest build from main branch
-- `vX.Y.Z` - Specific release version (e.g., `v1.0.0`)
-- `sha-<commit>` - Specific commit hash from main
+**Available tags:** `latest`, `vX.Y.Z`, `sha-<commit>`
 
   </TabItem>
   <TabItem label="Build locally">
@@ -219,14 +215,7 @@ docker build -t safeparts-web -f web/Dockerfile .
 docker run -p 8080:80 safeparts-web
 ```
 
-The build includes:
-
-- Rust toolchain + WASM compilation
-- Vite build (web app)
-- Astro build (docs)
-- nginx serving both
-
-Build time: ~20-30 minutes on first build (cached for subsequent builds).
+Build time: ~20-30 minutes on first build.
 
   </TabItem>
 </Tabs>
