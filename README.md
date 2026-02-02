@@ -2,7 +2,30 @@
   <img src="web/src/assets/logo.svg" width="120" alt="Safeparts logo" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/mustafamohsen/safeparts/releases">
+    <img src="https://img.shields.io/github/v/release/mustafamohsen/safeparts?display_name=tag&style=flat-square" alt="GitHub release" />
+  </a>
+  <a href="https://github.com/mustafamohsen/safeparts/actions/workflows/rust-ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/mustafamohsen/safeparts/rust-ci.yml?branch=main&style=flat-square" alt="Rust CI" />
+  </a>
+  <a href="https://github.com/mustafamohsen/safeparts/actions/workflows/docker-publish.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/mustafamohsen/safeparts/docker-publish.yml?branch=main&style=flat-square" alt="Docker Build" />
+  </a>
+  <a href="https://ghcr.io/mustafamohsen/safeparts">
+    <img src="https://img.shields.io/docker/image-size/mustafamohsen/safeparts/latest?style=flat-square" alt="Docker image size" />
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License: MIT" />
+  </a>
+  <a href="https://safeparts.netlify.app">
+    <img src="https://img.shields.io/badge/Web-UI-safeparts.netlify.app-00C7B7?style=flat-square" alt="Web UI" />
+  </a>
+</p>
+
 # Safeparts
+
+**Website:** [https://safeparts.netlify.app](https://safeparts.netlify.app)
 
 Safeparts helps you **split a sensitive secret into multiple “recovery parts”** so no single person, device, or location holds the whole thing.
 
@@ -160,7 +183,9 @@ Note: `--passphrase <text>` may leak into shell history. Prefer `--passphrase-fi
 
 ## Web interface (optional)
 
-A minimal web UI exists under `web/` and uses `crates/safeparts_wasm` (WASM) to run the split/combine logic locally.
+**Try it online:** [https://safeparts.netlify.app](https://safeparts.netlify.app)
+
+A minimal web UI exists under `web/` and uses `crates/safeparts_wasm` (WASM) to run the split/combine logic locally. All processing happens in your browser — secrets are never sent to a server.
 
 Run locally:
 
