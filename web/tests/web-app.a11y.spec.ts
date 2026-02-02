@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { expectNoA11yViolations, waitForWasmReady } from './a11y-utils'
+import { expectNoA11yViolations, waitForWasmReady, closeViteErrorOverlay } from './a11y-utils'
 
 test.describe('Web App Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
+    await closeViteErrorOverlay(page)
     await waitForWasmReady(page)
   })
 

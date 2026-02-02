@@ -26,7 +26,7 @@ export interface A11yResult {
  * Close Vite's error overlay if present.
  * The overlay can block interactions and cause a11y violations.
  */
-async function closeViteErrorOverlay(page: Page): Promise<void> {
+export async function closeViteErrorOverlay(page: Page): Promise<void> {
   try {
     // Try to click the close button if it exists
     const closeButton = page.locator('vite-error-overlay').locator('[aria-label="Close"]')
