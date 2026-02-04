@@ -60,11 +60,42 @@ jobs:
         run: bun run test:a11y:install
         working-directory: web
 
-      - name: Run a11y tests
+      - name: Start development servers
         run: |
+          # Start Vite dev server (web app on port 5173)
           bun run dev &
-          sleep 5
-          bun run test:a11y
+          
+          # Start Starlight dev server (docs on port 4321)
+          cd help && bun run dev &
+          
+          # Wait for both servers to be ready
+          echo "Waiting for Vite server..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5173 > /dev/null 2>&1; then
+              echo "Vite server ready"
+              break
+            fi
+            sleep 1
+          done
+          
+          echo "Waiting for Starlight server..."
+          for i in {1..30}; do
+            if curl -s http://localhost:4321 > /dev/null 2>&1; then
+              echo "Starlight server ready"
+              break
+            fi
+            sleep 1
+          done
+          
+          # Verify both are accessible
+          curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
+          echo " - Vite status"
+          curl -s -o /dev/null -w "%{http_code}" http://localhost:4321
+          echo " - Starlight status"
+        working-directory: web
+
+      - name: Run a11y tests
+        run: bun run test:a11y
         working-directory: web
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:5173
