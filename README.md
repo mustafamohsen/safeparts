@@ -134,6 +134,22 @@ bun run test:a11y
 - Tag pushes matching `v*` run the GitHub Actions release workflow and publish archives.
 - Local packaging helpers live in `scripts/release/README.md`.
 
+## Contributing
+
+Contributions are welcome. Start with an issue. Use it to agree on scope, direction, and acceptance criteria before writing code.
+
+Workflow:
+
+1. Open or pick an issue.
+2. Fork the repo.
+3. Create a dedicated branch (e.g. `feat/<short-slug>` or `fix/<short-slug>`).
+4. Make changes and run checks:
+   - `cargo fmt --all`
+   - `cargo clippy --all-targets --all-features -- -D warnings`
+   - `cargo test --all-features`
+   - `cd web && bun run test:a11y` (if you touched the web/docs)
+5. Open a PR and link the issue (e.g. “Fixes #123”).
+
 ## License
 
 MIT. See LICENSE.
