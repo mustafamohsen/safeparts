@@ -16,7 +16,17 @@ You choose a threshold (<var>k</var> of <var>n</var>):
 - With fewer than <var>k</var> shares, reconstruction is impossible.
 - With any <var>k</var> shares, reconstruction succeeds.
 
-Under the hood, this is Shamir-style secret sharing over a finite field (GF(256)), applied byte-wise.
+Under the hood, this is Shamir-style secret sharing over a finite field (<span class="token token--mono">GF(256)</span>), applied byte-wise.
+
+### What a “share” is
+
+Conceptually, each share is one point on a polynomial of degree <var>k</var>-1.
+With <var>k</var> points you can reconstruct the polynomial, and therefore the original secret.
+With fewer than <var>k</var> points, you learn nothing useful about the secret.
+
+### Why <span class="token token--mono">GF(256)</span>
+
+Safeparts works on bytes. <span class="token token--mono">GF(256)</span> lets us do the math over 8-bit values, so “secret sharing” applies cleanly to arbitrary binary data.
 
 ## Integrity
 
@@ -24,6 +34,11 @@ Safeparts adds an integrity tag so reconstruction can detect incorrect inputs.
 
 - If shares are corrupted or from different sets, combine fails.
 - If you typed a share wrong, combine fails.
+
+In addition to the packet-level tag:
+
+- Base58Check includes a checksum.
+- Mnemonic shares include CRC16 to catch many transcription mistakes.
 
 ## Optional passphrase protection
 
@@ -49,6 +64,16 @@ Shares can be encoded for different workflows:
 - human-friendly (transcription): mnemonic formats
 
 See [Encodings](encodings/).
+
+## Packet metadata (why shares must match)
+
+Shares are not just “chunks”. Each share carries enough metadata to ensure it belongs to the same set:
+
+- threshold (<var>k</var>) and share count (<var>n</var>)
+- set identity / versioning
+- integrity data
+
+This is why mixing shares from different splits should fail loudly.
 
 ## What Safeparts does not do
 

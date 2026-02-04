@@ -7,20 +7,19 @@ hero:
   image:
     file: ../../../assets/logo.svg
   actions:
+    - text: افتح تطبيق الويب
+      link: /
+      icon: external
     - text: دليل البدء
-      link: ar/getting-started
+      link: getting-started
       icon: left-arrow
 ---
 
-import { Card, CardGrid, LinkButton } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## ابدأ هنا
 
 Safeparts هو أداة استرداد تعتمد على <span class="token" dir="ltr">k من n</span>. هدفه تقليل نقاط الفشل الواحدة عبر توزيع السر على أشخاص وأماكن.
-
-<LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
-	افتح تطبيق الويب
-</LinkButton>
 
 <CardGrid stagger>
 	<Card title="ما هو Safeparts؟" icon="open-book">
@@ -31,7 +30,7 @@ Safeparts هو أداة استرداد تعتمد على <span class="token" dir
 	<Card title="دليل البدء" icon="star">
 		جرّب تجربة تدريبية قصيرة، وتعلم كيف تختار <var>k</var> و <var>n</var>، وابنِ خطة استرداد قابلة للتنفيذ وقت الضغط.
 		
-		[اقرأ الدليل](./getting-started/)
+		[افتح الدليل](./getting-started/)
 	</Card>
 	<Card title="حالات الاستخدام" icon="document">
 		سيناريوهات واقعية (استرداد شخصي، فرق، بنية تحتية) مع إرشادات لتوزيع الحصص.
@@ -41,7 +40,7 @@ Safeparts هو أداة استرداد تعتمد على <span class="token" dir
 	<Card title="الأمان" icon="setting">
 		نموذج التهديد، قواعد التخزين، وكيف تغيّر عبارة المرور ما يحتاجه المهاجم.
 		
-		[اقرأ ملاحظات الأمان](./security/)
+		[اقرأ الأمان](./security/)
 	</Card>
 	<Card title="الواجهات" icon="laptop">
 		استخدم واجهة الويب للخطوات المرئية، وواجهة CLI للأتمتة، وواجهة TUI لجلسات الطرفية التفاعلية أو offline.
