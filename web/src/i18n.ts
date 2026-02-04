@@ -31,6 +31,10 @@ export const STRINGS = {
     kLabel: "Minimum shares to recover (k)",
     nLabel: "Total shares to create (n)",
     encodingLabel: "Share format",
+    encodingBase64url: "Letters",
+    encodingBase64urlDesc: "Compact alphanumeric (base64url)",
+    encodingMnemoWords: "Words",
+    encodingMnemoWordsDesc: "Easy to write mnemonic words",
     passphraseLabel: "Passphrase (optional)",
 
     splitCta: "Split",
@@ -88,6 +92,10 @@ export const STRINGS = {
     kLabel: "الحد الأدنى للاستعادة (k)",
     nLabel: "إجمالي الحصص (n)",
     encodingLabel: "صيغة الحصة",
+    encodingBase64url: "أحرف",
+    encodingBase64urlDesc: "أحرف وأرقام مضغوطة (base64url)",
+    encodingMnemoWords: "كلمات",
+    encodingMnemoWordsDesc: "كلمات سهلة الكتابة",
     passphraseLabel: "عبارة مرور (اختياري)",
 
     splitCta: "قسم",

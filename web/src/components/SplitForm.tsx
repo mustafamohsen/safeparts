@@ -4,6 +4,7 @@ import type { Strings } from "../i18n";
 import { ensureWasm } from "../wasm";
 
 import { CopyButton } from "./CopyButton";
+import { Combobox, type ComboboxOption } from "./ui/combobox";
 import { EncryptedText } from "./ui/encrypted-text";
 
 type Encoding = "base64url" | "mnemo-words";
@@ -42,6 +43,22 @@ export function SplitForm({ strings }: SplitFormProps) {
   const [shares, setShares] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const encodingOptions: ComboboxOption<Encoding>[] = useMemo(
+    () => [
+      {
+        value: "mnemo-words",
+        label: strings.encodingMnemoWords,
+        description: strings.encodingMnemoWordsDesc,
+      },
+      {
+        value: "base64url",
+        label: strings.encodingBase64url,
+        description: strings.encodingBase64urlDesc,
+      },
+    ],
+    [strings]
+  );
 
   const canSplit = useMemo(
     () => secret.length > 0 && k >= 2 && n >= 2 && n <= 255,
@@ -130,20 +147,17 @@ export function SplitForm({ strings }: SplitFormProps) {
             />
           </label>
 
-          <label className="block">
+          <div className="block">
             <span className="field-label block sm:min-h-10" id="encoding-label">
               {strings.encodingLabel}
             </span>
-            <select
+            <Combobox
               value={encoding}
-              onChange={(e) => setEncoding(e.target.value as Encoding)}
-              className="input mt-2"
+              onChange={setEncoding}
+              options={encodingOptions}
               aria-labelledby="encoding-label"
-            >
-              <option value="base64url">Letters (base64url)</option>
-              <option value="mnemo-words">Words (mnemo-words)</option>
-            </select>
-          </label>
+            />
+          </div>
         </div>
 
         <label className="block">
