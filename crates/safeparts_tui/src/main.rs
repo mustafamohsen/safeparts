@@ -3,8 +3,8 @@ use std::io;
 use anyhow::{Context, Result};
 use crossterm::execute;
 use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
-use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
+use ratatui::Terminal;
 
 mod app;
 mod clipboard;

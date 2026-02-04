@@ -16,7 +16,7 @@ use tui_textarea::{Input, TextArea};
 use zeroize::Zeroizing;
 
 use crate::clipboard::Clipboard;
-use crate::domain::{Encoding, combine_shares, set_id_hex, split_secret};
+use crate::domain::{combine_shares, set_id_hex, split_secret, Encoding};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum TabId {

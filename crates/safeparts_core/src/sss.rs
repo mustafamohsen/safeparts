@@ -1,7 +1,7 @@
 use crate::error::{CoreError, CoreResult};
 use crate::gf256::Gf256;
-use rand::RngCore;
 use rand::rngs::OsRng;
+use rand::RngCore;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SetId(pub [u8; 16]);

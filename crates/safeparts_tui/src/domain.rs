@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{anyhow, bail, Context, Result};
 use safeparts_core::packet::SharePacket;
 use safeparts_core::{ascii, mnemo_bip39, mnemo_words};
 

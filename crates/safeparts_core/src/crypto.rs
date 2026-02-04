@@ -1,7 +1,7 @@
 use chacha20poly1305::aead::{Aead, KeyInit};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
-use rand::RngCore;
 use rand::rngs::OsRng;
+use rand::RngCore;
 use zeroize::Zeroizing;
 
 use crate::error::{CoreError, CoreResult};
