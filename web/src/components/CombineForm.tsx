@@ -328,6 +328,7 @@ export function CombineForm({ strings }: CombineFormProps) {
         <div className="dir-row flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
+            data-shortcut="submit"
             disabled={!canCombine || busy}
             onClick={onCombine}
             className="btn-primary w-full sm:w-auto"

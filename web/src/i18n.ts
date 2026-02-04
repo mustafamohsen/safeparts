@@ -62,6 +62,14 @@ export const STRINGS = {
     wasmCommand: "bun run build:wasm",
 
     errorWasmMissing: "WASM module not found. Run bun run build:wasm.",
+
+    keyboardShortcuts: "Keyboard shortcuts",
+    shortcutClose: "Close",
+    shortcutGoToSplit: "Go to Split",
+    shortcutGoToCombine: "Go to Combine",
+    shortcutSubmitForm: "Submit form",
+    shortcutCopyResult: "Copy result",
+    shortcutShowHelp: "Show shortcuts",
   },
   ar: {
     appName: "Safeparts",
@@ -123,6 +131,14 @@ export const STRINGS = {
     wasmCommand: "bun run build:wasm",
 
     errorWasmMissing: "لم يتم العثور على WASM. شغل bun run build:wasm.",
+
+    keyboardShortcuts: "اختصارات لوحة المفاتيح",
+    shortcutClose: "إغلاق",
+    shortcutGoToSplit: "الذهاب للتقسيم",
+    shortcutGoToCombine: "الذهاب للاستعادة",
+    shortcutSubmitForm: "إرسال النموذج",
+    shortcutCopyResult: "نسخ النتيجة",
+    shortcutShowHelp: "عرض الاختصارات",
   },
 } as const;
 

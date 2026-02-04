@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import logoUrl from "./assets/logo.svg";
 
 import { CombineForm } from "./components/CombineForm";
+import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
 import { LiveRegion } from "./components/LiveRegion";
 import { SplitForm } from "./components/SplitForm";
 import { EncryptedText } from "./components/ui/encrypted-text";
 import { LiveRegionProvider } from "./context/LiveRegionContext";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useLiveRegion } from "./hooks/useLiveRegion";
 import { STRINGS, type Lang } from "./i18n";
 
@@ -95,12 +97,32 @@ function ShieldIcon() {
 export function App() {
   const [tab, setTab] = useState<Tab>("split");
   const [lang, setLang] = useState<Lang>(() => getInitialLang());
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const { announcements, announce } = useLiveRegion();
+
+  const splitTabRef = useRef<HTMLButtonElement>(null);
+  const combineTabRef = useRef<HTMLButtonElement>(null);
 
   const helpUrl =
     import.meta.env.VITE_HELP_URL ?? (lang === "ar" ? "/help/ar/" : "/help/");
 
   const strings = STRINGS[lang];
+
+  const focusTab = useCallback((next: Tab) => {
+    const el = next === "split" ? splitTabRef.current : combineTabRef.current;
+    el?.focus();
+  }, []);
+
+  useKeyboardShortcuts({
+    tab,
+    setTab,
+    focusTab,
+    helpOpen: shortcutsOpen,
+    openHelp: () => setShortcutsOpen(true),
+    closeHelp: () => setShortcutsOpen(false),
+    strings,
+    announce,
+  });
 
   useEffect(() => {
     applyDocumentPrefs(lang);
@@ -166,6 +188,15 @@ export function App() {
                 >
                   <GitHubIcon />
                 </a>
+                <button
+                  type="button"
+                  onClick={() => setShortcutsOpen(true)}
+                  className="hidden sm:grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                  aria-label={strings.keyboardShortcuts}
+                  title={strings.keyboardShortcuts}
+                >
+                  ?
+                </button>
                 <div className="dir-row items-center gap-1 rounded-xl border border-emerald-500/15 bg-black/35 p-1">
                   <button
                     type="button"
@@ -196,15 +227,58 @@ export function App() {
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <nav className="pill w-fit" role="tablist" aria-label={lang === "en" ? "Operation mode" : "وضع التشغيل"}>
+              <div
+                className="pill w-fit"
+                role="tablist"
+                aria-label={lang === "en" ? "Operation mode" : "وضع التشغيل"}
+                onKeyDown={(e) => {
+                  const isRtl = lang === "ar";
+                  const current: Tab = tab;
+                  const next = (dir: "prev" | "next"): Tab => {
+                    if (current === "split") return dir === "next" ? "combine" : "split";
+                    return dir === "next" ? "combine" : "split";
+                  };
+
+                  if (e.key === "Home") {
+                    e.preventDefault();
+                    setTab("split");
+                    focusTab("split");
+                    return;
+                  }
+
+                  if (e.key === "End") {
+                    e.preventDefault();
+                    setTab("combine");
+                    focusTab("combine");
+                    return;
+                  }
+
+                  if (e.key === "ArrowRight") {
+                    e.preventDefault();
+                    const target = next(isRtl ? "prev" : "next");
+                    setTab(target);
+                    focusTab(target);
+                    return;
+                  }
+
+                  if (e.key === "ArrowLeft") {
+                    e.preventDefault();
+                    const target = next(isRtl ? "next" : "prev");
+                    setTab(target);
+                    focusTab(target);
+                  }
+                }}
+              >
                 <button
                   type="button"
                   role="tab"
                   aria-selected={tab === "split"}
                   aria-controls="split-panel"
                   id="split-tab"
+                  tabIndex={tab === "split" ? 0 : -1}
                   className={`pill-btn ${tab === "split" ? "pill-btn-active" : "pill-btn-inactive"}`}
                   onClick={() => setTab("split")}
+                  ref={splitTabRef}
                 >
                   {strings.splitTab}
                 </button>
@@ -214,12 +288,14 @@ export function App() {
                   aria-selected={tab === "combine"}
                   aria-controls="combine-panel"
                   id="combine-tab"
+                  tabIndex={tab === "combine" ? 0 : -1}
                   className={`pill-btn ${tab === "combine" ? "pill-btn-active" : "pill-btn-inactive"}`}
                   onClick={() => setTab("combine")}
+                  ref={combineTabRef}
                 >
                   {strings.combineTab}
                 </button>
-              </nav>
+              </div>
 
               <div className="dir-row items-center gap-2 rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2 text-xs text-slate-200">
                 <ShieldIcon />
@@ -245,6 +321,13 @@ export function App() {
           </footer>
 
           <LiveRegion announcements={announcements} />
+
+          <KeyboardShortcutsHelp
+            open={shortcutsOpen}
+            lang={lang}
+            strings={strings}
+            onClose={() => setShortcutsOpen(false)}
+          />
         </div>
       </LiveRegionProvider>
     </div>
