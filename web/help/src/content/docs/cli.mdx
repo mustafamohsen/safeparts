@@ -23,7 +23,7 @@ Mnemonic output (more human-friendly):
 echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e mnemo-words
 ```
 
-Combine from stdin (any `k` shares):
+Combine from stdin (any <var>k</var> shares):
 
 ```bash
 printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine

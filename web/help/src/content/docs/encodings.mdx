@@ -8,26 +8,26 @@ to represent the same packet bytes.
 
 ## Machine-friendly
 
-### `base64` (base64url)
+### <span class="token">base64</span> (base64url)
 
-- URL-safe (`-` and `_`)
+- URL-safe (<span class="token token--mono">-</span> and <span class="token token--mono">_</span>)
 - No padding
 - Good for copy/paste and scripts
 
-### `base58`
+### <span class="token">base58</span>
 
 - Avoids ambiguous characters
 - Often nicer for manual transcription than base64
 
 ## Human-friendly
 
-### `mnemo-words`
+### <span class="token">mnemo-words</span>
 
 - A single sentence of lowercase words
 - Uses the BIP-39 English word list as a 2048-symbol alphabet
 - Includes CRC16 to detect many typos
 
-### `mnemo-bip39`
+### <span class="token">mnemo-bip39</span>
 
 - Uses full BIP-39-valid sentences (with the standard checksum)
 - A single share may become multiple sentences, depending on payload size

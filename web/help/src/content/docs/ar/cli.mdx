@@ -24,7 +24,7 @@ echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64
 echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e mnemo-words
 ```
 
-استعادة من stdin (أي `k` حصص):
+استعادة من stdin (أي <var>k</var> حصص):
 
 ```bash
 printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine

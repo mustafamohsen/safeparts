@@ -38,20 +38,20 @@ You need k shares
 
 ## Understanding k-of-n
 
-- `n` is how many shares you create
-- `k` is how many shares are required to recover
+- <var>n</var> is how many shares you create
+- <var>k</var> is how many shares are required to recover
 
-With `k=2, n=3`: you create 3 shares, any 2 can recover, you can lose 1 and still recover.
+With <span class="token">k=2, n=3</span>: you create 3 shares, any 2 can recover, you can lose 1 and still recover.
 
 ### Choosing k and n
 
-Pick `k` based on who must approve recovery. Pick `n` based on how many losses you can tolerate.
+Pick <var>k</var> based on who must approve recovery. Pick <var>n</var> based on how many losses you can tolerate.
 
-`n = k + number of shares you can afford to lose`
+<var>n</var> = <var>k</var> + number of shares you can afford to lose
 
 Practical defaults:
-- Personal use: `k=2, n=3`
-- Teams: `k=3, n=5`
+- Personal use: <span class="token">k=2, n=3</span>
+- Teams: <span class="token">k=3, n=5</span>
 
 :::tip
 A simple plan people can execute under stress beats a perfect plan nobody follows.
@@ -87,7 +87,7 @@ Before splitting a real secret, do a 3-minute dry run with a fake secret.
 
 <Steps>
 1. Choose an interface (Web UI / CLI / TUI).
-2. Split the secret `example-secret` with `k=2, n=3`.
+2. Split the secret <span class="token">example-secret</span> with <span class="token">k=2, n=3</span>.
 3. Immediately recover it using any 2 shares.
 4. If recovery works smoothly, proceed with your real secret.
 </Steps>
@@ -100,7 +100,7 @@ Before splitting a real secret, do a 3-minute dry run with a fake secret.
 
 **Solution**: Split the recovery key so you need cooperation between two locations to recover, but losing one share doesn't lock you out.
 
-**Setup**: `k=2, n=3` using the Web UI
+**Setup**: <span class="token">k=2, n=3</span> using the Web UI
 
 <LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
 	Open the web app
@@ -108,7 +108,7 @@ Before splitting a real secret, do a 3-minute dry run with a fake secret.
 
 <Steps>
 1. Paste your recovery key into **Secret**.
-2. Set `k=2` and `n=3`.
+2. Set <var>k</var>=2 and <var>n</var>=3.
 3. Choose an encoding (see [Encodings](encodings/)).
 4. Click **Split**.
 5. Store each share in a different place.
@@ -134,7 +134,7 @@ Resilience: lose any one share, still recoverable
 
 **Solution**: Split the credential across roles so no single person can access it alone, but any authorized group can recover it during an incident.
 
-**Setup**: `k=3, n=5` using the CLI
+**Setup**: <span class="token">k=3, n=5</span> using the CLI
 
 <Steps>
 1. Define your policy (who must approve recovery).
@@ -179,11 +179,11 @@ After any break-glass event, rotate the credential and re-split. Treat shares as
 
 **Solution**: Split the seed phrase and store shares on physical media in separate locations. Recover on an air-gapped machine to avoid network exposure.
 
-**Setup**: `k=3, n=5` using the TUI on an offline machine
+**Setup**: <span class="token">k=3, n=5</span> using the TUI on an offline machine
 
 <Steps>
 1. Prepare an air-gapped machine (no network, never connected).
-2. Run the TUI and set `k=3, n=5`.
+2. Run the TUI and set <var>k</var>=3, <var>n</var>=5.
 3. Record each share on separate physical media (paper, metal, USB).
 4. Store media in different geographic locations.
 5. Test recovery on the same offline machine before trusting the setup.
@@ -212,55 +212,55 @@ Pick the closest pattern and adapt it to your needs.
 
 **Problem**: When you die or become incapacitated, your digital assets become inaccessible if only you know the credentials. Giving credentials to one person during your lifetime creates security and privacy risks.
 
-**Solution**: `k=2, n=4` — spouse/partner, executor, attorney, and one backup location. Your family can recover without needing you, but no single person can access while you're alive.
+**Solution**: <span class="token">k=2, n=4</span> — spouse/partner, executor, attorney, and one backup location. Your family can recover without needing you, but no single person can access while you're alive.
 
 ### Shared Household Accounts
 
 **Problem**: Couples need shared access to important accounts, but one person losing or exposing the credential locks both out or compromises both.
 
-**Solution**: `k=2, n=3` — each partner holds one share, third share is sealed offline backup. Either partner can initiate recovery, but needs the other's cooperation or the backup.
+**Solution**: <span class="token">k=2, n=3</span> — each partner holds one share, third share is sealed offline backup. Either partner can initiate recovery, but needs the other's cooperation or the backup.
 
 ### Domain Registrar and DNS Recovery
 
 **Problem**: Losing access to your domain registrar can take your entire web presence offline. Storing credentials in one place creates a business continuity risk.
 
-**Solution**: `k=2, n=3` (small business) or `k=3, n=5` (larger teams) — distribute across ops and security roles with one offline share.
+**Solution**: <span class="token">k=2, n=3</span> (small business) or <span class="token">k=3, n=5</span> (larger teams) — distribute across ops and security roles with one offline share.
 
 ### GitHub or GitLab Access Tokens
 
 **Problem**: Personal access tokens grant broad repository access. Storing them in one password manager creates a single point of failure. Losing the token disrupts automation.
 
-**Solution**: `k=2, n=3` — password manager, CI secret store, and offline backup. Compromise or loss of one location doesn't expose or lose the token.
+**Solution**: <span class="token">k=2, n=3</span> — password manager, CI secret store, and offline backup. Compromise or loss of one location doesn't expose or lose the token.
 
 ### 2FA Recovery Codes
 
 **Problem**: 2FA recovery codes are often stored in the same password manager as the passwords they protect. If the password manager is compromised, both factors are exposed.
 
-**Solution**: `k=2, n=3` — split the codes so one location being compromised doesn't bypass two-factor protection entirely.
+**Solution**: <span class="token">k=2, n=3</span> — split the codes so one location being compromised doesn't bypass two-factor protection entirely.
 
 ### Shared Service Accounts
 
 **Problem**: Teams need access to shared service accounts (email, cloud admin, payment processors), but turnover and single-person access create continuity and security risks.
 
-**Solution**: `k=2, n=4` — owner, ops, security, and offline backup. Use CLI for repeatable rotation workflows.
+**Solution**: <span class="token">k=2, n=4</span> — owner, ops, security, and offline backup. Use CLI for repeatable rotation workflows.
 
 ### Client Handoff (Agencies)
 
 **Problem**: Agencies hold client credentials during projects. At handoff, you need to transfer access securely without exposing credentials via email or chat.
 
-**Solution**: `k=2, n=3` — agency vault, client vault, and optional escrow. Use Web UI during handoff meetings for visual confirmation.
+**Solution**: <span class="token">k=2, n=3</span> — agency vault, client vault, and optional escrow. Use Web UI during handoff meetings for visual confirmation.
 
 ### Cofounder Continuity
 
 **Problem**: Startups depend on critical credentials held by cofounders. If one founder leaves or becomes unavailable, continuity is at risk. Giving one founder sole access creates single-person dependency.
 
-**Solution**: `k=2, n=4` — two founders, legal counsel, and offline backup. Any two parties can recover, but no single founder controls critical infrastructure alone.
+**Solution**: <span class="token">k=2, n=4</span> — two founders, legal counsel, and offline backup. Any two parties can recover, but no single founder controls critical infrastructure alone.
 
 ### Separation of Duties (Compliance)
 
 **Problem**: Regulations often require that no single person can perform sensitive operations alone. Storing credentials in one system doesn't satisfy separation-of-duty requirements.
 
-**Solution**: `k=2, n=4` or `k=3, n=5` — distribute shares across roles (engineering, security, compliance, executive). Use CLI for auditable, repeatable processes.
+**Solution**: <span class="token">k=2, n=4</span> or <span class="token">k=3, n=5</span> — distribute shares across roles (engineering, security, compliance, executive). Use CLI for auditable, repeatable processes.
 
 ## Next Steps
 

@@ -5,7 +5,7 @@ description: قسّم واستعد الأسرار محلياً داخل المت
 
 import { LinkButton, Steps } from '@astrojs/starlight/components';
 
-واجهة الويب موجودة في الصفحة الرئيسية (`/`). تستخدم WASM بحيث تتم عمليات التقسيم/الاستعادة
+واجهة الويب موجودة في الصفحة الرئيسية (<span class="token token--mono" dir="ltr">/</span>). تستخدم WASM بحيث تتم عمليات التقسيم/الاستعادة
 محلياً داخل المتصفح.
 
 <LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
@@ -21,7 +21,7 @@ import { LinkButton, Steps } from '@astrojs/starlight/components';
 
 <Steps>
   1. أدخل السر في مربع **Secret**.
-  2. اختر `k` (الحد الأدنى للحصص اللازمة للاستعادة) و `n` (عدد الحصص الكلي).
+  2. اختر <var>k</var> (الحد الأدنى للحصص اللازمة للاستعادة) و <var>n</var> (عدد الحصص الكلي).
   3. اختر صيغة الحصة.
   4. (اختياري) عيّن عبارة مرور (تشفير قبل التقسيم).
   5. اضغط **Split** ثم خزّن كل حصة في مكان مختلف.
@@ -31,7 +31,7 @@ import { LinkButton, Steps } from '@astrojs/starlight/components';
 
 <Steps>
   1. اختر صيغة الحصة (أو الصق حصة واترك الواجهة تكتشفها تلقائياً).
-  2. الصق على الأقل `k` حصص.
+  2. الصق على الأقل <var>k</var> حصص.
   3. أدخل عبارة المرور إذا كانت الحصص مشفّرة.
   4. اضغط **Combine**.
 </Steps>
