@@ -55,6 +55,27 @@ export default defineConfig({
   } catch {
     // ignore
   }
+
+  // Ensure the attribute-based theme is also dark.
+  // (Some tests assert on this, and it avoids a flash of light theme.)
+  try {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } catch {
+    // ignore
+  }
+
+  // Starlight still renders a theme select UI by default; remove it entirely.
+  // (CSS hiding keeps it in the DOM, which breaks our dark-only tests.)
+  const removeThemeUi = () => {
+    for (const el of document.querySelectorAll('starlight-theme-select')) {
+      el.remove();
+    }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', removeThemeUi, { once: true });
+  } else {
+    removeThemeUi();
+  }
 })();
 `,
 				},
