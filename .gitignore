@@ -8,3 +8,4 @@
 /web/node_modules
 /web/dist
 /web/src/wasm_pkg
+web/test-results
