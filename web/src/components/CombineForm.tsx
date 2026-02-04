@@ -4,9 +4,12 @@ import type { Strings } from "../i18n";
 import { ensureWasm } from "../wasm";
 
 import { CopyButton } from "./CopyButton";
+import {
+  EncodingSelector,
+  type Encoding,
+  type EncodingOption,
+} from "./ui/encoding-selector";
 import { EncryptedText } from "./ui/encrypted-text";
-
-type Encoding = "base64url" | "mnemo-words";
 
 type CombineFormProps = {
   strings: Strings;
@@ -112,6 +115,22 @@ export function CombineForm({ strings }: CombineFormProps) {
   const pasteRequestedRef = useRef(false);
   const flashTimeoutRef = useRef<number | null>(null);
 
+  const encodingOptions: EncodingOption[] = useMemo(
+    () => [
+      {
+        value: "mnemo-words",
+        label: strings.encodingMnemoWords,
+        description: strings.encodingMnemoWordsDesc,
+      },
+      {
+        value: "base64url",
+        label: strings.encodingBase64url,
+        description: strings.encodingBase64urlDesc,
+      },
+    ],
+    [strings]
+  );
+
   const triggerEncodingFlash = useCallback(() => {
     setEncodingFlash(true);
     if (flashTimeoutRef.current !== null) {
@@ -214,33 +233,26 @@ export function CombineForm({ strings }: CombineFormProps) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="block text-start">
-            <span className="field-label" id="encoding-label">{strings.encodingLabel}</span>
-            <select
-              value={encoding}
-              onChange={(e) => setEncoding(e.target.value as Encoding)}
-              className={`input mt-2 transition-colors duration-1000 ease-out ${
-                encodingFlash ? "border-emerald-300/70 bg-emerald-500/10" : ""
-              }`}
-              aria-labelledby="encoding-label"
-            >
-              <option value="base64url">Letters (base64url)</option>
-              <option value="mnemo-words">Words (mnemo-words)</option>
-            </select>
-          </label>
-
-          <label className="block text-start">
-            <span className="field-label" id="passphrase-label">{strings.passphraseLabel}</span>
-            <input
-              value={passphrase}
-              onChange={(e) => setPassphrase(e.target.value)}
-              className="input mt-2"
-              autoComplete="new-password"
-              aria-labelledby="passphrase-label"
-            />
-          </label>
+        <div className="block text-start">
+          <span className="field-label" id="encoding-label">{strings.encodingLabel}</span>
+          <EncodingSelector
+            value={encoding}
+            onChange={setEncoding}
+            options={encodingOptions}
+            flash={encodingFlash}
+          />
         </div>
+
+        <label className="block text-start">
+          <span className="field-label" id="passphrase-label">{strings.passphraseLabel}</span>
+          <input
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.target.value)}
+            className="input mt-2"
+            autoComplete="new-password"
+            aria-labelledby="passphrase-label"
+          />
+        </label>
 
         <div>
           <div className="dir-row items-start justify-between gap-3">
