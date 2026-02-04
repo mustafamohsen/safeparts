@@ -176,6 +176,7 @@ export function SplitForm({ strings }: SplitFormProps) {
           <button
             type="button"
             data-shortcut="submit"
+            data-keytip="Ctrl/Cmd+Enter"
             disabled={!canSplit || busy}
             onClick={onSplit}
             className="btn-primary w-full sm:w-auto"

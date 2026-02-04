@@ -3,7 +3,7 @@ title: Use cases
 description: Real-world scenarios and how to choose a share distribution.
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
 
 Use cases are not just “what <var>k</var>/<var>n</var> to pick”. They’re about who can realistically collaborate when recovery is needed.
 
@@ -18,18 +18,20 @@ Security comes from where shares live and who can access them.
 
 ## Scenarios
 
+Use this page to pick a plan you can actually execute: who holds which share, what happens if someone is unavailable, and how you practice recovery.
+
 <CardGrid>
 	<Card title="Password manager recovery" icon="star">
 		Recommended: <span class="token">k=2, n=3</span>.
-		Store shares across two locations you control plus one off-site fallback.
+		Two locations you control, one off-site fallback.
 	</Card>
 	<Card title="Family / executor planning" icon="open-book">
 		Recommended: <span class="token">k=2, n=4</span>.
-		Two people can recover without any single person holding full access.
+		Recovery without any single person holding full access.
 	</Card>
 	<Card title="Small team infra secret" icon="document">
 		Recommended: <span class="token">k=3, n=5</span>.
-		Distribute across roles (ops, security, eng, executive) plus one offline vault.
+		Distribute across roles plus one offline vault.
 	</Card>
 	<Card title="Break-glass procedure" icon="setting">
 		Recommended: <span class="token">k=2, n=4</span>.
@@ -45,6 +47,57 @@ Security comes from where shares live and who can access them.
 	</Card>
 </CardGrid>
 
+## Pattern: personal recovery (<span class="token">k=2, n=3</span>)
+
+Good for password manager recovery keys, 2FA backup codes, and other personal secrets.
+
+Suggested distribution:
+
+- Share A: a place you can reach quickly (password manager note, separate device/account)
+- Share B: sealed offline copy (paper/metal)
+- Share C: off-site fallback (trusted person, safe deposit box)
+
+<Steps>
+1. Split with <span class="token">k=2, n=3</span>.
+2. Place the shares in the three locations.
+3. Perform a recovery drill using any 2 shares.
+4. Write down where the third share lives and how to access it.
+</Steps>
+
+## Pattern: team secret (<span class="token">k=3, n=5</span>)
+
+Good when you want separation of duties: no one person can act alone, but the team can still recover during an incident.
+
+Suggested distribution (by role):
+
+- Share 1: operations
+- Share 2: security
+- Share 3: engineering lead
+- Share 4: executive sponsor
+- Share 5: offline vault
+
+<Steps>
+1. Document who holds each share (role + backup contact).
+2. Define an incident runbook: who initiates, how approval happens, where shares are gathered.
+3. Practice once before using the plan for production secrets.
+</Steps>
+
+## Pattern: break-glass (<span class="token">k=2, n=4</span>)
+
+Good when recovery should be rare and auditable.
+
+Suggested distribution:
+
+- Share 1: on-call lead (rotates)
+- Share 2: security lead
+- Share 3: offline vault
+- Share 4: backup executive or compliance
+
+:::caution
+After any break-glass event, rotate the underlying secret and re-split.
+Treat gathered shares as compromised.
+:::
+
 ## How to choose holders
 
 <CardGrid>
@@ -58,3 +111,10 @@ Security comes from where shares live and who can access them.
 		Document who has each share and what to do if a holder is unavailable.
 	</Card>
 </CardGrid>
+
+## When to add a passphrase
+
+If the risk of share theft is high (travel, shared environments, hostile endpoints), add a passphrase.
+It changes the attacker’s job from “steal <var>k</var> shares” to “steal <var>k</var> shares and the passphrase”.
+
+See [Security](security/).

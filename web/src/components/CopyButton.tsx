@@ -7,6 +7,7 @@ type CopyButtonProps = {
   copiedLabel: string
   className?: string
   announceCopied?: string
+  keytip?: string
 }
 
 function CopyIcon() {
@@ -64,7 +65,7 @@ async function copyToClipboard(text: string) {
   document.body.removeChild(textarea)
 }
 
-export function CopyButton({ value, copyLabel, copiedLabel, className, announceCopied }: CopyButtonProps) {
+export function CopyButton({ value, copyLabel, copiedLabel, className, announceCopied, keytip }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
   const { announce } = useAnnouncement()
 
@@ -89,6 +90,7 @@ export function CopyButton({ value, copyLabel, copiedLabel, className, announceC
   return (
     <button
       type="button"
+      data-keytip={keytip}
       className={`btn-secondary px-3 py-2.5 text-xs min-h-[44px] min-w-[44px] ${className ? className : ''}`}
       onClick={onCopy}
     >
