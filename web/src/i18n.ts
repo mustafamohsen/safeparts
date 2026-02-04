@@ -67,7 +67,7 @@ export const STRINGS = {
     shortcutClose: "Close",
     shortcutGoToSplit: "Go to Split",
     shortcutGoToCombine: "Go to Combine",
-    shortcutSubmitForm: "Submit form",
+    shortcutSubmitForm: "Split/Combine",
     shortcutCopyResult: "Copy result",
     shortcutShowHelp: "Show shortcuts",
     shortcutShowKeytips: "Show keytips overlay",
