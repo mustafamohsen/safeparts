@@ -27,6 +27,7 @@ The PRD proposes:
 - `crates/safeparts_core/` — core algorithms and formats
 - `crates/safeparts/` — CLI wrapper around the core
 - `web/` — React + TypeScript frontend, with WASM bindings
+- `web/help/` - Astro help/docs
 
 If the repo ends up structured differently, prefer the actual layout over this.
 
