@@ -150,11 +150,11 @@ Key shortcuts:
 
 Read secret from stdin and output shares to stdout:
 
-- `echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e base64`
 
 Mnemonic output (more human-friendly):
 
-- `echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e mnemo-words`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e mnemo-words`
 
 
 ### Combine shares
@@ -169,7 +169,7 @@ For `mnemo-words`, each share is typically a full line (because the share contai
 
 Split with a passphrase:
 
-- `echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64 -p "correct horse"`
+- `echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e base64 -p "correct horse"`
 
 Combine with a passphrase:
 

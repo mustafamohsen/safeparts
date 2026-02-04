@@ -147,7 +147,7 @@ Resilience: lose any one share, still recoverable
 Split:
 
 ```bash
-echo -n "example-break-glass-secret" | safeparts split -k 3 -n 5
+echo -n "example-break-glass-secret" | safeparts split -k 3 --threshold 5
 ```
 
 Distribution pattern:

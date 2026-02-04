@@ -14,13 +14,13 @@ Avoid `--passphrase <text>` in shells that persist history. Prefer `--passphrase
 Split a secret from stdin:
 
 ```bash
-echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64
+echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e base64
 ```
 
 Mnemonic output (more human-friendly):
 
 ```bash
-echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e mnemo-words
+echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e mnemo-words
 ```
 
 Combine from stdin (any `k` shares):
@@ -32,7 +32,7 @@ printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine
 Split with passphrase:
 
 ```bash
-echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64 -p "correct horse"
+echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e base64 -p "correct horse"
 ```
 
 Combine with passphrase:
