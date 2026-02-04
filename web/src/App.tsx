@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import logoUrl from "./assets/logo.svg";
 
 import { CombineForm } from "./components/CombineForm";
+import { KeytipsOverlay } from "./components/KeytipsOverlay";
 import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
 import { LiveRegion } from "./components/LiveRegion";
 import { SplitForm } from "./components/SplitForm";
@@ -98,6 +99,7 @@ export function App() {
   const [tab, setTab] = useState<Tab>("split");
   const [lang, setLang] = useState<Lang>(() => getInitialLang());
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [keytipsActive, setKeytipsActive] = useState(false);
   const { announcements, announce } = useLiveRegion();
 
   const splitTabRef = useRef<HTMLButtonElement>(null);
@@ -120,6 +122,9 @@ export function App() {
     helpOpen: shortcutsOpen,
     openHelp: () => setShortcutsOpen(true),
     closeHelp: () => setShortcutsOpen(false),
+    keytipsActive,
+    showKeytips: () => setKeytipsActive(true),
+    hideKeytips: () => setKeytipsActive(false),
     strings,
     announce,
   });
@@ -190,7 +195,11 @@ export function App() {
                 </a>
                 <button
                   type="button"
-                  onClick={() => setShortcutsOpen(true)}
+                  onMouseDown={() => setKeytipsActive(true)}
+                  onMouseUp={() => setKeytipsActive(false)}
+                  onMouseLeave={() => setKeytipsActive(false)}
+                  onTouchStart={() => setKeytipsActive(true)}
+                  onTouchEnd={() => setKeytipsActive(false)}
                   className="hidden sm:grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
                   aria-label={strings.keyboardShortcuts}
                   title={strings.keyboardShortcuts}
@@ -276,6 +285,7 @@ export function App() {
                   aria-controls="split-panel"
                   id="split-tab"
                   tabIndex={tab === "split" ? 0 : -1}
+                  data-keytip="1"
                   className={`pill-btn ${tab === "split" ? "pill-btn-active" : "pill-btn-inactive"}`}
                   onClick={() => setTab("split")}
                   ref={splitTabRef}
@@ -289,6 +299,7 @@ export function App() {
                   aria-controls="combine-panel"
                   id="combine-tab"
                   tabIndex={tab === "combine" ? 0 : -1}
+                  data-keytip="2"
                   className={`pill-btn ${tab === "combine" ? "pill-btn-active" : "pill-btn-inactive"}`}
                   onClick={() => setTab("combine")}
                   ref={combineTabRef}
@@ -321,6 +332,8 @@ export function App() {
           </footer>
 
           <LiveRegion announcements={announcements} />
+
+          <KeytipsOverlay active={keytipsActive} lang={lang} strings={strings} />
 
           <KeyboardShortcutsHelp
             open={shortcutsOpen}

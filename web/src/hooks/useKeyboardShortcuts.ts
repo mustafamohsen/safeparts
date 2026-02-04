@@ -11,6 +11,9 @@ type ShortcutHandlers = {
   helpOpen: boolean;
   openHelp: () => void;
   closeHelp: () => void;
+  keytipsActive: boolean;
+  showKeytips: () => void;
+  hideKeytips: () => void;
   strings: Strings;
   announce: (message: string, type?: "polite" | "assertive") => void;
 };
@@ -92,6 +95,9 @@ export function useKeyboardShortcuts({
   helpOpen,
   openHelp,
   closeHelp,
+  keytipsActive,
+  showKeytips,
+  hideKeytips,
   strings,
   announce,
 }: ShortcutHandlers) {
@@ -114,8 +120,15 @@ export function useKeyboardShortcuts({
 
       if (helpOpen) return;
 
-      // Toggle shortcuts help
+      // Hold ? to show keytips (avoid when typing).
       if (!editable && !e.ctrlKey && !e.metaKey && e.key === "?") {
+        e.preventDefault();
+        if (!keytipsActive) showKeytips();
+        return;
+      }
+
+      // Toggle shortcuts help (Ctrl/Cmd+/)
+      if (!editable && (e.ctrlKey || e.metaKey) && e.key === "/") {
         e.preventDefault();
         if (helpOpen) closeHelp();
         else openHelp();
@@ -158,7 +171,38 @@ export function useKeyboardShortcuts({
       }
     }
 
+    function onKeyUp(e: KeyboardEvent) {
+      if (e.isComposing) return;
+      if (e.defaultPrevented) return;
+      if (e.key === "?" && keytipsActive) {
+        hideKeytips();
+      }
+    }
+
+    function onWindowBlur() {
+      if (keytipsActive) hideKeytips();
+    }
+
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [announce, closeHelp, focusTab, helpOpen, openHelp, setTab, strings.copied, tab]);
+
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onWindowBlur);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onWindowBlur);
+    };
+  }, [
+    announce,
+    closeHelp,
+    focusTab,
+    helpOpen,
+    hideKeytips,
+    keytipsActive,
+    openHelp,
+    setTab,
+    showKeytips,
+    strings.copied,
+    tab,
+  ]);
 }

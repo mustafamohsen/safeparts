@@ -329,6 +329,7 @@ export function CombineForm({ strings }: CombineFormProps) {
           <button
             type="button"
             data-shortcut="submit"
+            data-keytip="Ctrl/Cmd+Enter"
             disabled={!canCombine || busy}
             onClick={onCombine}
             className="btn-primary w-full sm:w-auto"

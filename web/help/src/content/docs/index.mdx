@@ -7,26 +7,25 @@ hero:
   image:
     file: ../../assets/logo.svg
   actions:
-    - text: Start with a practice run
+    - text: Open the web app
+      link: /
+      icon: external
+    - text: Getting started
       link: getting-started
       icon: right-arrow
 ---
 
-import { Card, CardGrid, LinkButton } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Start here
 
 Safeparts is a k-of-n recovery tool. It helps you avoid single points of failure by distributing a secret across people and places.
 
-<LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
-	Open the web app
-</LinkButton>
-
 <CardGrid stagger>
 	<Card title="Getting started" icon="star">
 		Do a short practice run, learn how to pick <var>k</var> and <var>n</var>, and build a recovery plan that works under stress.
 		
-		[Start the guide](getting-started/)
+		[Read the guide](getting-started/)
 	</Card>
 	<Card title="Use cases" icon="document">
 		Real-world scenarios (personal recovery, teams, infra) and how to choose who holds which share.
