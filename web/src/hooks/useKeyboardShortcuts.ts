@@ -52,7 +52,13 @@ function collectSplitSharesText(): string | null {
   const shareBlocks = Array.from(
     panel.querySelectorAll<HTMLDivElement>('div[dir="ltr"].input')
   )
-    .map((el) => el.innerText.trim())
+    .map((el) => {
+      const visibleText = Array.from(el.querySelectorAll<HTMLElement>("span[aria-hidden='true']"))
+        .filter((span) => !span.classList.contains("sr-only"))
+        .map((span) => span.innerText.trim())
+        .join("");
+      return visibleText;
+    })
     .filter(Boolean);
   if (shareBlocks.length === 0) return null;
   return shareBlocks.join("\n\n");
@@ -62,8 +68,12 @@ function collectCombineResultText(): string | null {
   const panel = document.getElementById("combine-panel");
   if (!panel) return null;
   const recovered = panel.querySelector<HTMLDivElement>('div[dir="auto"].input');
-  const text = recovered?.innerText.trim();
-  return text ? text : null;
+  if (!recovered) return null;
+  const visibleText = Array.from(recovered.querySelectorAll<HTMLElement>("span[aria-hidden='true']"))
+    .filter((span) => !span.classList.contains("sr-only"))
+    .map((span) => span.innerText.trim())
+    .join("");
+  return visibleText || null;
 }
 
 function clickSubmit(tab: Tab) {
