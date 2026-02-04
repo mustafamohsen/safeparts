@@ -219,3 +219,4 @@ If the repo ends up structured differently, prefer the actual layout over this.
 - Write commit messages using conventional commits
 - Prefer rebase over merge
 - For major features, create a feature branch (feat/this-feature). Use kebab case branch names
+- Never push automatically. Only push when explicitly ordered to
