@@ -175,6 +175,7 @@ export function SplitForm({ strings }: SplitFormProps) {
         <div className="dir-row flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
+            data-shortcut="submit"
             disabled={!canSplit || busy}
             onClick={onSplit}
             className="btn-primary w-full sm:w-auto"
