@@ -86,7 +86,7 @@ export const STRINGS = {
     english: "English",
     arabic: "العربية",
     github: "GitHub",
-    help: "الوثائق",
+    help: "مساعدة",
     privacyNote: "يعمل محليا في المتصفح. الأسرار لا تغادر جهازك.",
 
     splitTitle: "تقسيم",
