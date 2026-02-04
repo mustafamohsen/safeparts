@@ -1,22 +1,60 @@
 ---
 title: حالات الاستخدام
-description: سيناريوهات شائعة حيث تقلل حصص الاستعادة باستخدام k من n من المخاطر.
+description: سيناريوهات واقعية وكيف تختار توزيع الحصص.
 ---
 
-import { LinkButton } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
 
-هذه الصفحة أصبحت صفحة تحويل. الدليل التعليمي الكامل موجود في صفحة "البدء".
-
-<LinkButton href="../getting-started/" icon="right-arrow">
-	اقرأ دليل البدء
-</LinkButton>
+حالات الاستخدام ليست فقط "أي <var>k</var>/<var>n</var> تختار"، بل من يستطيع التعاون فعلاً وقت الاسترداد.
 
 :::tip
-إذا كنت تريد نقطة بداية سريعة: جرّب <span class="token" dir="ltr">k=2, n=3</span> للاسترداد الشخصي و <span class="token" dir="ltr">k=3, n=5</span> للفرق مع
-فصل صلاحيات أقوى.
+إن كنت تريد نقطة بداية: جرّب <span class="token" dir="ltr">k=2, n=3</span> للاسترداد الشخصي و <span class="token" dir="ltr">k=3, n=5</span> للفرق.
 :::
 
 :::caution
-Safeparts لا يمنع من يملك <var>k</var> حصص من إعادة تركيب السر. الأمان يأتي من أين تُخزّن الحصص
-ومن يستطيع الوصول إليها.
+Safeparts لا يمنع من يملك <var>k</var> حصص من إعادة تركيب السر.
+الأمان يأتي من أين تُخزّن الحصص ومن يستطيع الوصول إليها.
 :::
+
+## سيناريوهات
+
+<CardGrid>
+	<Card title="استرداد مدير كلمات المرور" icon="star">
+		المقترح: <span class="token" dir="ltr">k=2, n=3</span>.
+		وزّع الحصص بين موقعين تتحكم بهما وموقع احتياطي خارج الموقع.
+	</Card>
+	<Card title="تخطيط العائلة/الوصية" icon="open-book">
+		المقترح: <span class="token" dir="ltr">k=2, n=4</span>.
+		يستطيع طرفان الاسترداد دون أن يملك شخص واحد السيطرة وحده.
+	</Card>
+	<Card title="سر بنية تحتية لفريق صغير" icon="document">
+		المقترح: <span class="token" dir="ltr">k=3, n=5</span>.
+		وزّع على أدوار (عمليات، أمن، هندسة، إدارة) مع خزنة offline.
+	</Card>
+	<Card title="إجراء break-glass" icon="setting">
+		المقترح: <span class="token" dir="ltr">k=2, n=4</span>.
+		اجعل حصة واحدة offline واطلب تعاون طرفين أثناء الحوادث.
+	</Card>
+	<Card title="أكواد النسخ الاحتياطي لـ 2FA" icon="laptop">
+		المقترح: <span class="token" dir="ltr">k=2, n=3</span>.
+		اختراق جهاز واحد لا ينبغي أن يعطل 2FA بالكامل.
+	</Card>
+	<Card title="تسليم بين وكالة وعميل" icon="pen">
+		المقترح: <span class="token" dir="ltr">k=2, n=3</span>.
+		قسّم بين خزنة الوكالة وخزنة العميل ونسخة offline مختومة.
+	</Card>
+</CardGrid>
+
+## كيف تختار حاملي الحصص
+
+<CardGrid>
+	<Card title="افصل أسباب الفشل" icon="setting">
+		أشخاص وأجهزة ومواقع مختلفة. تجنب "نفس الخزنة، ظرفان".
+	</Card>
+	<Card title="صمّم لأسوأ يوم" icon="warning">
+		الاسترداد يحدث وقت ضغط: أعطال، سفر، مرض، أو فقد.
+	</Card>
+	<Card title="اكتب runbook" icon="document">
+		وثّق من يحمل أي حصة وماذا تفعل إذا كان أحدهم غير متاح.
+	</Card>
+</CardGrid>

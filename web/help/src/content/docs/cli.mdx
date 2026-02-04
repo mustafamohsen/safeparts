@@ -1,53 +1,70 @@
 ---
 title: CLI
-description: Scriptable split/combine workflows for pipelines and automation.
+description: Script-friendly split and combine from the terminal.
 ---
 
-The CLI binary is `safeparts` (crate: `crates/safeparts`).
+import { Steps } from '@astrojs/starlight/components';
 
-:::note
-Avoid `--passphrase <text>` in shells that persist history. Prefer `--passphrase-file`.
-:::
+The CLI binary is <span class="token token--mono">safeparts</span>.
 
-## Quick examples
+## Split
 
-Split a secret from stdin:
+Split a secret from stdin into 3 shares, requiring any 2 to recover:
 
 ```bash
-echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e base64
+echo -n "my secret" | safeparts split -k 2 -n 3 -e base64
 ```
 
-Mnemonic output (more human-friendly):
+Write shares to a file:
 
 ```bash
-echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e mnemo-words
+echo -n "my secret" | safeparts split -k 2 -n 3 -e base64 -o shares.txt
 ```
+
+## Combine
 
 Combine from stdin (any <var>k</var> shares):
 
 ```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine
+printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine
 ```
 
-Split with passphrase:
+Write the recovered secret to a file:
 
 ```bash
-echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 --threshold 3 -e base64 -p "correct horse"
+printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -o secret.bin
 ```
 
-Combine with passphrase:
+## Passphrases
+
+:::caution
+Prefer <span class="token token--mono">--passphrase-file</span> over <span class="token token--mono">--passphrase</span> in shells that keep history.
+:::
+
+Split with a passphrase:
 
 ```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine -p "correct horse"
+echo -n "my secret" | safeparts split -k 2 -n 3 -e base64 -P passphrase.txt
 ```
 
-## Encodings
+Combine with a passphrase:
 
-`split -e/--encoding` supports:
+```bash
+printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -P passphrase.txt
+```
 
-- `base64` (URL-safe, no padding)
-- `base58`
-- `mnemo-words`
-- `mnemo-bip39`
+## Practical workflow
 
-`combine` can auto-detect if you omit `--encoding`.
+<Steps>
+1. Do a practice run with a synthetic secret.
+2. Split the real secret.
+3. Store shares in separate places.
+4. Immediately test recovery with <var>k</var> shares.
+5. Delete the original secret from temporary locations.
+</Steps>
+
+## Troubleshooting
+
+- <samp>no shares provided</samp>: input was empty or only whitespace.
+- <samp>could not detect share encoding</samp>: pass <span class="token token--mono">--encoding</span> explicitly.
+- <samp>combine failed</samp>: shares are from different sets, corrupted, or the passphrase is wrong.

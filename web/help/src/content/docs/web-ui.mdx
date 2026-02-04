@@ -1,42 +1,37 @@
 ---
 title: Web UI
-description: Split and combine secrets locally in your browser.
+description: Split and combine locally in your browser via WASM.
 ---
 
 import { LinkButton, Steps } from '@astrojs/starlight/components';
 
-The web UI lives at the site root (<span class="token token--mono">/</span>). It uses WASM bindings so split/combine runs
-locally in your browser.
+The web UI lives at the site root (<span class="token token--mono">/</span>).
+Split/combine runs locally in your browser via WASM.
 
 <LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
 	Open the web app
 </LinkButton>
 
-:::note
-Nothing is uploaded by default. The only time data leaves your device is when you
-copy/paste, save files, or deploy a modified build.
-:::
-
-## Split a secret
+## Split
 
 <Steps>
-  1. Enter the secret in the **Secret** box.
-  2. Choose <var>k</var> (minimum shares to recover) and <var>n</var> (total shares to create).
-  3. Choose a share format.
-  4. Optionally set a passphrase (encrypt-before-split).
-  5. Click **Split** and copy each share to a separate storage location.
+1. Paste the secret into **Secret**.
+2. Choose <var>k</var> and <var>n</var>.
+3. Choose an encoding.
+4. (Optional) set a passphrase.
+5. Click **Split** and store each share separately.
 </Steps>
 
-## Combine shares
+## Combine
 
 <Steps>
-  1. Set the share format (or paste a share and let the UI auto-detect).
-  2. Paste at least <var>k</var> shares.
-  3. Enter the passphrase if shares were created with one.
-  4. Click **Combine**.
+1. Set the encoding (or paste a share and let the UI auto-detect).
+2. Paste at least <var>k</var> shares.
+3. Enter the passphrase if you used one.
+4. Click **Combine**.
 </Steps>
 
-:::caution
-Avoid reconstructing secrets on shared machines, and avoid copying recovered secrets
-into tools that sync by default.
-:::
+## Privacy boundary
+
+The app does not upload your secret by default.
+Anything you copy/paste or store is your responsibility.

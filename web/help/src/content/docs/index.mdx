@@ -3,49 +3,64 @@ title: Safeparts Help
 description: Learn what Safeparts is, when to use it, and how to run the Web UI, CLI, and TUI.
 template: splash
 hero:
-  tagline: Split a sensitive secret into recovery shares and reconstruct it with k of n.
+  tagline: Split a secret into recovery shares and recover it with k of n.
   image:
     file: ../../assets/logo.svg
   actions:
-    - text: Getting Started
+    - text: Start with a practice run
       link: getting-started
       icon: right-arrow
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkButton } from '@astrojs/starlight/components';
 
 ## Start here
 
+Safeparts is a k-of-n recovery tool. It helps you avoid single points of failure by distributing a secret across people and places.
+
+<LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
+	Open the web app
+</LinkButton>
+
 <CardGrid stagger>
-	<Card title="What is Safeparts?" icon="open-book">
-		A quick mental model of threshold secret sharing, integrity checks, and the
-		formats Safeparts supports.
-		
-		[Read the overview](project/)
-	</Card>
 	<Card title="Getting started" icon="star">
-		A tutorial guide with practical examples for individuals and teams.
+		Do a short practice run, learn how to pick <var>k</var> and <var>n</var>, and build a recovery plan that works under stress.
 		
-		[Read the guide](getting-started/)
+		[Start the guide](getting-started/)
 	</Card>
-	<Card title="Use it in your browser" icon="laptop">
-		Split and combine locally via WASM. Nothing is uploaded unless you choose to.
+	<Card title="Use cases" icon="document">
+		Real-world scenarios (personal recovery, teams, infra) and how to choose who holds which share.
 		
-		[Web UI guide](web-ui/)
+		[Browse use cases](use-cases/)
 	</Card>
-	<Card title="Use it in a terminal" icon="pen">
-		Scriptable CLI for pipelines, and a TUI for interactive workflows.
+	<Card title="Security" icon="setting">
+		Threat model, storage rules, and how passphrases change what an attacker must steal.
 		
-		[CLI](cli/) · [TUI](tui/)
+		[Read security notes](security/)
 	</Card>
-	<Card title="Build & run anywhere" icon="setting">
-		Linux/macOS/Windows steps for the CLI, TUI, and web UI.
+	<Card title="How it works" icon="open-book">
+		The short science: threshold sharing, integrity tags, and optional encryption.
+		
+		[Read how it works](project/)
+	</Card>
+	<Card title="Interfaces" icon="laptop">
+		Use the web UI for one-off workflows, the CLI for automation, or the TUI for offline/interactive sessions.
+		
+		[Web UI](web-ui/) · [CLI](cli/) · [TUI](tui/)
+	</Card>
+	<Card title="Build & run" icon="setting">
+		Install and run Safeparts on Linux/macOS/Windows, including the docs site.
 		
 		[Build & run](build-and-run/)
 	</Card>
 </CardGrid>
 
 :::caution
- Safeparts shares are sensitive. Don't paste them into chat, tickets, or logs. Use
-synthetic examples when documenting or debugging.
+Shares are sensitive. Don’t paste real shares into chat, tickets, or logs.
+When documenting or debugging, use synthetic examples.
+:::
+
+:::note
+If you’re choosing a plan for the first time, start with a practice run and a simple storage plan.
+You can always re-split later.
 :::

@@ -1,30 +1,83 @@
 import { test, expect } from '@playwright/test'
 import { expectNoA11yViolations } from './a11y-utils'
 
+import fs from 'node:fs'
+import path from 'node:path'
+
+type DocsRouteSets = {
+  english: string[]
+  arabic: string[]
+  englishSlugs: string[]
+  arabicSlugs: string[]
+}
+
+function listMdxSlugs(dir: string): string[] {
+  const out: string[] = []
+
+  const walk = (currentDir: string, prefix: string) => {
+    for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+      if (entry.name.startsWith('.') || entry.name.startsWith('_')) continue
+
+      const fullPath = path.join(currentDir, entry.name)
+      if (entry.isDirectory()) {
+        walk(fullPath, prefix ? `${prefix}/${entry.name}` : entry.name)
+        continue
+      }
+
+      if (!entry.isFile() || !entry.name.endsWith('.mdx')) continue
+
+      const name = entry.name.slice(0, -('.mdx'.length))
+      const slug = prefix ? `${prefix}/${name}` : name
+      out.push(slug)
+    }
+  }
+
+  walk(dir, '')
+  return out.sort()
+}
+
+function getDocsRouteSets(): DocsRouteSets {
+  // Tests run from `web/` in CI.
+  const docsRoot = path.resolve(process.cwd(), 'help/src/content/docs')
+  const arRoot = path.join(docsRoot, 'ar')
+
+  const englishSlugs = listMdxSlugs(docsRoot).filter(s => !s.startsWith('ar/'))
+  const arabicSlugs = listMdxSlugs(arRoot)
+
+  const toRoute = (base: string, slug: string) => {
+    if (slug === 'index') return `${base}/`
+    return `${base}/${slug.replace(/\\/g, '/')}/`
+  }
+
+  const english = englishSlugs.map(s => toRoute('/help', s))
+  const arabic = arabicSlugs.map(s => toRoute('/help/ar', s))
+
+  return { english, arabic, englishSlugs, arabicSlugs }
+}
+
+const routes = getDocsRouteSets()
+
 test.describe('Docs Site Accessibility', () => {
-  test('Home page has no accessibility violations', async ({ page }) => {
-    await page.goto('/help/')
-    await page.waitForLoadState('networkidle')
-    await expectNoA11yViolations(page)
+  test('Docs routes are in sync (EN/AR)', async () => {
+    // We keep the docs bilingual; Arabic must mirror English route set.
+    expect(routes.arabicSlugs).toEqual(routes.englishSlugs)
   })
 
-  test('Content page has no accessibility violations', async ({ page }) => {
-    await page.goto('/help/cli/')
-    await page.waitForLoadState('networkidle')
-    await expectNoA11yViolations(page)
-  })
+  for (const route of routes.english) {
+    test(`No accessibility violations (EN): ${route}`, async ({ page }) => {
+      await page.goto(route)
+      await page.waitForLoadState('networkidle')
+      await expectNoA11yViolations(page)
+    })
+  }
 
-  test('Arabic locale has no accessibility violations', async ({ page }) => {
-    await page.goto('/help/ar/')
-    await page.waitForLoadState('networkidle')
-    await expectNoA11yViolations(page)
-  })
-
-  test('Arabic content page has no accessibility violations', async ({ page }) => {
-    await page.goto('/help/ar/cli/')
-    await page.waitForLoadState('networkidle')
-    await expectNoA11yViolations(page)
-  })
+  for (const route of routes.arabic) {
+    test(`No accessibility violations (AR): ${route}`, async ({ page }) => {
+      await page.goto(route)
+      await page.waitForLoadState('networkidle')
+      await expectNoA11yViolations(page)
+    })
+  }
 
   test('Docs are dark-only (no light theme toggle)', async ({ page }) => {
     await page.goto('/help/')

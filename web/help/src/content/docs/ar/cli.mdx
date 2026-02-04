@@ -1,54 +1,70 @@
 ---
-title: CLI
-description: واجهة سطر أوامر قابلة للأتمتة للتقسيم والاستعادة.
+title: سطر الأوامر (CLI)
+description: تقسيم واسترداد بطريقة قابلة للأتمتة عبر الطرفية.
 ---
 
-ملف التنفيذ هو `safeparts` (الحزمة: `crates/safeparts`).
+import { Steps } from '@astrojs/starlight/components';
 
-:::note
-تجنّب استخدام `--passphrase <text>` في الطرفيات التي تحتفظ بسجل الأوامر. فضّل
-`--passphrase-file`.
+ملف التنفيذ هو <span class="token token--mono" dir="ltr">safeparts</span>.
+
+## التقسيم
+
+قسّم سراً من stdin إلى 3 حصص بحيث تحتاج أي حصتين للاسترداد:
+
+```bash
+echo -n "my secret" | safeparts split -k 2 -n 3 -e base64
+```
+
+اكتب الحصص إلى ملف:
+
+```bash
+echo -n "my secret" | safeparts split -k 2 -n 3 -e base64 -o shares.txt
+```
+
+## الاسترداد
+
+استرداد من stdin (أي <var>k</var> حصص):
+
+```bash
+printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine
+```
+
+اكتب السر المستعاد إلى ملف:
+
+```bash
+printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -o secret.bin
+```
+
+## عبارة المرور
+
+:::caution
+يفضل استخدام <span class="token token--mono" dir="ltr">--passphrase-file</span> بدلاً من <span class="token token--mono" dir="ltr">--passphrase</span> في البيئات التي تحفظ history.
 :::
 
-## أمثلة سريعة
-
-تقسيم سر من stdin:
+التقسيم مع عبارة مرور:
 
 ```bash
-echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64
+echo -n "my secret" | safeparts split -k 2 -n 3 -e base64 -P passphrase.txt
 ```
 
-إخراج بكلمات (أسهل للبشر):
+الاسترداد مع عبارة مرور:
 
 ```bash
-echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e mnemo-words
+printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -P passphrase.txt
 ```
 
-استعادة من stdin (أي <var>k</var> حصص):
+## سير عمل عملي
 
-```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine
-```
+<Steps>
+1. نفّذ تجربة تدريبية باستخدام سر اصطناعي.
+2. قسّم السر الحقيقي.
+3. خزّن الحصص في أماكن منفصلة.
+4. اختبر الاسترداد فوراً باستخدام <var>k</var> حصص.
+5. احذف السر الأصلي من الأماكن المؤقتة.
+</Steps>
 
-تقسيم مع عبارة مرور:
+## استكشاف الأخطاء
 
-```bash
-echo -n "my secret" | cargo run -q -p safeparts -- split -k 2 -n 3 -e base64 -p "correct horse"
-```
-
-استعادة مع عبارة مرور:
-
-```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | cargo run -q -p safeparts -- combine -p "correct horse"
-```
-
-## الصيغ (Encodings)
-
-`split -e/--encoding` يدعم:
-
-- `base64` (URL-safe, بدون padding)
-- `base58`
-- `mnemo-words`
-- `mnemo-bip39`
-
-أمر `combine` يستطيع اكتشاف الصيغة تلقائياً إذا لم تكتب `--encoding`.
+- <samp dir="ltr">no shares provided</samp>: الإدخال فارغ.
+- <samp dir="ltr">could not detect share encoding</samp>: مرّر <span class="token token--mono" dir="ltr">--encoding</span> بشكل صريح.
+- <samp dir="ltr">combine failed</samp>: الحصص من مجموعات مختلفة أو تالفة أو عبارة المرور خاطئة.

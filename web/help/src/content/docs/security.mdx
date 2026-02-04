@@ -1,53 +1,51 @@
 ---
 title: Security
-description: What Safeparts does (and does not) do to keep secrets safe.
+description: Threat model, safe handling rules, and what passphrases change.
 ---
 
-Safeparts is designed so your *secret material* can stay on your device while you
-generate recovery shares.
+import { Steps } from '@astrojs/starlight/components';
 
-## Web app properties
+Safeparts reduces single points of failure. It does not remove the need for good storage decisions.
 
-- No cookies.
-- No analytics/tracking.
-- Secret splitting/combining runs locally (WASM).
-- Open source and self-hostable.
+## Threat model (what to assume)
 
-:::note
-Starlight (this docs site) and the web UI may store non-secret preferences in
-`localStorage` (e.g., theme). This is not a cookie.
-:::
-
-## What "local" means here
-
-Safeparts does not send your secret to a server for processing.
-
-However, data can still leave your device when you choose to:
-
-- Copy/paste shares into other apps.
-- Save shares to synced folders.
-- Share your screen / paste into chat.
+- If an attacker gets <var>k</var> shares, they can reconstruct the secret.
+- If an attacker gets fewer than <var>k</var> shares, they learn nothing useful.
+- If you lose too many shares (fewer than <var>k</var> remain), recovery is impossible.
 
 :::caution
-Treat shares like the secret itself. If an attacker obtains <var>k</var> shares, they can
-reconstruct.
+Treat shares like the secret itself.
+Don’t paste them into chat, tickets, logs, or screenshots.
 :::
 
-## Integrity and passphrases
+## Storage rules
 
-- Safeparts includes an integrity tag (BLAKE3) so mismatched/corrupted shares fail.
-- If you use a passphrase, Safeparts encrypts before splitting (Argon2id -> ChaCha20-Poly1305).
+<Steps>
+1. Separate failure modes: different people, devices, and locations.
+2. Avoid co-location: two shares in the same safe is one compromise away from disclosure.
+3. Avoid centralization: a shared drive holding multiple shares defeats the point.
+4. Keep a contact/runbook: who holds each share, and what to do if someone is unavailable.
+5. Practice recovery periodically.
+</Steps>
 
-## Self-hosting
+## Passphrases (optional)
 
-To self-host the full site (app + docs) as one static bundle:
+Safeparts can encrypt the secret before splitting it.
+With a passphrase, an attacker needs both:
 
-```bash
-cd web
-bun install
-bun run build:wasm
-bun run build
-bun run help:build
-```
+- at least <var>k</var> shares, and
+- the passphrase.
 
-Publish <span class="token token--mono">web/dist/</span>.
+:::note
+Passphrases do not replace share separation.
+They add a second requirement, but you still must store shares safely.
+:::
+
+## Web UI privacy boundary
+
+The web UI runs split/combine locally via WASM.
+Your secret is not uploaded unless you choose to copy/paste it somewhere or deploy a modified build.
+
+## Build output
+
+When deploying the web UI yourself, publish <span class="token token--mono">web/dist/</span>.

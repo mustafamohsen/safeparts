@@ -1,22 +1,60 @@
 ---
 title: Use cases
-description: Common scenarios where k-of-n recovery shares reduce risk.
+description: Real-world scenarios and how to choose a share distribution.
 ---
 
-import { LinkButton } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
 
-This page is now a landing page. The full tutorial lives in the Getting Started guide.
-
-<LinkButton href="../getting-started/" icon="right-arrow">
-	Read the Getting Started guide
-</LinkButton>
+Use cases are not just “what <var>k</var>/<var>n</var> to pick”. They’re about who can realistically collaborate when recovery is needed.
 
 :::tip
-If you only need a quick starting point: try <span class="token">k=2, n=3</span> for personal recovery and <span class="token">k=3, n=5</span>
-for teams with stronger separation of duties.
+If you need a starting point: <span class="token">k=2, n=3</span> for personal recovery, <span class="token">k=3, n=5</span> for teams.
 :::
 
 :::caution
-Safeparts doesn’t prevent someone with <var>k</var> shares from reconstructing. Security comes from
-where shares live and who can access them.
+Safeparts does not prevent reconstruction by someone who holds <var>k</var> shares.
+Security comes from where shares live and who can access them.
 :::
+
+## Scenarios
+
+<CardGrid>
+	<Card title="Password manager recovery" icon="star">
+		Recommended: <span class="token">k=2, n=3</span>.
+		Store shares across two locations you control plus one off-site fallback.
+	</Card>
+	<Card title="Family / executor planning" icon="open-book">
+		Recommended: <span class="token">k=2, n=4</span>.
+		Two people can recover without any single person holding full access.
+	</Card>
+	<Card title="Small team infra secret" icon="document">
+		Recommended: <span class="token">k=3, n=5</span>.
+		Distribute across roles (ops, security, eng, executive) plus one offline vault.
+	</Card>
+	<Card title="Break-glass procedure" icon="setting">
+		Recommended: <span class="token">k=2, n=4</span>.
+		Keep one share offline; require two parties to recover during incidents.
+	</Card>
+	<Card title="Two-factor backup codes" icon="laptop">
+		Recommended: <span class="token">k=2, n=3</span>.
+		Store shares so a single device compromise doesn’t disable 2FA.
+	</Card>
+	<Card title="Agency / client handoff" icon="pen">
+		Recommended: <span class="token">k=2, n=3</span>.
+		Split between agency vault, client vault, and a sealed offline copy.
+	</Card>
+</CardGrid>
+
+## How to choose holders
+
+<CardGrid>
+	<Card title="Prefer independent failures" icon="setting">
+		Different people, devices, and locations. Avoid “same safe, two envelopes”.
+	</Card>
+	<Card title="Design for the worst day" icon="warning">
+		Recovery happens when you’re stressed: outages, travel, illness, or loss.
+	</Card>
+	<Card title="Write down the runbook" icon="document">
+		Document who has each share and what to do if a holder is unavailable.
+	</Card>
+</CardGrid>

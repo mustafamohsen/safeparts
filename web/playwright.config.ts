@@ -37,7 +37,7 @@ export default defineConfig({
         // Start the Starlight dev server for the docs site
         {
           command: 'cd help && bun run dev',
-          url: 'http://localhost:4321',
+          url: 'http://localhost:4321/help/',
           reuseExistingServer: !process.env.CI,
           timeout: 120000,
         },

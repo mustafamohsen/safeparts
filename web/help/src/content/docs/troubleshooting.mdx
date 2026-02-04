@@ -1,38 +1,31 @@
 ---
 title: Troubleshooting
-description: Common issues when building and using Safeparts.
+description: Common errors and how to fix them safely.
 ---
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Combine fails
+
+Most combine failures are one of these:
+
+- not enough shares (<var>k</var>)
+- shares from different sets
+- corrupted/typo’d share
+- wrong passphrase
+
+<Steps>
+1. Confirm you have at least <var>k</var> shares.
+2. Confirm all shares were created together (same split run).
+3. If using a passphrase, verify the exact passphrase file/value.
+4. If in doubt, re-split a synthetic secret and validate your workflow end-to-end.
+</Steps>
 
 ## Web UI says <samp>WASM module not found</samp>
 
-Build the WASM package and reload:
+This usually means the WASM build step was not run.
 
-```bash
-cd web
-bun run build:wasm
-bun run dev
-```
-
-On Windows, see the Windows notes in [Build & run](../build-and-run/).
-
-## CLI combine can't detect the encoding
-
-If auto-detect fails, specify it explicitly:
-
-```bash
-safeparts combine --encoding mnemo-words
-```
-
-## Reconstruction fails integrity checks
-
-This usually means one of:
-
-- At least one share is mistyped/corrupted.
-- Shares are from different sets (metadata mismatch).
-- Wrong passphrase (if encryption was used).
-
-## Clipboard doesn't work in the TUI
-
-Some environments restrict clipboard access. Safeparts-tui will fall back to OSC52
-copy sequences when it can; if that still doesn't work, use the save-to-file shortcut
-and copy from your terminal/editor.
+<Steps>
+1. From <span class="token token--mono">web/</span>, run <span class="token token--mono">bun run build:wasm</span>.
+2. Restart the dev server (<span class="token token--mono">bun run dev</span>).
+</Steps>

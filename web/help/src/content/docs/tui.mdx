@@ -1,32 +1,39 @@
 ---
 title: TUI
-description: Interactive terminal UI for hands-on splitting and recovery.
+description: Interactive terminal UI for offline or hands-on workflows.
 ---
 
-The TUI binary is `safeparts-tui` (crate: `crates/safeparts_tui`).
+import { Steps } from '@astrojs/starlight/components';
 
-Run directly:
+The TUI binary is <span class="token token--mono">safeparts-tui</span>.
+You can also launch it via the CLI: <span class="token token--mono">safeparts tui</span>.
 
-```bash
-cargo run -q -p safeparts_tui
-```
+## When to use the TUI
 
-Or via the CLI launcher:
+- You want to work offline (air-gapped machine).
+- You want a guided, interactive workflow.
+- You want to save one file per share.
 
-```bash
-cargo run -q -p safeparts -- tui
-```
+## Offline workflow
+
+<Steps>
+1. Use a machine that is offline (no network).
+2. Run <span class="token token--mono">safeparts-tui</span>.
+3. Set <var>k</var>, <var>n</var>, and the encoding.
+4. Split, then save each share to separate media.
+5. Recover once using <var>k</var> shares to verify the plan.
+</Steps>
+
+:::caution
+Offline work only helps if storage is separated.
+Don’t put two shares on the same USB drive.
+:::
 
 ## Key shortcuts
 
 - <kbd>Enter</kbd>: run split/combine
 - <kbd>Ctrl</kbd>+<kbd>L</kbd>: load secret/share file(s)
 - <kbd>Ctrl</kbd>+<kbd>S</kbd>: save (one file per share, or recovered secret)
-- <kbd>Ctrl</kbd>+<kbd>C</kbd>: copy (UTF-8 if possible, else <span class="token">base64</span>)
+- <kbd>Ctrl</kbd>+<kbd>C</kbd>: copy
 - <kbd>Ctrl</kbd>+<kbd>Q</kbd>: quit
 - <kbd>?</kbd>: help overlay
-
-:::note
-Clipboard support uses your system clipboard when available, and falls back to
-OSC52 escape sequences for terminals that support it (useful over SSH/tmux).
-:::

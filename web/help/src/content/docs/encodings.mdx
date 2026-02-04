@@ -1,38 +1,44 @@
 ---
 title: Encodings
-description: How shares are represented (machine-friendly and human-friendly).
+description: Choose a share format that matches your workflow.
 ---
 
-Safeparts produces and consumes **share packets**. Encodings are just different ways
-to represent the same packet bytes.
+Encodings change how shares are represented for storage and transfer.
+The underlying share packet is the same.
+
+:::note
+Pick the format you can reliably store and recover.
+The best format is the one your recovery plan can execute.
+:::
 
 ## Machine-friendly
 
 ### <span class="token">base64</span> (base64url)
 
+- Compact and easy to copy/paste
 - URL-safe (<span class="token token--mono">-</span> and <span class="token token--mono">_</span>)
-- No padding
-- Good for copy/paste and scripts
+- Best when shares live in password managers or secure secret stores
 
-### <span class="token">base58</span>
+### <span class="token">base58</span> (base58check)
 
 - Avoids ambiguous characters
-- Often nicer for manual transcription than base64
+- Has an integrated checksum (Base58Check)
+- Good for manual copy/paste when you want fewer visually confusing characters
 
 ## Human-friendly
 
 ### <span class="token">mnemo-words</span>
 
-- A single sentence of lowercase words
-- Uses the BIP-39 English word list as a 2048-symbol alphabet
-- Includes CRC16 to detect many typos
+- Words are easier to transcribe than long strings
+- Includes CRC16 to catch typos
+- Good for paper/metal backups
 
 ### <span class="token">mnemo-bip39</span>
 
-- Uses full BIP-39-valid sentences (with the standard checksum)
-- A single share may become multiple sentences, depending on payload size
+- Uses BIP-39-valid word sequences
+- Fits environments that already handle BIP-39 wordlists
 
 :::caution
-Mnemonic shares are **not wallet seeds** and should not be imported into wallet apps.
-They are an encoding for Safeparts share packets.
+Mnemonic shares are not wallet seeds.
+Do not import them into wallet software.
 :::
