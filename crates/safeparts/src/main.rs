@@ -22,11 +22,11 @@ enum Commands {
     /// Split a secret into N shares.
     Split {
         /// Threshold shares required to recover.
-        #[arg(short = 'k', long)]
+        #[arg(short = 'k', long = "threshold")]
         k: u8,
 
         /// Total shares to create.
-        #[arg(short = 'n', long)]
+        #[arg(short = 'n', long = "shares")]
         n: u8,
 
         /// Output encoding for shares.
