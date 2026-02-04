@@ -70,6 +70,7 @@ export const STRINGS = {
     shortcutSubmitForm: "Submit form",
     shortcutCopyResult: "Copy result",
     shortcutShowHelp: "Show shortcuts",
+    shortcutShowKeytips: "Show keytips overlay",
   },
   ar: {
     appName: "Safeparts",
@@ -139,6 +140,7 @@ export const STRINGS = {
     shortcutSubmitForm: "إرسال النموذج",
     shortcutCopyResult: "نسخ النتيجة",
     shortcutShowHelp: "عرض الاختصارات",
+    shortcutShowKeytips: "إظهار تلميحات الاختصارات",
   },
 } as const;
 

@@ -56,7 +56,8 @@ export function KeyboardShortcutsHelp({
     return [
       { keys: "1", action: strings.shortcutGoToSplit },
       { keys: "2", action: strings.shortcutGoToCombine },
-      { keys: "?", action: strings.shortcutShowHelp },
+      { keys: "Hold ?", action: strings.shortcutShowKeytips },
+      { keys: `${ctrlOrCmd}+/`, action: strings.shortcutShowHelp },
       { keys: `${ctrlOrCmd}+Enter`, action: strings.shortcutSubmitForm },
       { keys: `${ctrlOrCmd}+Shift+C`, action: strings.shortcutCopyResult },
     ];
