@@ -248,11 +248,6 @@ export function CombineForm({ strings }: CombineFormProps) {
   }
 
   async function onCombine() {
-    const emptyIds = shareBoxes
-      .filter((b) => b.value.trim().length === 0)
-      .map((b) => b.id);
-    if (emptyIds.length > 0) setInvalidShareBoxIds(emptyIds);
-
     setBusy(true);
     setError(null);
     setSecret("");
@@ -268,7 +263,22 @@ export function CombineForm({ strings }: CombineFormProps) {
       setSecret(new TextDecoder().decode(bytes));
       setInvalidShareBoxIds([]);
     } catch (e) {
-      setError(toErrorMessage(e, strings));
+      const message = toErrorMessage(e, strings);
+      setError(message);
+
+      const m = /need at least k shares: need (\d+), got (\d+)/i.exec(message);
+      if (m) {
+        const k = Number(m[1]);
+        const got = Number(m[2]);
+        const missing = Math.max(0, k - got);
+
+        if (missing > 0) {
+          const emptyBoxIds = shareBoxes
+            .filter((b) => parseSharesFromBox(b.value).length === 0)
+            .map((b) => b.id);
+          setInvalidShareBoxIds(emptyBoxIds.slice(0, missing));
+        }
+      }
     } finally {
       setBusy(false);
     }
