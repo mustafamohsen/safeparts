@@ -107,13 +107,18 @@ export function CombineForm({ strings }: CombineFormProps) {
     createShareBox(),
   ]);
   const [invalidShareBoxIds, setInvalidShareBoxIds] = useState<string[]>([]);
+  const [shareBoxFlashIds, setShareBoxFlashIds] = useState<string[]>([]);
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [encodingFlash, setEncodingFlash] = useState(false);
   const pasteRequestedRef = useRef(false);
+  const pendingShareBoxFlashIdsRef = useRef<string[] | null>(null);
   const flashTimeoutRef = useRef<number | null>(null);
+  const shareBoxFlashTimeoutRef = useRef<number | null>(null);
+
+  const shareBoxCount = shareBoxes.length;
 
   const encodingOptions: EncodingOption[] = useMemo(
     () => [
@@ -141,13 +146,34 @@ export function CombineForm({ strings }: CombineFormProps) {
     }, 1100);
   }, []);
 
+  const triggerShareBoxFlash = useCallback((ids: string[]) => {
+    setShareBoxFlashIds(ids);
+    if (shareBoxFlashTimeoutRef.current !== null) {
+      window.clearTimeout(shareBoxFlashTimeoutRef.current);
+    }
+    shareBoxFlashTimeoutRef.current = window.setTimeout(() => {
+      setShareBoxFlashIds([]);
+    }, 1100);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (flashTimeoutRef.current !== null) {
         window.clearTimeout(flashTimeoutRef.current);
       }
+      if (shareBoxFlashTimeoutRef.current !== null) {
+        window.clearTimeout(shareBoxFlashTimeoutRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    const ids = pendingShareBoxFlashIdsRef.current;
+    if (!ids || ids.length === 0) return;
+    if (shareBoxCount < 2) return;
+    pendingShareBoxFlashIdsRef.current = null;
+    triggerShareBoxFlash(ids);
+  }, [shareBoxCount, triggerShareBoxFlash]);
 
   useEffect(() => {
     if (!pasteRequestedRef.current) return;
@@ -184,9 +210,9 @@ export function CombineForm({ strings }: CombineFormProps) {
           if (prev.length >= k) return prev;
 
           const toAdd = k - prev.length;
-          const next = [...prev];
-          for (let i = 0; i < toAdd; i++) next.push(createShareBox());
-          return next;
+          const added = Array.from({ length: toAdd }, () => createShareBox());
+          pendingShareBoxFlashIdsRef.current = added.map((b) => b.id);
+          return [...prev, ...added];
         });
       } catch {
         // Ignore: auto-expanding share slots is a best-effort UX enhancement.
@@ -294,6 +320,7 @@ export function CombineForm({ strings }: CombineFormProps) {
           <div className="mt-3 divide-y divide-emerald-500/10">
             {shareBoxes.map((box, i) => {
               const isInvalid = invalidShareBoxIds.includes(box.id);
+              const isFlashing = shareBoxFlashIds.includes(box.id);
 
               return (
                 <div key={box.id} className="py-4 first:pt-0 last:pb-0">
@@ -324,11 +351,11 @@ export function CombineForm({ strings }: CombineFormProps) {
                     }}
                     rows={3}
                     placeholder={strings.sharePlaceholder}
-                    className={`input mt-2 resize-y font-mono text-xs leading-relaxous ${
+                    className={`input mt-2 resize-y font-mono text-xs leading-relaxous transition-colors duration-700 ${
                       isInvalid
                         ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
                         : ""
-                    }`}
+                    } ${isFlashing ? "border-emerald-300/70 bg-emerald-500/15" : ""}`}
                     aria-labelledby="shares-label"
                     aria-describedby={isInvalid ? `share-${box.id}-error` : "shares-hint"}
                     aria-invalid={isInvalid}
