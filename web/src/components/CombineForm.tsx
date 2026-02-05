@@ -107,13 +107,18 @@ export function CombineForm({ strings }: CombineFormProps) {
     createShareBox(),
   ]);
   const [invalidShareBoxIds, setInvalidShareBoxIds] = useState<string[]>([]);
+  const [shareBoxFlashIds, setShareBoxFlashIds] = useState<string[]>([]);
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [encodingFlash, setEncodingFlash] = useState(false);
   const pasteRequestedRef = useRef(false);
+  const pendingShareBoxFlashIdsRef = useRef<string[] | null>(null);
   const flashTimeoutRef = useRef<number | null>(null);
+  const shareBoxFlashTimeoutRef = useRef<number | null>(null);
+
+  const shareBoxCount = shareBoxes.length;
 
   const encodingOptions: EncodingOption[] = useMemo(
     () => [
@@ -141,13 +146,34 @@ export function CombineForm({ strings }: CombineFormProps) {
     }, 1100);
   }, []);
 
+  const triggerShareBoxFlash = useCallback((ids: string[]) => {
+    setShareBoxFlashIds(ids);
+    if (shareBoxFlashTimeoutRef.current !== null) {
+      window.clearTimeout(shareBoxFlashTimeoutRef.current);
+    }
+    shareBoxFlashTimeoutRef.current = window.setTimeout(() => {
+      setShareBoxFlashIds([]);
+    }, 1100);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (flashTimeoutRef.current !== null) {
         window.clearTimeout(flashTimeoutRef.current);
       }
+      if (shareBoxFlashTimeoutRef.current !== null) {
+        window.clearTimeout(shareBoxFlashTimeoutRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    const ids = pendingShareBoxFlashIdsRef.current;
+    if (!ids || ids.length === 0) return;
+    if (shareBoxCount < 2) return;
+    pendingShareBoxFlashIdsRef.current = null;
+    triggerShareBoxFlash(ids);
+  }, [shareBoxCount, triggerShareBoxFlash]);
 
   useEffect(() => {
     if (!pasteRequestedRef.current) return;
@@ -157,12 +183,41 @@ export function CombineForm({ strings }: CombineFormProps) {
     if (!firstNonEmpty) return;
 
     const detected = detectEncodingFromText(firstNonEmpty.value);
-    if (!detected) return;
+    const encodingForDecode = detected ?? encoding;
 
-    if (detected !== encoding) {
+    if (detected && detected !== encoding) {
       setEncoding(detected);
       triggerEncodingFlash();
     }
+
+    const firstShare = parseSharesFromBox(firstNonEmpty.value)[0];
+    if (!firstShare) return;
+
+    (async () => {
+      try {
+        const wasm = await ensureWasm();
+
+        const k =
+          typeof wasm.share_threshold === "function"
+            ? Number(wasm.share_threshold(firstShare, encodingForDecode))
+            : typeof wasm.inspect_share === "function"
+              ? Number(wasm.inspect_share(firstShare, encodingForDecode)?.k)
+              : NaN;
+
+        if (!Number.isFinite(k) || k < 2) return;
+
+        setShareBoxes((prev) => {
+          if (prev.length >= k) return prev;
+
+          const toAdd = k - prev.length;
+          const added = Array.from({ length: toAdd }, () => createShareBox());
+          pendingShareBoxFlashIdsRef.current = added.map((b) => b.id);
+          return [...prev, ...added];
+        });
+      } catch {
+        // Ignore: auto-expanding share slots is a best-effort UX enhancement.
+      }
+    })();
   }, [shareBoxes, encoding, triggerEncodingFlash]);
 
   const shares = useMemo(
@@ -193,11 +248,6 @@ export function CombineForm({ strings }: CombineFormProps) {
   }
 
   async function onCombine() {
-    const emptyIds = shareBoxes
-      .filter((b) => b.value.trim().length === 0)
-      .map((b) => b.id);
-    if (emptyIds.length > 0) setInvalidShareBoxIds(emptyIds);
-
     setBusy(true);
     setError(null);
     setSecret("");
@@ -213,7 +263,22 @@ export function CombineForm({ strings }: CombineFormProps) {
       setSecret(new TextDecoder().decode(bytes));
       setInvalidShareBoxIds([]);
     } catch (e) {
-      setError(toErrorMessage(e, strings));
+      const message = toErrorMessage(e, strings);
+      setError(message);
+
+      const m = /need at least k shares: need (\d+), got (\d+)/i.exec(message);
+      if (m) {
+        const k = Number(m[1]);
+        const got = Number(m[2]);
+        const missing = Math.max(0, k - got);
+
+        if (missing > 0) {
+          const emptyBoxIds = shareBoxes
+            .filter((b) => parseSharesFromBox(b.value).length === 0)
+            .map((b) => b.id);
+          setInvalidShareBoxIds(emptyBoxIds.slice(0, missing));
+        }
+      }
     } finally {
       setBusy(false);
     }
@@ -265,6 +330,7 @@ export function CombineForm({ strings }: CombineFormProps) {
           <div className="mt-3 divide-y divide-emerald-500/10">
             {shareBoxes.map((box, i) => {
               const isInvalid = invalidShareBoxIds.includes(box.id);
+              const isFlashing = shareBoxFlashIds.includes(box.id);
 
               return (
                 <div key={box.id} className="py-4 first:pt-0 last:pb-0">
@@ -295,11 +361,11 @@ export function CombineForm({ strings }: CombineFormProps) {
                     }}
                     rows={3}
                     placeholder={strings.sharePlaceholder}
-                    className={`input mt-2 resize-y font-mono text-xs leading-relaxous ${
+                    className={`input mt-2 resize-y font-mono text-xs leading-relaxous transition-colors duration-700 ${
                       isInvalid
                         ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
                         : ""
-                    }`}
+                    } ${isFlashing ? "border-emerald-300/70 bg-emerald-500/15" : ""}`}
                     aria-labelledby="shares-label"
                     aria-describedby={isInvalid ? `share-${box.id}-error` : "shares-hint"}
                     aria-invalid={isInvalid}
