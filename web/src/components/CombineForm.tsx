@@ -157,12 +157,41 @@ export function CombineForm({ strings }: CombineFormProps) {
     if (!firstNonEmpty) return;
 
     const detected = detectEncodingFromText(firstNonEmpty.value);
-    if (!detected) return;
+    const encodingForDecode = detected ?? encoding;
 
-    if (detected !== encoding) {
+    if (detected && detected !== encoding) {
       setEncoding(detected);
       triggerEncodingFlash();
     }
+
+    const firstShare = parseSharesFromBox(firstNonEmpty.value)[0];
+    if (!firstShare) return;
+
+    (async () => {
+      try {
+        const wasm = await ensureWasm();
+
+        const k =
+          typeof wasm.share_threshold === "function"
+            ? Number(wasm.share_threshold(firstShare, encodingForDecode))
+            : typeof wasm.inspect_share === "function"
+              ? Number(wasm.inspect_share(firstShare, encodingForDecode)?.k)
+              : NaN;
+
+        if (!Number.isFinite(k) || k < 2) return;
+
+        setShareBoxes((prev) => {
+          if (prev.length >= k) return prev;
+
+          const toAdd = k - prev.length;
+          const next = [...prev];
+          for (let i = 0; i < toAdd; i++) next.push(createShareBox());
+          return next;
+        });
+      } catch {
+        // Ignore: auto-expanding share slots is a best-effort UX enhancement.
+      }
+    })();
   }, [shareBoxes, encoding, triggerEncodingFlash]);
 
   const shares = useMemo(
