@@ -1,0 +1,243 @@
+---
+title: Technical design
+description: How Safeparts works under the hood, why the cryptographic primitives were chosen, and how to run secure split/recovery procedures.
+---
+
+This page is a security-focused, technical overview of Safeparts.
+It explains the *procedures* and *design decisions* rather than the code.
+
+If you are new, start with [Getting started](getting-started/) and [Security](security/).
+
+## What Safeparts is (and is not)
+
+Safeparts is a <var>k</var>-of-<var>n</var> recovery tool based on Shamir-style secret sharing.
+
+- With fewer than <var>k</var> shares, the secret remains unrecoverable.
+- With any <var>k</var> shares from the same set, recovery succeeds.
+
+It is **not** a storage system. Your storage and distribution plan is the security boundary.
+
+## End-to-end data flow
+
+Safeparts intentionally layers protections so you can detect mistakes early (wrong shares, typos, mixed sets), and optionally add a second factor (a passphrase).
+
+```text
+Split flow
+---------
+secret bytes
+  |
+  | (optional) passphrase protection
+  |   - Argon2id(passphrase, salt, parameters) -> 32-byte key
+  |   - ChaCha20-Poly1305(key, nonce) -> ciphertext
+  |
+  | data_to_split = plaintext OR ciphertext
+  |
+  | integrity tag = BLAKE3(data_to_split)   (32 bytes)
+  | tagged = data_to_split || integrity tag
+  |
+  | Shamir split(tagged, k, n, set_id) -> n shares
+  |
+  | wrap each share into a self-describing SharePacket
+  |
+  | encode for transport/storage (base64url | base58check | mnemonic)
+```
+
+```text
+Combine flow
+-----------
+decode shares -> SharePackets
+  |
+  | validate metadata consistency (set_id, k, n, x, crypto params)
+  |
+  | Shamir combine -> tagged bytes
+  |
+  | split tagged bytes into (data_to_split, integrity tag)
+  | verify BLAKE3(data_to_split) == integrity tag
+  |
+  | if encrypted:
+  |   Argon2id(passphrase, salt, parameters) -> key
+  |   ChaCha20-Poly1305 decrypt(key, nonce) -> secret
+  |
+  +-> output secret bytes
+```
+
+## Threshold sharing details
+
+### Shamir secret sharing over GF(256)
+
+Safeparts uses Shamir-style secret sharing over the finite field <span class="token token--mono">GF(256)</span>, applied byte-wise.
+
+Practical implications:
+
+- **Works for any binary secret**: the secret is just bytes (files, keys, seed phrases, etc.).
+- **Share count limit**: <span class="token token--mono">GF(256)</span> has 256 elements; Safeparts reserves <span class="token token--mono">x = 0</span> for reconstruction, so <span class="token token--mono">1 &lt;= n &lt;= 255</span>.
+- **No structure leakage**: fewer than <var>k</var> shares provides no usable information about the secret bytes.
+
+### Why GF(256) instead of a big prime field
+
+Many Shamir implementations treat the secret as a big integer mod a prime.
+Safeparts chooses <span class="token token--mono">GF(256)</span> so the scheme applies cleanly and efficiently to arbitrary bytes without additional packing rules.
+
+The trade-off is the practical limit of 255 shares per split, which is usually far beyond real-world recovery plans.
+
+## Share packets and metadata (anti-footgun design)
+
+Safeparts shares are not just raw (x, y) points. Each share is wrapped into a versioned, self-describing packet so that:
+
+- Shares from different splits are hard to mix by accident.
+- The decoding layer can reject truncated/garbled data.
+- Optional encryption parameters are carried with the share set.
+
+Conceptual binary layout (simplified):
+
+```text
+SharePacket
+----------
+magic      : "SMN1"
+version    : u8
+flags      : u8   (e.g. encrypted)
+k, n, x    : u8, u8, u8
+set_id     : 16 bytes (random identifier for the share set)
+
+if encrypted:
+  salt         : 16 bytes
+  nonce        : 12 bytes
+  argon mem    : u32 (KiB)
+  argon time   : u32
+  argon par    : u32
+
+payload_len: u32
+payload    : bytes   (the share data)
+```
+
+Security note: metadata (like <var>k</var>, <var>n</var>, and payload length) is not secret. The secrecy comes from threshold sharing and (optionally) encryption.
+
+## Integrity: why a BLAKE3 tag exists
+
+Shamir sharing gives confidentiality (until <var>k</var> shares), but by itself it does not reliably detect user mistakes.
+For example, with the wrong share, interpolation still returns *some* output.
+
+Safeparts therefore appends a 32-byte integrity tag:
+
+- On split: compute <span class="token token--mono">BLAKE3(data_to_split)</span> and append it.
+- On combine: recompute and compare; if it does not match, recovery fails.
+
+What this integrity tag is for:
+
+- Detecting corrupted shares (bad copy/paste, damaged storage).
+- Detecting mixed sets (shares from different splits).
+- Validating a reconstructed *ciphertext* without knowing the passphrase.
+
+What it is **not** for:
+
+- It is not a keyed MAC and does not provide authenticity against an attacker who already has <var>k</var> shares.
+  (If an attacker has <var>k</var> shares, confidentiality is already lost.)
+
+### Why BLAKE3 (instead of SHA-256, etc.)
+
+BLAKE3 is chosen as a modern, fast general-purpose hash:
+
+- Fast on basically all CPUs, including low-power devices.
+- Parallel-friendly and incremental.
+- Strong, conservative design lineage (BLAKE2-based).
+
+SHA-256 would also work for “checksum after reconstruction”; BLAKE3 is mainly a performance and ergonomics choice.
+
+## Optional passphrase protection
+
+Safeparts can encrypt the secret *before* secret sharing.
+This turns recovery into a two-factor requirement:
+
+- something you have: at least <var>k</var> shares
+- something you know: the passphrase
+
+### Why encrypt-then-split
+
+Encrypting once and then splitting has two useful properties:
+
+- You can verify share correctness (via the BLAKE3 tag) **without** the passphrase.
+- You only decrypt after you are confident the share set is consistent.
+
+### Why Argon2id for key derivation
+
+If an attacker obtains <var>k</var> shares, they can reconstruct the encrypted payload and run an offline passphrase-guessing attack.
+The KDF exists to make that attack expensive.
+
+Argon2id is a widely recommended password hashing / KDF primitive because it is:
+
+- Memory-hard (more expensive on GPUs/ASICs than PBKDF2).
+- Resistant to common side-channel concerns (compared to Argon2d in hostile environments).
+- Tunable (time, memory, parallelism) so deployments can raise the cost over time.
+
+Safeparts stores the Argon2 parameters in the share packet so future versions can change defaults without breaking old shares.
+
+Current defaults (subject to change) are roughly:
+
+- memory: 64 MiB
+- time cost: 3
+- parallelism: 1
+
+### Why ChaCha20-Poly1305 for encryption
+
+ChaCha20-Poly1305 is an AEAD construction (authenticated encryption with associated data).
+It provides:
+
+- Confidentiality: the secret remains hidden without the key.
+- Integrity/authenticity of ciphertext: wrong passphrases or tampering cause decryption failure.
+
+It is commonly chosen for cross-platform tools because it is fast and constant-time on systems without AES acceleration.
+
+AES-GCM is also a strong, standard AEAD. ChaCha20-Poly1305 is selected here mainly for consistent performance and simpler “works well everywhere” behavior.
+
+## Encoding layers (human and machine safety)
+
+Encodings are about *operational reliability*: can you store and later re-enter the share correctly?
+
+- <span class="token">base64url</span>: compact, machine-friendly.
+- <span class="token">base58check</span>: avoids ambiguous characters and adds a checksum.
+- <span class="token">mnemo-words</span>: word-based with CRC16 to catch many transcription errors.
+- <span class="token">mnemo-bip39</span>: BIP-39-valid word sequences with framing for multi-part packets.
+
+See [Encodings](encodings/) for selection guidance.
+
+## Recommended security procedures
+
+### Split procedure (creating shares)
+
+1. Choose <var>k</var> and <var>n</var> based on people and locations you can realistically coordinate under stress.
+2. Use a clean environment:
+   - Prefer offline.
+   - Disable clipboard history and screen recording if possible.
+   - Avoid shells or tools that log input.
+3. If using a passphrase:
+   - Use a high-entropy passphrase.
+   - Avoid passing it on the command line; prefer a file input where supported.
+4. Generate shares.
+5. Distribute shares across independent failure domains (people/devices/locations).
+6. Maintain a runbook that lists *who holds which share* and *how to contact them*.
+7. Do a practice recovery (ideally with a synthetic secret first, then with the real plan).
+
+### Recovery procedure (combining shares)
+
+1. Collect at least <var>k</var> shares.
+2. Decode them in a controlled environment.
+3. Combine and check integrity (Safeparts does this automatically).
+4. If encrypted, decrypt using the passphrase.
+5. Treat the recovered secret as sensitive output:
+   - Avoid saving to disk unless necessary.
+   - Rotate/replace the secret if recovery was performed in an untrusted environment.
+
+### Compromise and rotation
+
+- If you suspect any share was copied, photographed, or exfiltrated, assume that share is compromised.
+- If enough shares may be compromised to reach <var>k</var>, assume the secret is compromised.
+- Best practice is to reconstruct the secret, rotate it (if possible), and re-split into a new set.
+
+## Limitations / non-goals
+
+- No verifiable secret sharing (VSS): a malicious share-holder can still provide a wrong share and cause recovery to fail.
+- No share refresh/rotation without reconstructing the secret.
+- No protection if a legitimate coalition obtains <var>k</var> shares.
+- Passphrase security depends on passphrase strength; Argon2id raises the cost but cannot prevent weak passphrases.
+
+For the human side of planning, see [Use cases](use-cases/) and [Security](security/).
