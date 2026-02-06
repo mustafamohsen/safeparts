@@ -1,0 +1,46 @@
+name: mobile ci
+
+on:
+  push:
+    paths:
+      - 'mobile/**'
+      - 'crates/safeparts_core/**'
+      - '.github/workflows/mobile-ci.yml'
+  pull_request:
+    paths:
+      - 'mobile/**'
+      - 'crates/safeparts_core/**'
+      - '.github/workflows/mobile-ci.yml'
+
+jobs:
+  gates:
+    name: gates (rust + mobile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 'latest'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Rust tests
+        run: cargo test --all-features
+
+      - name: Mobile bridge tests
+        run: cargo test
+        working-directory: mobile/src-native
+
+      - name: Install mobile deps
+        run: bun install
+        working-directory: mobile
+
+      - name: Mobile typecheck
+        run: bunx tsc -p . --noEmit
+        working-directory: mobile

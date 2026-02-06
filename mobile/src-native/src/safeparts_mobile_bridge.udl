@@ -1,0 +1,26 @@
+namespace safeparts_mobile_bridge {
+  sequence<string> supported_encodings();
+
+  [Throws=SafepartsError]
+  sequence<string> split_secret(
+    string secret_b64,
+    u8 k,
+    u8 n,
+    string encoding,
+    string? passphrase
+  );
+
+  [Throws=SafepartsError]
+  string combine_shares(
+    sequence<string> shares,
+    string encoding,
+    string? passphrase
+  );
+
+  string get_version();
+};
+
+[Error]
+interface SafepartsError {
+  Error(string message);
+};

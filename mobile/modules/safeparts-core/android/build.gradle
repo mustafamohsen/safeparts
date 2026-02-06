@@ -1,0 +1,21 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'safeparts'
+version = '0.0.1'
+
+android {
+  namespace "safeparts.core"
+  defaultConfig {
+    minSdkVersion 24
+    versionCode 1
+    versionName "0.0.1"
+  }
+}
+
+dependencies {
+  // UniFFI Kotlin bindings (default generator) uses JNA.
+  implementation 'net.java.dev.jna:jna:5.15.0'
+}
