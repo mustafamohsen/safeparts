@@ -1,0 +1,11 @@
+{
+  "name": "safeparts-core",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.ts",
+  "keywords": ["expo", "react-native", "safeparts"],
+  "peerDependencies": {
+    "expo": "*",
+    "react-native": "*"
+  }
+}
