@@ -8,15 +8,22 @@ import {
   Text,
   TextInput,
   View,
+  Platform,
 } from "react-native";
 
 import * as Clipboard from "expo-clipboard";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 
 import type { CoreEncoding } from "safeparts-core";
 
 import { ENCODINGS } from "../core/encodings";
+import { localizeError } from "../core/errors";
 import { splitSecret } from "../core/safeparts";
 import { utf8ToBase64 } from "../core/text";
+import { ScreenHeader } from "../components/ScreenHeader";
+import { QrModal } from "../components/QrModal";
+import { useI18n } from "../i18n/i18n";
 
 function clampK(nextK: number, nextN: number): number {
   if (!Number.isFinite(nextK)) return 2;
@@ -33,6 +40,7 @@ function clampN(nextN: number): number {
 }
 
 export function SplitScreen() {
+  const { isRtl, t } = useI18n();
   const [secret, setSecret] = useState("");
   const [k, setK] = useState(2);
   const [n, setN] = useState(3);
@@ -41,6 +49,9 @@ export function SplitScreen() {
   const [shares, setShares] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [qr, setQr] = useState<string | null>(null);
+
+  const maxQrChars = 1200;
 
   const canSplit = useMemo(() => {
     return secret.trim().length > 0 && k >= 2 && n >= 2 && n <= 255;
@@ -56,32 +67,52 @@ export function SplitScreen() {
       const out = await splitSecret(secretB64, k, n, encoding, passphrase ? passphrase : undefined);
       setShares(out);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(localizeError(e, t));
     } finally {
       setBusy(false);
     }
   }
 
+  async function exportShares() {
+    if (shares.length === 0) return;
+
+    const out = shares.join("\n\n");
+    const baseDir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory;
+    if (!baseDir) {
+      setError(t("error.noWritableDir"));
+      return;
+    }
+
+    const fileUri = `${baseDir}safeparts-shares-${Date.now()}.txt`;
+    await FileSystem.writeAsStringAsync(fileUri, out, {
+      encoding: FileSystem.EncodingType.UTF8,
+    });
+    await Sharing.shareAsync(fileUri, {
+      mimeType: "text/plain",
+      dialogTitle: t("share.dialogTitleShares"),
+    });
+    await FileSystem.deleteAsync(fileUri, { idempotent: true });
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Text style={styles.title}>Split</Text>
-      <Text style={styles.subtitle}>Turn one secret into multiple shares.</Text>
+      <ScreenHeader title={t("split.title")} subtitle={t("split.subtitle")} />
 
-      <Text style={styles.label}>Secret</Text>
+      <Text style={[styles.label, isRtl ? styles.right : styles.left]}>{t("split.secret")}</Text>
       <TextInput
         value={secret}
         onChangeText={setSecret}
-        placeholder="Type or paste your secret"
+        placeholder={t("split.secret.placeholder")}
         placeholderTextColor="#6f7aa7"
         multiline
-        style={[styles.input, styles.mono, styles.secretBox]}
+        style={[styles.input, styles.secretBox, styles.textBox, isRtl ? styles.right : styles.left]}
         autoCapitalize="none"
         autoCorrect={false}
       />
 
       <View style={styles.row}>
         <View style={styles.rowItem}>
-          <Text style={styles.label}>k</Text>
+          <Text style={[styles.label, isRtl ? styles.right : styles.left]}>k</Text>
           <TextInput
             value={String(k)}
             onChangeText={(v) => setK(clampK(Number(v), n))}
@@ -90,7 +121,7 @@ export function SplitScreen() {
           />
         </View>
         <View style={styles.rowItem}>
-          <Text style={styles.label}>n</Text>
+          <Text style={[styles.label, isRtl ? styles.right : styles.left]}>n</Text>
           <TextInput
             value={String(n)}
             onChangeText={(v) => {
@@ -104,7 +135,7 @@ export function SplitScreen() {
         </View>
       </View>
 
-      <Text style={styles.label}>Encoding</Text>
+      <Text style={[styles.label, isRtl ? styles.right : styles.left]}>{t("split.encoding")}</Text>
       <View style={styles.chips}>
         {ENCODINGS.map((opt) => {
           const active = opt.value === encoding;
@@ -115,18 +146,18 @@ export function SplitScreen() {
               style={[styles.chip, active ? styles.chipActive : styles.chipInactive]}
             >
               <Text style={[styles.chipText, active ? styles.chipTextActive : styles.chipTextInactive]}>
-                {opt.label}
+                {t(opt.labelKey)}
               </Text>
             </Pressable>
           );
         })}
       </View>
 
-      <Text style={styles.label}>Passphrase (optional)</Text>
+      <Text style={[styles.label, isRtl ? styles.right : styles.left]}>{t("split.passphrase")}</Text>
       <TextInput
         value={passphrase}
         onChangeText={setPassphrase}
-        placeholder="Passphrase"
+        placeholder={t("split.passphrase.placeholder")}
         placeholderTextColor="#6f7aa7"
         style={styles.input}
         autoCapitalize="none"
@@ -147,17 +178,31 @@ export function SplitScreen() {
         {busy ? (
           <ActivityIndicator color="#061315" />
         ) : (
-          <Text style={styles.ctaText}>Split</Text>
+          <Text style={styles.ctaText}>{t("split.cta")}</Text>
         )}
       </Pressable>
 
       {shares.length > 0 ? (
         <View style={styles.outBox}>
-          <Text style={styles.outTitle}>Shares</Text>
+          <View style={styles.outTop}>
+            <Text style={[styles.outTitle, isRtl ? styles.right : styles.left]}>{t("split.shares")}</Text>
+            <Pressable
+              onPress={() => {
+                void exportShares();
+              }}
+              style={styles.actionBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t("a11y.exportShares")}
+            >
+              <Text style={styles.actionBtnText}>{t("common.export")}</Text>
+            </Pressable>
+          </View>
           {shares.map((s, idx) => (
             <View key={`${idx}-${s.slice(0, 12)}`} style={styles.shareItem}>
               <View style={styles.shareHeader}>
-                <Text style={styles.shareLabel}>Share {idx + 1}</Text>
+                <Text style={[styles.shareLabel, isRtl ? styles.right : styles.left]}>
+                  {t("split.share")} {idx + 1}
+                </Text>
                 <View style={styles.shareActions}>
                   <Pressable
                     onPress={() => {
@@ -165,9 +210,23 @@ export function SplitScreen() {
                     }}
                     style={styles.actionBtn}
                     accessibilityRole="button"
-                    accessibilityLabel={`Copy share ${idx + 1}`}
+                    accessibilityLabel={t("a11y.copyShare", { n: idx + 1 })}
                   >
-                    <Text style={styles.actionBtnText}>Copy</Text>
+                    <Text style={styles.actionBtnText}>{t("common.copy")}</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      if (s.length > maxQrChars) {
+                        setError(t("qr.tooLarge"));
+                        return;
+                      }
+                      setQr(s);
+                    }}
+                    style={styles.actionBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("a11y.qrShare", { n: idx + 1 })}
+                  >
+                    <Text style={styles.actionBtnText}>{t("common.qr")}</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => {
@@ -175,17 +234,26 @@ export function SplitScreen() {
                     }}
                     style={styles.actionBtn}
                     accessibilityRole="button"
-                    accessibilityLabel={`Share share ${idx + 1}`}
+                    accessibilityLabel={t("a11y.shareShare", { n: idx + 1 })}
                   >
-                    <Text style={styles.actionBtnText}>Share</Text>
+                    <Text style={styles.actionBtnText}>{t("common.share")}</Text>
                   </Pressable>
                 </View>
               </View>
-              <Text selectable style={[styles.shareText, styles.mono]}>{s}</Text>
+              <Text selectable style={[styles.shareText, styles.textBox]}>
+                {s}
+              </Text>
             </View>
           ))}
         </View>
       ) : null}
+
+      <QrModal
+        visible={qr !== null}
+        title={t("qr.title")}
+        value={qr ?? ""}
+        onClose={() => setQr(null)}
+      />
     </ScrollView>
   );
 }
@@ -198,16 +266,6 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
     paddingBottom: 28,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#e8fbff",
-  },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    color: "#a8b3cf",
   },
   label: {
     marginTop: 14,
@@ -231,8 +289,12 @@ const styles = StyleSheet.create({
     minHeight: 120,
     textAlignVertical: "top",
   },
-  mono: {
-    fontFamily: "Courier",
+  textBox: {
+    fontFamily: Platform.select({
+      ios: "Courier",
+      android: "monospace",
+      default: "monospace",
+    }),
   },
   row: {
     marginTop: 12,
@@ -316,6 +378,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#e8fbff",
   },
+  outTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
   shareItem: {
     marginTop: 12,
   },
@@ -336,7 +404,7 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     minWidth: 44,
-    minHeight: 36,
+    minHeight: 44,
     paddingHorizontal: 10,
     borderRadius: 999,
     borderWidth: 1,
@@ -354,5 +422,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#e8fbff",
     lineHeight: 18,
+    writingDirection: "ltr",
+    textAlign: "left",
+  },
+  left: {
+    textAlign: "left",
+  },
+  right: {
+    textAlign: "right",
   },
 });

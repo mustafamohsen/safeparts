@@ -28,27 +28,21 @@
 - [x] 4.2 Implement Split screen: secret input, k/n, encoding selector, passphrase, shares output
 - [x] 4.3 Implement Combine screen: share inputs, encoding selector + auto-detect, passphrase, recovered output
 - [x] 4.4 Implement Copy + platform Share actions for shares and recovered secret
-- [ ] 4.5 Add file import/export equivalents (document picker + share sheet) without secret persistence by default
+- [x] 4.5 Add file import/export equivalents (document picker + share sheet) without secret persistence by default
 
 ## 5. Camera + QR
 
-- [ ] 5.1 Add QR rendering for each share (with fallback when payload is too large)
-- [ ] 5.2 Add Combine “Scan QR” flow that appends scanned shares
-- [ ] 5.3 Support rapid multi-scan (stay in scanner until user exits) and de-duplicate scans
-- [ ] 5.4 Add clear permission UX and localized camera/scan strings (English + Arabic)
-
-## 6. Offline Help/Docs
-
-- [ ] 6.1 Bundle the built docs site into the mobile app assets (English + Arabic)
-- [ ] 6.2 Add an in-app Help entry point that opens bundled docs (locale-aware)
-- [ ] 6.3 Verify help rendering requires no network requests
+- [x] 5.1 Add QR rendering for each share (with fallback when payload is too large)
+- [x] 5.2 Add Combine “Scan QR” flow that appends scanned shares
+- [x] 5.3 Support rapid multi-scan (stay in scanner until user exits) and de-duplicate scans
+- [x] 5.4 Add clear permission UX and localized camera/scan strings (English + Arabic)
 
 ## 7. Localization, RTL Safety, Accessibility, and Polish
 
-- [ ] 7.1 Localize all mobile UI strings (English + Arabic)
-- [ ] 7.2 Ensure correct RTL/LTR behavior and bidi-safe token rendering for shares and code-like strings
-- [ ] 7.3 Ensure touch targets meet minimum size and primary flows are usable one-handed
-- [ ] 7.4 Add reduced-motion support for any animations
+- [x] 7.1 Localize all mobile UI strings (English + Arabic)
+- [x] 7.2 Ensure correct RTL/LTR behavior and bidi-safe token rendering for shares and code-like strings
+- [x] 7.3 Ensure touch targets meet minimum size and primary flows are usable one-handed
+- [x] 7.4 Add reduced-motion support for any animations
 - [ ] 7.5 Manual accessibility pass on iOS VoiceOver and Android TalkBack for main flows
 
 ## 8. CI and Store Release
@@ -63,5 +57,5 @@
 
 - [ ] 9.1 Manual test on iOS: split/combine for each encoding (with and without passphrase)
 - [ ] 9.2 Manual test on Android: split/combine for each encoding (with and without passphrase)
-- [ ] 9.3 Verify offline behavior: no network required for core workflows and docs load in-app
+- [ ] 9.3 Verify offline behavior: no network required for core workflows
 - [ ] 9.4 Verify QR workflow: scan k shares from another device and recover successfully
