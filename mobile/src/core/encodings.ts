@@ -1,10 +1,17 @@
 import type { CoreEncoding } from "safeparts-core";
 
-export const ENCODINGS: { value: CoreEncoding; label: string }[] = [
-  { value: "mnemo-words", label: "Mnemonic (words)" },
-  { value: "mnemo-bip39", label: "BIP39 (phrases)" },
-  { value: "base58check", label: "Base58Check" },
-  { value: "base64url", label: "Base64URL" },
+export const ENCODINGS: {
+  value: CoreEncoding;
+  labelKey:
+    | "encoding.mnemoWords"
+    | "encoding.mnemoBip39"
+    | "encoding.base58check"
+    | "encoding.base64url";
+}[] = [
+  { value: "mnemo-words", labelKey: "encoding.mnemoWords" },
+  { value: "mnemo-bip39", labelKey: "encoding.mnemoBip39" },
+  { value: "base58check", labelKey: "encoding.base58check" },
+  { value: "base64url", labelKey: "encoding.base64url" },
 ];
 
 export function detectEncodingFromText(text: string): CoreEncoding | null {

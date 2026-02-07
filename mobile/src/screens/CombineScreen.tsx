@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -8,15 +8,23 @@ import {
   Text,
   TextInput,
   View,
+  Platform,
 } from "react-native";
 
 import * as Clipboard from "expo-clipboard";
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 
 import type { CoreEncoding } from "safeparts-core";
 
 import { ENCODINGS, detectEncodingFromText } from "../core/encodings";
+import { localizeError } from "../core/errors";
 import { combineShares } from "../core/safeparts";
 import { base64ToUtf8 } from "../core/text";
+import { ScreenHeader } from "../components/ScreenHeader";
+import { QrScannerModal } from "../components/QrScannerModal";
+import { useI18n } from "../i18n/i18n";
 
 function parseShares(text: string): string[] {
   return text
@@ -26,12 +34,16 @@ function parseShares(text: string): string[] {
 }
 
 export function CombineScreen() {
+  const { isRtl, t } = useI18n();
   const [raw, setRaw] = useState("");
   const [encoding, setEncoding] = useState<CoreEncoding>("mnemo-words");
   const [passphrase, setPassphrase] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerAdded, setScannerAdded] = useState(0);
+  const seenScans = useRef<Set<string>>(new Set());
 
   const shares = useMemo(() => parseShares(raw), [raw]);
 
@@ -46,7 +58,7 @@ export function CombineScreen() {
       const outB64 = await combineShares(shares, encoding, passphrase ? passphrase : undefined);
       setSecret(base64ToUtf8(outB64));
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(localizeError(e, t));
     } finally {
       setBusy(false);
     }
@@ -57,31 +69,83 @@ export function CombineScreen() {
     if (detected) setEncoding(detected);
   }
 
+  async function importSharesFile() {
+    const res = await DocumentPicker.getDocumentAsync({
+      copyToCacheDirectory: true,
+      multiple: false,
+      type: "text/plain",
+    });
+    if (res.canceled) return;
+    const f = res.assets?.[0];
+    if (!f?.uri) return;
+
+    const text = await FileSystem.readAsStringAsync(f.uri, {
+      encoding: FileSystem.EncodingType.UTF8,
+    });
+
+    setRaw((prev) => (prev.trim().length > 0 ? `${prev}\n\n${text.trim()}` : text.trim()));
+  }
+
+  async function exportSecret() {
+    if (!secret) return;
+
+    const baseDir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory;
+    if (!baseDir) {
+      setError(t("error.noWritableDir"));
+      return;
+    }
+
+    const fileUri = `${baseDir}safeparts-secret-${Date.now()}.txt`;
+    await FileSystem.writeAsStringAsync(fileUri, secret, {
+      encoding: FileSystem.EncodingType.UTF8,
+    });
+    await Sharing.shareAsync(fileUri, {
+      mimeType: "text/plain",
+      dialogTitle: t("share.dialogTitleSecret"),
+    });
+    await FileSystem.deleteAsync(fileUri, { idempotent: true });
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Text style={styles.title}>Combine</Text>
-      <Text style={styles.subtitle}>Paste shares to recover the secret.</Text>
+      <ScreenHeader title={t("combine.title")} subtitle={t("combine.subtitle")} />
 
-      <Text style={styles.label}>Shares</Text>
+      <View style={styles.actionsTop}>
+        <Pressable onPress={() => void importSharesFile()} style={styles.smallBtn}>
+          <Text style={styles.smallBtnText}>{t("combine.importFile")}</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            seenScans.current = new Set();
+            setScannerAdded(0);
+            setScannerOpen(true);
+          }}
+          style={styles.smallBtn}
+        >
+          <Text style={styles.smallBtnText}>{t("combine.scanQr")}</Text>
+        </Pressable>
+      </View>
+
+      <Text style={[styles.label, isRtl ? styles.right : styles.left]}>{t("combine.shares")}</Text>
       <TextInput
         value={raw}
         onChangeText={setRaw}
-        placeholder="Paste shares here (blank line separates shares)"
+        placeholder={t("combine.shares.placeholder")}
         placeholderTextColor="#6f7aa7"
         multiline
-        style={[styles.input, styles.mono, styles.secretBox]}
+        style={[styles.input, styles.secretBox, styles.textBox]}
         autoCapitalize="none"
         autoCorrect={false}
       />
 
       <View style={styles.row}>
         <Pressable onPress={tryAutoDetect} style={[styles.smallBtn, styles.smallBtnMuted]}>
-          <Text style={styles.smallBtnText}>Auto-detect</Text>
+          <Text style={styles.smallBtnText}>{t("combine.autodetect")}</Text>
         </Pressable>
-        <Text style={styles.countText}>{shares.length} shares</Text>
+        <Text style={styles.countText}>{t("combine.count", { n: shares.length })}</Text>
       </View>
 
-      <Text style={styles.label}>Encoding</Text>
+      <Text style={[styles.label, isRtl ? styles.right : styles.left]}>{t("combine.encoding")}</Text>
       <View style={styles.chips}>
         {ENCODINGS.map((opt) => {
           const active = opt.value === encoding;
@@ -92,18 +156,18 @@ export function CombineScreen() {
               style={[styles.chip, active ? styles.chipActive : styles.chipInactive]}
             >
               <Text style={[styles.chipText, active ? styles.chipTextActive : styles.chipTextInactive]}>
-                {opt.label}
+                {t(opt.labelKey)}
               </Text>
             </Pressable>
           );
         })}
       </View>
 
-      <Text style={styles.label}>Passphrase (optional)</Text>
+      <Text style={[styles.label, isRtl ? styles.right : styles.left]}>{t("combine.passphrase")}</Text>
       <TextInput
         value={passphrase}
         onChangeText={setPassphrase}
-        placeholder="Passphrase"
+        placeholder={t("combine.passphrase.placeholder")}
         placeholderTextColor="#6f7aa7"
         style={styles.input}
         autoCapitalize="none"
@@ -124,14 +188,14 @@ export function CombineScreen() {
         {busy ? (
           <ActivityIndicator color="#061315" />
         ) : (
-          <Text style={styles.ctaText}>Combine</Text>
+          <Text style={styles.ctaText}>{t("combine.cta")}</Text>
         )}
       </Pressable>
 
       {secret !== null ? (
         <View style={styles.outBox}>
           <View style={styles.outHeader}>
-            <Text style={styles.outTitle}>Recovered secret</Text>
+            <Text style={[styles.outTitle, isRtl ? styles.right : styles.left]}>{t("combine.recovered")}</Text>
             <View style={styles.shareActions}>
               <Pressable
                 onPress={() => {
@@ -139,9 +203,19 @@ export function CombineScreen() {
                 }}
                 style={styles.actionBtn}
                 accessibilityRole="button"
-                accessibilityLabel="Copy recovered secret"
+                accessibilityLabel={t("a11y.copySecret")}
               >
-                <Text style={styles.actionBtnText}>Copy</Text>
+                <Text style={styles.actionBtnText}>{t("common.copy")}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  void exportSecret();
+                }}
+                style={styles.actionBtn}
+                accessibilityRole="button"
+                accessibilityLabel={t("a11y.exportSecret")}
+              >
+                <Text style={styles.actionBtnText}>{t("common.export")}</Text>
               </Pressable>
               <Pressable
                 onPress={() => {
@@ -149,15 +223,29 @@ export function CombineScreen() {
                 }}
                 style={styles.actionBtn}
                 accessibilityRole="button"
-                accessibilityLabel="Share recovered secret"
+                accessibilityLabel={t("a11y.shareSecret")}
               >
-                <Text style={styles.actionBtnText}>Share</Text>
+                <Text style={styles.actionBtnText}>{t("common.share")}</Text>
               </Pressable>
             </View>
           </View>
-          <Text selectable style={[styles.shareText, styles.mono]}>{secret}</Text>
+          <Text selectable style={[styles.shareText, styles.textBox]}>{secret}</Text>
         </View>
       ) : null}
+
+      <QrScannerModal
+        visible={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        addedCount={scannerAdded}
+        onScan={(value) => {
+          if (seenScans.current.has(value)) {
+            return;
+          }
+          seenScans.current.add(value);
+          setRaw((prev) => (prev.trim().length > 0 ? `${prev}\n\n${value}` : value));
+          setScannerAdded((c) => c + 1);
+        }}
+      />
     </ScrollView>
   );
 }
@@ -171,15 +259,10 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 28,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#e8fbff",
-  },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    color: "#a8b3cf",
+  actionsTop: {
+    marginBottom: 8,
+    flexDirection: "row",
+    gap: 10,
   },
   label: {
     marginTop: 14,
@@ -203,8 +286,14 @@ const styles = StyleSheet.create({
     minHeight: 140,
     textAlignVertical: "top",
   },
-  mono: {
-    fontFamily: "Courier",
+  textBox: {
+    fontFamily: Platform.select({
+      ios: "Courier",
+      android: "monospace",
+      default: "monospace",
+    }),
+    writingDirection: "ltr",
+    textAlign: "left",
   },
   chips: {
     flexDirection: "row",
@@ -242,6 +331,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   smallBtn: {
+    minWidth: 44,
+    minHeight: 44,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -318,7 +409,7 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     minWidth: 44,
-    minHeight: 36,
+    minHeight: 44,
     paddingHorizontal: 10,
     borderRadius: 999,
     borderWidth: 1,
@@ -336,5 +427,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#e8fbff",
     lineHeight: 18,
+  },
+  left: {
+    textAlign: "left",
+  },
+  right: {
+    textAlign: "right",
   },
 });

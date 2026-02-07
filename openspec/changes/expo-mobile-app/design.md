@@ -5,6 +5,7 @@ Safeparts currently ships as a Rust core (`crates/safeparts_core`) with three us
 Constraints:
 
 - Offline-first: split/combine and help/docs must work without network connectivity.
+- Offline-first: split/combine must work without network connectivity.
 - Security: no secret/share/passphrase logging; no persistence unless explicit user export.
 - Parity: match existing encodings and passphrase behavior so shares are cross-compatible with CLI/TUI/Desktop/Web.
 - Bilingual UI: English + Arabic, with correct direction handling and bidi-safe rendering of share tokens.
@@ -16,7 +17,6 @@ Constraints:
 - Build an Expo (React Native) mobile app for iOS and Android under `mobile/`.
 - Run split/combine operations locally by calling `safeparts_core` through a native bridge (not via a remote service).
 - Provide QR export and camera QR import for shares.
-- Bundle help/docs for offline in-app viewing.
 - Add CI gates and an automated tag-based store release pipeline (App Store Connect + Google Play) with signing gated on credentials.
 
 **Non-Goals:**
@@ -72,19 +72,7 @@ Rationale:
 
 - QR is more reliable than OCR for high-entropy tokens like base58/base64.
 
-### Decision 4: Bundle docs as static assets and render in-app
-
-Approach:
-
-- Reuse the existing `web/help` build output.
-- Package the built docs into the mobile app as assets.
-- Render docs in an in-app WebView under locale routes (English + Arabic).
-
-Rationale:
-
-- Keeps security guidance accessible offline and avoids external browser context switching.
-
-### Decision 5: Localization and bidi-safe share rendering are first-class
+### Decision 4: Localization and bidi-safe share rendering are first-class
 
 Approach:
 
@@ -96,7 +84,7 @@ Rationale:
 
 - Prevents bidi reordering bugs that can silently corrupt share copying/visual verification.
 
-### Decision 6: CI and release are part of the product surface
+### Decision 5: CI and release are part of the product surface
 
 Approach:
 
@@ -120,7 +108,7 @@ Rationale:
 
 - Add the mobile app as an additive surface with no changes to existing share formats.
 - First releases ship to TestFlight and Play internal testing tracks.
-- Promote to production tracks after manual verification on real devices (Split/Combine parity, offline docs, QR scan flows, accessibility baseline).
+- Promote to production tracks after manual verification on real devices (Split/Combine parity, QR scan flows, accessibility baseline).
 
 ## Open Questions
 
