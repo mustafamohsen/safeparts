@@ -40,6 +40,7 @@ export default defineConfig({
 			customCss: ['./src/styles/theme.css'],
 			components: {
 				SocialIcons: './src/components/SocialIcons.astro',
+				Footer: './src/components/Footer.astro',
 			},
 			head: [
 				{ tag: 'meta', attrs: { name: 'color-scheme', content: 'dark' } },
