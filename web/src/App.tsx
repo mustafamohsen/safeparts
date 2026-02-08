@@ -328,7 +328,17 @@ export function App() {
           </main>
 
           <footer className="dir-row flex-wrap items-center justify-between gap-2 text-start text-xs text-slate-400">
-            <div>MIT Licensed</div>
+            <div>
+              © Mustafa Mohsen ·{' '}
+              <a
+                className="underline decoration-slate-400/30 underline-offset-4 hover:decoration-slate-400/60"
+                href="https://github.com/mustafamohsen/safeparts/blob/main/LICENSE"
+                target="_blank"
+                rel="noreferrer"
+              >
+                MIT
+              </a>
+            </div>
           </footer>
 
           <LiveRegion announcements={announcements} />
