@@ -37,6 +37,10 @@ export const STRINGS = {
     encodingMnemoWordsDesc: "Easy to write mnemonic words",
     passphraseLabel: "Passphrase (optional)",
 
+    clearSecret: "Clear secret",
+    clearPassphrase: "Clear passphrase",
+    clearShare: "Clear share",
+
     splitCta: "Split",
     combineCta: "Combine",
     working: "Working…",
@@ -106,6 +110,10 @@ export const STRINGS = {
     encodingMnemoWords: "كلمات",
     encodingMnemoWordsDesc: "كلمات سهلة الكتابة",
     passphraseLabel: "عبارة مرور (اختياري)",
+
+    clearSecret: "مسح السر",
+    clearPassphrase: "مسح عبارة المرور",
+    clearShare: "مسح الحصة",
 
     splitCta: "قسم",
     combineCta: "استعادة",
