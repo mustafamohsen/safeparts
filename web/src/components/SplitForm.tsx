@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import type { Strings } from "../i18n";
 import { ensureWasm } from "../wasm";
 
+import { ClearButton } from "./ClearButton";
 import { CopyButton } from "./CopyButton";
 import {
   EncodingSelector,
@@ -104,14 +105,22 @@ export function SplitForm({ strings }: SplitFormProps) {
         <label className="block">
           <span className="field-label" id="secret-label">{strings.secretLabel}</span>
           <span className="field-hint mt-1 block" id="secret-hint">{strings.secretHint}</span>
-          <textarea
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            rows={4}
-            className="input mt-3 min-h-[120px] resize-y font-mono text-xs leading-relaxed"
-            aria-labelledby="secret-label"
-            aria-describedby="secret-hint"
-          />
+          <div className="relative mt-3">
+            <textarea
+              value={secret}
+              onChange={(e) => setSecret(e.target.value)}
+              rows={4}
+              className="input input-with-clear min-h-[120px] resize-y font-mono text-xs leading-relaxed"
+              aria-labelledby="secret-label"
+              aria-describedby="secret-hint"
+            />
+            <ClearButton
+              label={strings.clearSecret}
+              disabled={secret.length === 0}
+              onClick={() => setSecret("")}
+              className="absolute top-2 end-2"
+            />
+          </div>
         </label>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -163,13 +172,21 @@ export function SplitForm({ strings }: SplitFormProps) {
 
         <label className="block">
           <span className="field-label" id="passphrase-label">{strings.passphraseLabel}</span>
-          <input
-            value={passphrase}
-            onChange={(e) => setPassphrase(e.target.value)}
-            className="input mt-2"
-            autoComplete="new-password"
-            aria-labelledby="passphrase-label"
-          />
+          <div className="relative mt-2">
+            <input
+              value={passphrase}
+              onChange={(e) => setPassphrase(e.target.value)}
+              className="input input-with-clear"
+              autoComplete="new-password"
+              aria-labelledby="passphrase-label"
+            />
+            <ClearButton
+              label={strings.clearPassphrase}
+              disabled={passphrase.length === 0}
+              onClick={() => setPassphrase("")}
+              className="absolute top-1/2 -translate-y-1/2 end-2"
+            />
+          </div>
         </label>
 
         <div className="dir-row flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">

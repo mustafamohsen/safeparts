@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Strings } from "../i18n";
 import { ensureWasm } from "../wasm";
 
+import { ClearButton } from "./ClearButton";
 import { CopyButton } from "./CopyButton";
 import {
   EncodingSelector,
@@ -310,13 +311,21 @@ export function CombineForm({ strings }: CombineFormProps) {
 
         <label className="block text-start">
           <span className="field-label" id="passphrase-label">{strings.passphraseLabel}</span>
-          <input
-            value={passphrase}
-            onChange={(e) => setPassphrase(e.target.value)}
-            className="input mt-2"
-            autoComplete="new-password"
-            aria-labelledby="passphrase-label"
-          />
+          <div className="relative mt-2">
+            <input
+              value={passphrase}
+              onChange={(e) => setPassphrase(e.target.value)}
+              className="input input-with-clear"
+              autoComplete="new-password"
+              aria-labelledby="passphrase-label"
+            />
+            <ClearButton
+              label={strings.clearPassphrase}
+              disabled={passphrase.length === 0}
+              onClick={() => setPassphrase("")}
+              className="absolute top-1/2 -translate-y-1/2 end-2"
+            />
+          </div>
         </label>
 
         <div>
@@ -352,24 +361,34 @@ export function CombineForm({ strings }: CombineFormProps) {
                     </button>
                   </div>
 
-                  <textarea
-                    dir="ltr"
-                    value={box.value}
-                    onChange={(e) => setShareBoxValue(box.id, e.target.value)}
-                    onPaste={() => {
-                      pasteRequestedRef.current = true;
-                    }}
-                    rows={3}
-                    placeholder={strings.sharePlaceholder}
-                    className={`input mt-2 resize-y font-mono text-xs leading-relaxous transition-colors duration-700 ${
-                      isInvalid
-                        ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
-                        : ""
-                    } ${isFlashing ? "border-emerald-300/70 bg-emerald-500/15" : ""}`}
-                    aria-labelledby="shares-label"
-                    aria-describedby={isInvalid ? `share-${box.id}-error` : "shares-hint"}
-                    aria-invalid={isInvalid}
-                  />
+                  <div className="relative mt-2" dir="ltr">
+                    <textarea
+                      dir="ltr"
+                      value={box.value}
+                      onChange={(e) => setShareBoxValue(box.id, e.target.value)}
+                      onPaste={() => {
+                        pasteRequestedRef.current = true;
+                      }}
+                      rows={3}
+                      placeholder={strings.sharePlaceholder}
+                      className={`input input-with-clear resize-y font-mono text-xs leading-relaxous transition-colors duration-700 ${
+                        isInvalid
+                          ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
+                          : ""
+                      } ${isFlashing ? "border-emerald-300/70 bg-emerald-500/15" : ""}`}
+                      aria-labelledby="shares-label"
+                      aria-describedby={
+                        isInvalid ? `share-${box.id}-error` : "shares-hint"
+                      }
+                      aria-invalid={isInvalid}
+                    />
+                    <ClearButton
+                      label={`${strings.clearShare} ${i + 1}`}
+                      disabled={box.value.length === 0}
+                      onClick={() => setShareBoxValue(box.id, "")}
+                      className="absolute top-2 end-2"
+                    />
+                  </div>
                   {isInvalid && (
                     <p className="mt-1 text-xs text-rose-400" id={`share-${box.id}-error`} role="alert">
                       {strings.shareRequired}
