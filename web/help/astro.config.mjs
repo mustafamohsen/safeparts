@@ -4,6 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+	devToolbar: { enabled: false },
 	// This Starlight site is deployed under the main web UI at `/help/`.
 	base: '/help',
 	// Build into the Vite app's dist directory so Netlify can publish both.
