@@ -49,20 +49,28 @@ async function copyToClipboard(text: string) {
   document.body.removeChild(textarea);
 }
 
+function extractEncryptedTextPlaintext(container: HTMLElement): string | null {
+  const srOnly = container.querySelector<HTMLElement>("span.sr-only");
+  const text = srOnly?.textContent?.trim();
+  if (text) return text;
+
+  // Fallback: if the EncryptedText animation changes markup,
+  // prefer stable readable text over animated glyphs.
+  const ariaLabel = container.querySelector<HTMLElement>("[aria-label]")?.getAttribute("aria-label")?.trim();
+  if (ariaLabel) return ariaLabel;
+
+  const innerText = container.innerText.trim();
+  return innerText.length > 0 ? innerText : null;
+}
+
 function collectSplitSharesText(): string | null {
   const panel = document.getElementById("split-panel");
   if (!panel) return null;
-  const shareBlocks = Array.from(
-    panel.querySelectorAll<HTMLDivElement>('div[dir="ltr"].input')
-  )
-    .map((el) => {
-      const visibleText = Array.from(el.querySelectorAll<HTMLElement>("span[aria-hidden='true']"))
-        .filter((span) => !span.classList.contains("sr-only"))
-        .map((span) => span.innerText.trim())
-        .join("");
-      return visibleText;
-    })
-    .filter(Boolean);
+
+  const shareBlocks = Array.from(panel.querySelectorAll<HTMLDivElement>('div[dir="ltr"].input'))
+    .map((el) => extractEncryptedTextPlaintext(el))
+    .filter((text): text is string => Boolean(text));
+
   if (shareBlocks.length === 0) return null;
   return shareBlocks.join("\n\n");
 }
@@ -70,13 +78,11 @@ function collectSplitSharesText(): string | null {
 function collectCombineResultText(): string | null {
   const panel = document.getElementById("combine-panel");
   if (!panel) return null;
+
   const recovered = panel.querySelector<HTMLDivElement>('div[dir="auto"].input');
   if (!recovered) return null;
-  const visibleText = Array.from(recovered.querySelectorAll<HTMLElement>("span[aria-hidden='true']"))
-    .filter((span) => !span.classList.contains("sr-only"))
-    .map((span) => span.innerText.trim())
-    .join("");
-  return visibleText || null;
+
+  return extractEncryptedTextPlaintext(recovered);
 }
 
 function clickSubmit(tab: Tab) {
