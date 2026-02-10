@@ -27,7 +27,10 @@ export function SplitForm({ strings }: SplitFormProps) {
   const [secret, setSecret] = useState("");
   const [k, setK] = useState(2);
   const [n, setN] = useState(3);
-  const [isCoarsePointer, setIsCoarsePointer] = useState(false);
+  const [isCoarsePointer, setIsCoarsePointer] = useState(() => {
+    const media = typeof window !== "undefined" ? window.matchMedia?.("(pointer: coarse)") : null;
+    return media?.matches ?? false;
+  });
 
   useEffect(() => {
     const media = typeof window !== "undefined" ? window.matchMedia?.("(pointer: coarse)") : null;
@@ -159,88 +162,116 @@ export function SplitForm({ strings }: SplitFormProps) {
         </label>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <label className="block">
+          <label className="block" htmlFor="split-k">
             <span className="field-label block sm:min-h-10" id="k-label">
               {strings.kLabel}
             </span>
-            <div className="relative mt-2">
+            {isCoarsePointer ? (
+              <div className="input-stepper-shell mt-2">
+                <input
+                  id="split-k"
+                  type="number"
+                  inputMode="numeric"
+                  min={2}
+                  max={Math.min(255, n)}
+                  value={k}
+                  onChange={(e) => setK(clampK(Number(e.target.value), n))}
+                  onFocus={selectAllOnFocus}
+                  onClick={selectAllOnClick}
+                  className="input-stepper-field"
+                  aria-labelledby="k-label"
+                />
+                <div className="stepper-controls items-center gap-1 p-1">
+                  <button
+                    type="button"
+                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setK((prev) => clampK(prev - 1, n))}
+                    disabled={k <= 2}
+                    aria-label={strings.decrement}
+                    title={strings.decrement}
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setK((prev) => clampK(prev + 1, n))}
+                    disabled={k >= Math.min(255, n)}
+                    aria-label={strings.increment}
+                    title={strings.increment}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            ) : (
               <input
+                id="split-k"
                 type="number"
-                inputMode="numeric"
                 min={2}
                 max={Math.min(255, n)}
                 value={k}
                 onChange={(e) => setK(clampK(Number(e.target.value), n))}
-                onFocus={selectAllOnFocus}
-                onClick={selectAllOnClick}
-                className="input input-with-stepper"
+                className="input mt-2"
                 aria-labelledby="k-label"
               />
-              <div className="stepper-controls absolute top-1/2 -translate-y-1/2 end-2 items-center gap-1">
-                <button
-                  type="button"
-                  className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-                  onClick={() => setK((prev) => clampK(prev - 1, n))}
-                  disabled={k <= 2}
-                  aria-label={strings.decrement}
-                  title={strings.decrement}
-                >
-                  −
-                </button>
-                <button
-                  type="button"
-                  className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-                  onClick={() => setK((prev) => clampK(prev + 1, n))}
-                  disabled={k >= Math.min(255, n)}
-                  aria-label={strings.increment}
-                  title={strings.increment}
-                >
-                  +
-                </button>
-              </div>
-            </div>
+            )}
           </label>
 
-          <label className="block">
+          <label className="block" htmlFor="split-n">
             <span className="field-label block sm:min-h-10" id="n-label">
               {strings.nLabel}
             </span>
-            <div className="relative mt-2">
+            {isCoarsePointer ? (
+              <div className="input-stepper-shell mt-2">
+                <input
+                  id="split-n"
+                  type="number"
+                  inputMode="numeric"
+                  min={2}
+                  max={255}
+                  value={n}
+                  onChange={(e) => setNClamped(Number(e.target.value))}
+                  onFocus={selectAllOnFocus}
+                  onClick={selectAllOnClick}
+                  className="input-stepper-field"
+                  aria-labelledby="n-label"
+                />
+                <div className="stepper-controls items-center gap-1 p-1">
+                  <button
+                    type="button"
+                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setNClamped(n - 1)}
+                    disabled={n <= 2}
+                    aria-label={strings.decrement}
+                    title={strings.decrement}
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setNClamped(n + 1)}
+                    disabled={n >= 255}
+                    aria-label={strings.increment}
+                    title={strings.increment}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            ) : (
               <input
+                id="split-n"
                 type="number"
-                inputMode="numeric"
                 min={2}
                 max={255}
                 value={n}
                 onChange={(e) => setNClamped(Number(e.target.value))}
-                onFocus={selectAllOnFocus}
-                onClick={selectAllOnClick}
-                className="input input-with-stepper"
+                className="input mt-2"
                 aria-labelledby="n-label"
               />
-              <div className="stepper-controls absolute top-1/2 -translate-y-1/2 end-2 items-center gap-1">
-                <button
-                  type="button"
-                  className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-                  onClick={() => setNClamped(n - 1)}
-                  disabled={n <= 2}
-                  aria-label={strings.decrement}
-                  title={strings.decrement}
-                >
-                  −
-                </button>
-                <button
-                  type="button"
-                  className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-                  onClick={() => setNClamped(n + 1)}
-                  disabled={n >= 255}
-                  aria-label={strings.increment}
-                  title={strings.increment}
-                >
-                  +
-                </button>
-              </div>
-            </div>
+            )}
           </label>
 
           <div className="block sm:col-span-3">

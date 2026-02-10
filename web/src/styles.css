@@ -58,25 +58,37 @@
 
   /*
    * Mobile: numeric inputs have poor affordances on iOS (no steppers).
-   * We add custom +/- controls for coarse pointers without changing layout.
+   * Use custom +/- controls on coarse pointers.
    */
   .stepper-controls {
-    display: none;
+    display: flex;
   }
 
-  @media (pointer: coarse) {
+  @media (pointer: fine) {
     .stepper-controls {
-      display: flex;
+      display: none;
     }
+  }
 
-    .input-with-stepper {
-      padding-right: 5.5rem;
-    }
+  .input-stepper-shell {
+    @apply w-full rounded-xl border border-emerald-500/15 bg-black/40 text-sm text-slate-100 shadow-sm outline-none;
+    @apply focus-within:border-emerald-400 focus-within:ring-4 focus-within:ring-emerald-500/15;
+    display: flex;
+    align-items: stretch;
+  }
 
-    :dir(rtl) .input-with-stepper {
-      padding-left: 5.5rem;
-      padding-right: 0.75rem;
-    }
+  .input-stepper-field {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: none;
+    padding: 0.5rem 0.75rem;
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    -webkit-appearance: none;
+    appearance: none;
   }
 
   .btn {
