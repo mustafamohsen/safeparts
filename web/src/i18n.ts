@@ -61,6 +61,8 @@ export const STRINGS = {
 
     copy: "Copy",
     copied: "Copied",
+    increment: "Increase",
+    decrement: "Decrease",
 
     wasmHint: "Before using this UI, run",
     wasmCommand: "bun run build:wasm",
@@ -135,6 +137,8 @@ export const STRINGS = {
 
     copy: "نسخ",
     copied: "تم النسخ",
+    increment: "زيادة",
+    decrement: "تقليل",
 
     wasmHint: "قبل استخدام الواجهة، شغل",
     wasmCommand: "bun run build:wasm",
