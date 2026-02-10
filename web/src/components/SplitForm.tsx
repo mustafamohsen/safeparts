@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FocusEvent, type MouseEvent as ReactMouseEvent } from "react";
 
 import type { Strings } from "../i18n";
 import { ensureWasm } from "../wasm";
@@ -27,6 +27,27 @@ export function SplitForm({ strings }: SplitFormProps) {
   const [secret, setSecret] = useState("");
   const [k, setK] = useState(2);
   const [n, setN] = useState(3);
+  const [isCoarsePointer, setIsCoarsePointer] = useState(() => {
+    const media = typeof window !== "undefined" ? window.matchMedia?.("(pointer: coarse)") : null;
+    return media?.matches ?? false;
+  });
+
+  useEffect(() => {
+    const media = typeof window !== "undefined" ? window.matchMedia?.("(pointer: coarse)") : null;
+    if (!media) return;
+
+    const update = () => setIsCoarsePointer(media.matches);
+    update();
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", update);
+      return () => media.removeEventListener("change", update);
+    }
+
+    // Safari < 14
+    media.addListener(update);
+    return () => media.removeListener(update);
+  }, []);
 
   function clampK(nextK: number, nextN: number): number {
     if (!Number.isFinite(nextK)) return 2;
@@ -40,6 +61,23 @@ export function SplitForm({ strings }: SplitFormProps) {
   function clampN(nextN: number): number {
     if (!Number.isFinite(nextN)) return 2;
     return Math.min(255, Math.max(2, Math.floor(nextN)));
+  }
+
+  function setNClamped(nextN: number) {
+    const safeN = clampN(nextN);
+    setN(safeN);
+    setK((prevK) => clampK(prevK, safeN));
+  }
+
+  function selectAllOnFocus(e: FocusEvent<HTMLInputElement>) {
+    if (!isCoarsePointer) return;
+    // Makes it easy to replace the value on mobile.
+    requestAnimationFrame(() => e.currentTarget.select());
+  }
+
+  function selectAllOnClick(e: ReactMouseEvent<HTMLInputElement>) {
+    if (!isCoarsePointer) return;
+    e.currentTarget.select();
   }
   const [encoding, setEncoding] = useState<Encoding>("mnemo-words");
   const [passphrase, setPassphrase] = useState("");
@@ -124,49 +162,123 @@ export function SplitForm({ strings }: SplitFormProps) {
         </label>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <label className="block">
+          <label className="block" htmlFor="split-k">
             <span className="field-label block sm:min-h-10" id="k-label">
               {strings.kLabel}
             </span>
-            <input
-              type="number"
-              min={2}
-              max={Math.min(255, n)}
-              value={k}
-              onChange={(e) => setK(clampK(Number(e.target.value), n))}
-              className="input mt-2"
-              aria-labelledby="k-label"
-            />
+            {isCoarsePointer ? (
+              <div className="input-stepper-shell mt-2">
+                <input
+                  id="split-k"
+                  type="number"
+                  inputMode="numeric"
+                  min={2}
+                  max={Math.min(255, n)}
+                  value={k}
+                  onChange={(e) => setK(clampK(Number(e.target.value), n))}
+                  onFocus={selectAllOnFocus}
+                  onClick={selectAllOnClick}
+                  className="input-stepper-field"
+                  aria-labelledby="k-label"
+                />
+                <div className="stepper-controls items-center gap-1 p-1">
+                  <button
+                    type="button"
+                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setK((prev) => clampK(prev - 1, n))}
+                    disabled={k <= 2}
+                    aria-label={strings.decrement}
+                    title={strings.decrement}
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setK((prev) => clampK(prev + 1, n))}
+                    disabled={k >= Math.min(255, n)}
+                    aria-label={strings.increment}
+                    title={strings.increment}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <input
+                id="split-k"
+                type="number"
+                min={2}
+                max={Math.min(255, n)}
+                value={k}
+                onChange={(e) => setK(clampK(Number(e.target.value), n))}
+                className="input mt-2"
+                aria-labelledby="k-label"
+              />
+            )}
           </label>
 
-          <label className="block">
+          <label className="block" htmlFor="split-n">
             <span className="field-label block sm:min-h-10" id="n-label">
               {strings.nLabel}
             </span>
-            <input
-              type="number"
-              min={2}
-              max={255}
-              value={n}
-              onChange={(e) => {
-                const nextN = clampN(Number(e.target.value));
-                setN(nextN);
-                setK((prevK) => clampK(prevK, nextN));
-              }}
-              className="input mt-2"
-              aria-labelledby="n-label"
-            />
+            {isCoarsePointer ? (
+              <div className="input-stepper-shell mt-2">
+                <input
+                  id="split-n"
+                  type="number"
+                  inputMode="numeric"
+                  min={2}
+                  max={255}
+                  value={n}
+                  onChange={(e) => setNClamped(Number(e.target.value))}
+                  onFocus={selectAllOnFocus}
+                  onClick={selectAllOnClick}
+                  className="input-stepper-field"
+                  aria-labelledby="n-label"
+                />
+                <div className="stepper-controls items-center gap-1 p-1">
+                  <button
+                    type="button"
+                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setNClamped(n - 1)}
+                    disabled={n <= 2}
+                    aria-label={strings.decrement}
+                    title={strings.decrement}
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setNClamped(n + 1)}
+                    disabled={n >= 255}
+                    aria-label={strings.increment}
+                    title={strings.increment}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <input
+                id="split-n"
+                type="number"
+                min={2}
+                max={255}
+                value={n}
+                onChange={(e) => setNClamped(Number(e.target.value))}
+                className="input mt-2"
+                aria-labelledby="n-label"
+              />
+            )}
           </label>
 
           <div className="block sm:col-span-3">
             <span className="field-label block" id="encoding-label">
               {strings.encodingLabel}
             </span>
-            <EncodingSelector
-              value={encoding}
-              onChange={setEncoding}
-              options={encodingOptions}
-            />
+            <EncodingSelector value={encoding} onChange={setEncoding} options={encodingOptions} />
           </div>
         </div>
 
