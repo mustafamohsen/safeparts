@@ -61,6 +61,21 @@ decode shares -> SharePackets
   +-> output secret bytes
 ```
 
+## Data structure of a split
+
+Safeparts treats the input as a byte array and splits it **byte-by-byte**. The split input is:
+
+- `data_to_split` (plaintext or ciphertext)
+- followed by a 32-byte BLAKE3 integrity tag
+
+Let the tagged payload be `L` bytes. For each byte position `i`:
+
+1. Interpret the byte as the constant term of a degree-<var>k</var>-1 polynomial in <span class="token token--mono">GF(256)</span>.
+2. Sample <var>k</var>-1 random coefficients (one polynomial per byte index).
+3. Evaluate the polynomial at `x = 1..n` to produce `n` output bytes.
+
+Each share payload is the concatenation of its `y` values across all `L` positions, so every share has the same length as the tagged payload. The share packet stores its own `x` value, along with `k`, `n`, and `set_id`, so reconstruction can pick any <var>k</var> shares and interpolate each byte independently.
+
 ## Threshold sharing details
 
 ### Shamir secret sharing over GF(256)
