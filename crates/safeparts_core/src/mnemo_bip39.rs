@@ -50,6 +50,14 @@ pub fn decode_packet(s: &str) -> CoreResult<SharePacket> {
     let mut chunks: Vec<Option<[u8; CHUNK_LEN]>> = Vec::new();
 
     for phrase in phrases {
+        let lowered;
+        let phrase = if phrase.bytes().any(|b| b.is_ascii_uppercase()) {
+            lowered = phrase.to_ascii_lowercase();
+            lowered.as_str()
+        } else {
+            phrase
+        };
+
         let mnemonic = Mnemonic::parse_in(Language::English, phrase)
             .map_err(|e| CoreError::Encoding(e.to_string()))?;
 
@@ -155,6 +163,44 @@ mod tests {
 
         let s = encode_packet(&pkt).unwrap();
         let decoded = decode_packet(&s).unwrap();
+        assert_eq!(decoded, pkt);
+    }
+
+    #[test]
+    fn decode_accepts_mixed_case_words() {
+        let pkt = SharePacket {
+            set_id: SetId([7u8; 16]),
+            k: 3,
+            n: 5,
+            x: 4,
+            payload: (0u8..200).collect(),
+            crypto_params: None,
+        };
+
+        let s = encode_packet(&pkt).unwrap();
+        let phrases: Vec<String> = s
+            .split('/')
+            .map(str::trim)
+            .filter(|p| !p.is_empty())
+            .map(|phrase| {
+                let words: Vec<String> = phrase
+                    .split_whitespace()
+                    .enumerate()
+                    .map(|(i, w)| {
+                        if i % 3 == 0 {
+                            w.to_ascii_uppercase()
+                        } else {
+                            w.to_string()
+                        }
+                    })
+                    .collect();
+
+                words.join(" ")
+            })
+            .collect();
+
+        let mixed = phrases.join(FRAME_SEPARATOR);
+        let decoded = decode_packet(&mixed).unwrap();
         assert_eq!(decoded, pkt);
     }
 

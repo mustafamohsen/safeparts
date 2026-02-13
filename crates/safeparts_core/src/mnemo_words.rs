@@ -109,9 +109,18 @@ fn words_to_bytes(words: &[&str]) -> CoreResult<Vec<u8>> {
     let mut acc_bits: u8 = 0;
 
     for &w in words {
-        let idx = *map
-            .get(w)
-            .ok_or_else(|| CoreError::Encoding(format!("unknown word: {w}")))?;
+        let idx = match map.get(w) {
+            Some(idx) => *idx,
+            None => {
+                if w.bytes().any(|b| b.is_ascii_uppercase()) {
+                    let lowered = w.to_ascii_lowercase();
+                    *map.get(lowered.as_str())
+                        .ok_or_else(|| CoreError::Encoding(format!("unknown word: {w}")))?
+                } else {
+                    return Err(CoreError::Encoding(format!("unknown word: {w}")));
+                }
+            }
+        };
 
         acc = (acc << 11) | u32::from(idx);
         acc_bits += 11;
@@ -169,6 +178,34 @@ mod tests {
 
         let s = encode_packet(&pkt).unwrap();
         let decoded = decode_packet(&s).unwrap();
+        assert_eq!(decoded, pkt);
+    }
+
+    #[test]
+    fn decode_accepts_mixed_case_words() {
+        let pkt = SharePacket {
+            set_id: SetId([1u8; 16]),
+            k: 3,
+            n: 5,
+            x: 2,
+            payload: vec![9, 8, 7, 6, 5, 4, 3],
+            crypto_params: None,
+        };
+
+        let s = encode_packet(&pkt).unwrap();
+        let mixed: Vec<String> = s
+            .split_whitespace()
+            .enumerate()
+            .map(|(i, w)| {
+                if i % 2 == 0 {
+                    w.to_ascii_uppercase()
+                } else {
+                    w.to_string()
+                }
+            })
+            .collect();
+
+        let decoded = decode_packet(&mixed.join(" ")).unwrap();
         assert_eq!(decoded, pkt);
     }
 
