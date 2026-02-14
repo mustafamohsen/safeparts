@@ -63,6 +63,11 @@ def main() -> int:
         help="Optional cargo --target triple (uses target/<triple>/release)",
     )
     parser.add_argument(
+        "--arch",
+        default=None,
+        help="Override detected architecture for naming",
+    )
+    parser.add_argument(
         "--out-dir",
         default=None,
         help="Output directory (default: dist/release)",
@@ -71,7 +76,7 @@ def main() -> int:
 
     repo_root = Path(__file__).resolve().parents[2]
     os_id = _detect_os()
-    arch = _detect_arch()
+    arch = args.arch or _detect_arch()
 
     version = args.version
     if version.startswith("refs/tags/"):

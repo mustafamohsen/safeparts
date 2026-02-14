@@ -86,10 +86,13 @@ jobs:
             id: linux
           - os: windows-latest
             id: windows
-          - os: macos-13
+          - os: macos-14
             id: macos-x86_64
+            target: x86_64-apple-darwin
+            arch: x86_64
           - os: macos-14
             id: macos-aarch64
+            arch: aarch64
 
     steps:
       - uses: actions/checkout@v4
@@ -100,11 +103,28 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
 
+      - name: Install Rust target (if needed)
+        if: matrix.target
+        shell: bash
+        run: rustup target add ${{ matrix.target }}
+
       - name: Build release binaries
-        run: cargo build --release -p safeparts -p safeparts_tui
+        shell: bash
+        run: |
+          if [ -n "${{ matrix.target }}" ]; then
+            cargo build --release -p safeparts -p safeparts_tui --target ${{ matrix.target }}
+          else
+            cargo build --release -p safeparts -p safeparts_tui
+          fi
 
       - name: Package
-        run: python scripts/release/package.py --version "${{ env.RELEASE_VERSION }}"
+        shell: bash
+        run: |
+          if [ -n "${{ matrix.target }}" ]; then
+            python scripts/release/package.py --version "${{ env.RELEASE_VERSION }}" --target "${{ matrix.target }}" --arch "${{ matrix.arch }}"
+          else
+            python scripts/release/package.py --version "${{ env.RELEASE_VERSION }}" --arch "${{ matrix.arch }}"
+          fi
 
       - name: Upload packaged artifact
         uses: actions/upload-artifact@v4
