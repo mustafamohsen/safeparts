@@ -147,6 +147,7 @@ for (const a of document.querySelectorAll('a[href]')) {
 						{ slug: 'encodings' },
 						{ slug: 'security' },
 						{ slug: 'technical-design' },
+						{ slug: 'use-cases' },
 						{ slug: 'troubleshooting' },
 					],
 				},
