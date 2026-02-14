@@ -135,6 +135,11 @@ If the repo ends up structured differently, prefer the actual layout over this.
 - Do not commit secrets or sample shares derived from real secrets.
 - Treat share packets and reconstructed secrets as sensitive: minimize logging.
 
+### Docs writing
+
+- When editing or creating user-facing docs (for example `README.md`, `web/help/**/*.mdx`, and other end-user/contributor docs), load and apply the `humanizer` skill before finalizing the text.
+- Do not apply this to internal instruction/tooling files (for example `AGENTS.md`, `openspec/**`, `.opencode/**`, or similar).
+
 ### Rust Style
 
 **Formatting**
