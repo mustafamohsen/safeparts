@@ -3,12 +3,12 @@ title: Encodings
 description: Choose a share format that matches your workflow.
 ---
 
-Encodings change how shares are represented for storage and transfer.
-The underlying share packet is the same.
+Encodings only change how shares are represented for storage and transfer.
+The underlying share packet bytes stay the same.
 
 :::note
-Pick the format you can reliably store and recover.
-The best format is the one your recovery plan can execute.
+Pick the format you can store and later re-enter without mistakes.
+The best encoding is the one your recovery plan can execute.
 :::
 
 ## Machine-friendly
@@ -17,13 +17,13 @@ The best format is the one your recovery plan can execute.
 
 - Compact and easy to copy/paste
 - URL-safe (<span class="token token--mono">-</span> and <span class="token token--mono">_</span>)
-- Best when shares live in password managers or secure secret stores
+- A good fit for password managers or secure secret stores
 
 ### <span class="token">base58</span> (base58check)
 
-- Avoids ambiguous characters
-- Has an integrated checksum (Base58Check)
-- Good for manual copy/paste when you want fewer visually confusing characters
+- Avoids some visually ambiguous characters
+- Includes a built-in checksum (Base58Check)
+- Nice for manual copy/paste when you want fewer "did I read that right?" moments
 
 ## Human-friendly
 

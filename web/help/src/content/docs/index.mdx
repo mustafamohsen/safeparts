@@ -3,7 +3,7 @@ title: Safeparts Help
 description: Learn what Safeparts is, when to use it, and how to run the Web UI, CLI, and TUI.
 template: splash
 hero:
-  tagline: Split a secret into recovery shares and recover it with k of n.
+  tagline: Split a secret into recovery shares. Recover with k of n.
   image:
     file: ../../assets/logo.svg
   actions:
@@ -19,47 +19,48 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Start here
 
-Safeparts is a k-of-n recovery tool. It helps you avoid single points of failure by distributing a secret across people and places.
+Safeparts is a k-of-n recovery tool.
+It lets you spread one secret across people and places so recovery takes cooperation, not one perfect backup.
 
 <CardGrid stagger>
 	<Card title="Getting started" icon="star">
-		Do a short practice run, learn how to pick <var>k</var> and <var>n</var>, and build a recovery plan that works under stress.
+		Do one short practice run, learn how to pick <var>k</var> and <var>n</var>, and write down a recovery plan you can follow on a bad day.
 		
 		[Read the guide](getting-started/)
 	</Card>
 	<Card title="Use cases" icon="document">
-		Real-world scenarios (personal recovery, teams, infra) and how to choose who holds which share.
+		Real-world scenarios (personal recovery, teams, infra) and a few simple patterns for deciding who should hold which share.
 		
 		[Browse use cases](use-cases/)
 	</Card>
 	<Card title="Security" icon="setting">
-		Threat model, storage rules, and how passphrases change what an attacker must steal.
+		Threat model, storage rules, and what passphrases change (and what they don't).
 		
 		[Read security notes](security/)
 	</Card>
 	<Card title="How it works" icon="open-book">
-		The short science: threshold sharing, integrity tags, and optional encryption.
+		The short version: threshold sharing, an integrity tag to catch mistakes, and optional encryption.
 		
 		[Read how it works](project/)
 	</Card>
 	<Card title="Interfaces" icon="laptop">
-		Use the web UI for one-off workflows, the CLI for automation, or the TUI for offline/interactive sessions.
+		Pick your front-end: Web UI for one-off workflows, CLI for automation, or TUI for offline/interactive sessions.
 		
 		[Web UI](web-ui/) · [CLI](cli/) · [TUI](tui/)
 	</Card>
 	<Card title="Build & run" icon="setting">
-		Install and run Safeparts on Linux/macOS/Windows, including the docs site.
+		Install and run Safeparts on Linux/macOS/Windows, including building the web app and this docs site.
 		
 		[Build & run](build-and-run/)
 	</Card>
 </CardGrid>
 
 :::caution
-Shares are sensitive. Don’t paste real shares into chat, tickets, or logs.
-When documenting or debugging, use synthetic examples.
+Shares are sensitive. Don't paste real shares into chat, tickets, or logs.
+When you need examples for docs or debugging, use synthetic secrets.
 :::
 
 :::note
-If you’re choosing a plan for the first time, start with a practice run and a simple storage plan.
+If you're choosing a plan for the first time, start simple and do a practice run.
 You can always re-split later.
 :::

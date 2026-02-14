@@ -5,7 +5,8 @@ description: Threat model, safe handling rules, and what passphrases change.
 
 import { Steps } from '@astrojs/starlight/components';
 
-Safeparts reduces single points of failure. It does not remove the need for good storage decisions.
+Safeparts removes single points of failure.
+It does not make storage and distribution decisions for you.
 
 ## Threat model (what to assume)
 
@@ -15,7 +16,7 @@ Safeparts reduces single points of failure. It does not remove the need for good
 
 :::caution
 Treat shares like the secret itself.
-Don’t paste them into chat, tickets, logs, or screenshots.
+Don't paste them into chat, tickets, logs, or screenshots.
 :::
 
 ## Storage rules
@@ -38,13 +39,13 @@ With a passphrase, an attacker needs both:
 
 :::note
 Passphrases do not replace share separation.
-They add a second requirement, but you still must store shares safely.
+They add a second requirement, but the storage plan is still the security boundary.
 :::
 
 ## Web UI privacy boundary
 
-The web UI runs split/combine locally via WASM.
-Your secret is not uploaded unless you choose to copy/paste it somewhere or deploy a modified build.
+The web UI runs split/combine entirely in your browser via WASM (no backend required).
+Your secret is not uploaded unless you choose to copy/paste it somewhere else or deploy a modified build.
 
 ## Build output
 
