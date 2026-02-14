@@ -6,7 +6,7 @@ description: How Safeparts works under the hood, why the cryptographic primitive
 This page is a technical overview with a security bias.
 It's about the procedures and design decisions behind Safeparts, not a tour of the codebase.
 
-If you are new, start with [Getting started](getting-started/) and [Security](security/).
+If you are new, start with [Getting started](../getting-started/) and [Security](../security/).
 
 ## What Safeparts is (and is not)
 
@@ -224,7 +224,7 @@ can you store and later re-enter the share correctly?
 - <span class="token">mnemo-words</span>: word-based with CRC16 to catch many transcription errors.
 - <span class="token">mnemo-bip39</span>: BIP-39-valid word sequences with framing for multi-part packets.
 
-See [Encodings](encodings/) for selection guidance.
+See [Encodings](../encodings/) for selection guidance.
 
 ## Recommended security procedures
 
@@ -266,7 +266,7 @@ See [Encodings](encodings/) for selection guidance.
 - No protection if a legitimate coalition obtains <var>k</var> shares.
 - Passphrase security depends on passphrase strength; Argon2id raises the cost but cannot prevent weak passphrases.
 
-For the human side of planning, see [Use cases](use-cases/) and [Security](security/).
+For the human side of planning, see [Use cases](../use-cases/) and [Security](../security/).
 
 ## Resources
 
