@@ -115,8 +115,8 @@ pub struct App {
     combine_shares_text: TextArea<'static>,
     combine_encoding: Encoding,
     combine_passphrase: Zeroizing<String>,
-    combine_recovered: Option<Vec<u8>>,
-    combine_recovered_text: Option<String>,
+    combine_recovered: Option<Zeroizing<Vec<u8>>>,
+    combine_recovered_text: Option<Zeroizing<String>>,
     combine_used_encoding: Option<Encoding>,
 
     // common
@@ -135,10 +135,7 @@ impl App {
         split_secret_text
             .set_placeholder_text("Paste secret text here (UTF-8) or Ctrl+L to load a file...");
 
-        let mut combine_shares_text = TextArea::default();
-        combine_shares_text.set_placeholder_text(
-            "Paste shares here.\n\n- base64/base58: whitespace-separated\n- mnemonics: one share per paragraph (blank-line separated)",
-        );
+        let combine_shares_text = Self::new_combine_shares_text();
 
         Self {
             tab: TabId::Split,
@@ -168,6 +165,14 @@ impl App {
             modal: None,
             theme,
         }
+    }
+
+    fn new_combine_shares_text() -> TextArea<'static> {
+        let mut combine_shares_text = TextArea::default();
+        combine_shares_text.set_placeholder_text(
+            "Paste shares here.\n\n- base64/base58: whitespace-separated\n- mnemonics: one share per paragraph (blank-line separated)",
+        );
+        combine_shares_text
     }
 
     pub fn run<B: ratatui::backend::Backend>(mut self, terminal: &mut Terminal<B>) -> Result<()> {
@@ -463,9 +468,9 @@ impl App {
             }
             TabId::Combine => {
                 if let Some(text) = self.combine_recovered_text.as_ref() {
-                    text.clone()
+                    text.as_str().to_string()
                 } else if let Some(bytes) = self.combine_recovered.as_ref() {
-                    base64::engine::general_purpose::STANDARD.encode(bytes)
+                    base64::engine::general_purpose::STANDARD.encode(bytes.as_slice())
                 } else {
                     self.set_info("nothing to copy");
                     return Ok(());
@@ -474,7 +479,10 @@ impl App {
         };
 
         match self.clipboard.set_text(&text) {
-            Ok(()) => self.set_ok("copied"),
+            Ok(crate::clipboard::CopyMethod::System) => self.set_ok("copied to clipboard"),
+            Ok(crate::clipboard::CopyMethod::Osc52) => {
+                self.set_info("copied via OSC52; clipboard may be shared")
+            }
             Err(e) => self.set_err(format!("copy failed: {e}")),
         }
         Ok(())
@@ -554,6 +562,7 @@ impl App {
                     combined.push_str(s.trim());
                     combined.push_str("\n\n");
                 }
+                self.combine_shares_text = Self::new_combine_shares_text();
                 self.combine_shares_text.insert_str(combined);
                 self.set_ok("loaded share files");
             }
@@ -585,8 +594,14 @@ impl App {
                     return Ok(());
                 };
 
+                if text.is_empty() {
+                    self.set_info("output path required");
+                    return Ok(());
+                }
+
                 let path = PathBuf::from(text);
-                fs::write(&path, bytes).with_context(|| format!("write {}", path.display()))?;
+                fs::write(&path, bytes.as_slice())
+                    .with_context(|| format!("write {}", path.display()))?;
                 self.set_ok("saved recovered secret");
             }
         }
@@ -600,6 +615,7 @@ impl App {
         } else {
             self.split_secret_text.lines().join("\n").into_bytes()
         };
+        let secret_bytes = Zeroizing::new(secret_bytes);
 
         if secret_bytes.is_empty() {
             self.set_info("secret is empty");
@@ -613,7 +629,7 @@ impl App {
         };
 
         match split_secret(
-            &secret_bytes,
+            secret_bytes.as_slice(),
             self.split_k,
             self.split_n,
             self.split_encoding,
@@ -643,9 +659,14 @@ impl App {
 
         match combine_shares(&input, self.combine_encoding, passphrase) {
             Ok((_packets, bytes, used_enc)) => {
+                let recovered = Zeroizing::new(bytes);
+                let recovered_text = String::from_utf8(recovered.as_slice().to_vec())
+                    .ok()
+                    .map(Zeroizing::new);
+
                 self.combine_used_encoding = Some(used_enc);
-                self.combine_recovered_text = String::from_utf8(bytes.clone()).ok();
-                self.combine_recovered = Some(bytes);
+                self.combine_recovered_text = recovered_text;
+                self.combine_recovered = Some(recovered);
 
                 let detected = self
                     .combine_used_encoding
@@ -1017,11 +1038,15 @@ impl App {
         .block(self.block("Recovered"));
         f.render_widget(meta, right[0]);
 
-        let utf8_text = self.combine_recovered_text.clone().unwrap_or_default();
+        let utf8_text = self
+            .combine_recovered_text
+            .as_ref()
+            .map(|s| s.as_str())
+            .unwrap_or("");
         let base64_text = self
             .combine_recovered
             .as_ref()
-            .map(|b| base64::engine::general_purpose::STANDARD.encode(b))
+            .map(|b| base64::engine::general_purpose::STANDARD.encode(b.as_slice()))
             .unwrap_or_default();
 
         let text_view = Paragraph::new(utf8_text)
