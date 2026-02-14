@@ -76,7 +76,7 @@ If you take one thing from this section: **shares are as sensitive as the secret
 
 Safeparts ships as a few different front-ends over the same core:
 
-- **Web UI** (WASM, local-first): easiest for one-off workflows.
+- **Web UI** (WASM, runs entirely in your browser; no backend): easiest for one-off workflows.
 - **CLI** (`safeparts`): script-friendly; good for runbooks and automation.
 - **TUI** (`safeparts-tui` or `safeparts tui`): interactive terminal workflow; nice for offline machines.
 - **Rust crate** (`safeparts_core`): core algorithms and packet formats.
