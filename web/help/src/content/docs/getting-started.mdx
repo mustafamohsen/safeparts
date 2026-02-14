@@ -5,10 +5,10 @@ description: Pick a recovery plan and run a safe first split.
 
 import { Card, CardGrid, LinkButton, Steps } from '@astrojs/starlight/components';
 
-Safeparts helps you split a single secret into recovery shares, so recovery requires cooperation instead of one perfect backup.
+Safeparts splits one secret into recovery shares so recovery requires cooperation, not one perfect backup.
 
 :::caution
-Shares are sensitive. Don’t paste real shares into chat, tickets, issues, or logs.
+Shares are sensitive. Don't paste real shares into chat, tickets, issues, or logs.
 When you need examples, use synthetic secrets.
 :::
 
@@ -19,20 +19,22 @@ Safeparts turns one secret into <var>n</var> shares. Recovery requires any <var>
 - Fewer than <var>k</var> shares: an attacker learns nothing useful.
 - Any <var>k</var> shares: you can reconstruct the original secret.
 
+Practical limits: <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>.
+
 ## Choose <var>k</var> and <var>n</var>
 
-Think of <var>k</var> as “how many people/places must agree” and <var>n</var> as “how many losses you can survive”.
+Think of <var>k</var> as "how many people/places have to show up" and <var>n</var> as "how many you can lose and still recover".
 
 <var>n</var> = <var>k</var> + losses you can tolerate
 
-Defaults that work well in practice:
+Defaults that usually work well:
 
 - Personal recovery: <span class="token">k=2, n=3</span>
 - Teams: <span class="token">k=3, n=5</span>
 
 :::tip
-Pick a plan people can execute under stress.
-If the plan is too clever, it will fail at the moment it matters.
+Pick a plan you can execute under stress.
+If the plan is too clever, it will fall apart when you need it.
 :::
 
 ## Pick an interface
@@ -61,7 +63,7 @@ If the plan is too clever, it will fail at the moment it matters.
 
 ## Do a practice run (recommended)
 
-Do this once with a fake secret so you learn the workflow before using a real key.
+Do this once with a fake secret so you learn the flow before you trust it with a real key.
 
 <Steps>
 1. Pick <span class="token">k=2, n=3</span>.
@@ -74,8 +76,8 @@ Do this once with a fake secret so you learn the workflow before using a real ke
 ## Storage rules
 
 <Steps>
-1. Don’t co-locate shares. Two shares in the same vault is one incident away from disclosure.
-2. Don’t centralize “for convenience”. A shared drive holding multiple shares defeats the point.
+1. Don't co-locate shares. Two shares in the same vault is one incident away from disclosure.
+2. Don't centralize "for convenience". A shared drive holding multiple shares defeats the point.
 3. Write down who holds which share and how to contact them.
 4. Practice recovery once per year (or whenever roles/locations change).
 </Steps>

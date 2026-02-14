@@ -1,6 +1,6 @@
 ---
 title: واجهة الطرفية (TUI)
-description: واجهة تفاعلية للطرفية مناسبة للأجهزة offline ولسير العمل اليدوي.
+description: واجهة تفاعلية للطرفية مناسبة للأجهزة دون اتصال ولسير العمل اليدوي.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
@@ -10,14 +10,14 @@ import { Steps } from '@astrojs/starlight/components';
 
 ## متى تستخدم TUI
 
-- عندما تريد العمل offline (جهاز معزول).
+- عندما تريد العمل دون اتصال (جهاز معزول).
 - عندما تريد سير عمل تفاعلياً موجهاً.
 - عندما تريد حفظ ملف لكل حصة.
 
-## سير عمل offline
+## سير عمل دون اتصال
 
 <Steps>
-1. استخدم جهازاً offline (بدون شبكة).
+1. استخدم جهازاً دون اتصال (بدون شبكة).
 2. شغّل <span class="token token--mono" dir="ltr">safeparts-tui</span>.
 3. اضبط <var>k</var> و <var>n</var> والترميز.
 4. قسّم ثم احفظ كل حصة على وسيط منفصل.
@@ -25,7 +25,7 @@ import { Steps } from '@astrojs/starlight/components';
 </Steps>
 
 :::caution
-العمل offline يفيد فقط إذا كانت الحصص مخزنة بشكل منفصل.
+العمل دون اتصال يفيد فقط إذا كانت الحصص مخزنة بشكل منفصل.
 لا تضع حصتين على نفس USB.
 :::
 
