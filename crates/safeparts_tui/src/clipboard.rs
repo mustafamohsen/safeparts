@@ -3,6 +3,12 @@ use std::io::{self, Write};
 use anyhow::{Context, Result};
 use base64::Engine;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CopyMethod {
+    System,
+    Osc52,
+}
+
 pub struct Clipboard {
     inner: Option<arboard::Clipboard>,
 }
@@ -20,14 +26,14 @@ impl Clipboard {
         }
     }
 
-    pub fn set_text(&mut self, text: &str) -> Result<()> {
+    pub fn set_text(&mut self, text: &str) -> Result<CopyMethod> {
         if let Some(cb) = self.inner.as_mut() {
             cb.set_text(text.to_string()).context("write clipboard")?;
-            return Ok(());
+            return Ok(CopyMethod::System);
         }
 
         osc52_copy(text).context("osc52 copy")?;
-        Ok(())
+        Ok(CopyMethod::Osc52)
     }
 }
 
