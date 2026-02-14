@@ -4,7 +4,7 @@
 
 # Safeparts
 
-Safeparts splits a sensitive secret into recovery shares and reconstructs it later from any k of n shares.
+Safeparts splits a secret into recovery shares. Later, you can recover it from any k of n shares.
 
 - Web app: https://safeparts.netlify.app
 - Help / docs: https://safeparts.netlify.app/help/ (English) and https://safeparts.netlify.app/help/ar/ (Arabic)
@@ -14,7 +14,7 @@ Safeparts splits a sensitive secret into recovery shares and reconstructs it lat
 
 - Threshold secret sharing (Shamir-style over GF(256), byte-wise)
 - Integrity-checked reconstruction (BLAKE3 tag)
-- Multiple share encodings for the same packet bytes:
+- Multiple share encodings for the same underlying packet bytes:
   - base64 (base64url, no padding)
   - base58 (base58check)
   - mnemo-words (word list + CRC16 for typo detection)
@@ -23,9 +23,9 @@ Safeparts splits a sensitive secret into recovery shares and reconstructs it lat
 
 ## Safety model (read this first)
 
-- Shares are as sensitive as the secret. If an attacker obtains k shares, they can reconstruct.
+- Treat shares as sensitive as the secret. If someone gets k shares, they can reconstruct.
 - Do not paste real secrets/shares into chat, tickets, logs, or screenshots. Use synthetic examples.
-- Store shares in separate places/roles. Do not keep all shares together.
+- Store shares in separate places/roles. Avoid keeping all shares together.
 - Practice recovery once with a fake secret before trusting a real recovery plan.
 - Mnemonic shares are not wallet seeds. Do not import them into wallet apps.
 
@@ -33,8 +33,8 @@ Safeparts splits a sensitive secret into recovery shares and reconstructs it lat
 
 Download a release archive from GitHub Releases. Each release includes:
 
-- safeparts (CLI)
-- safeparts-tui (terminal UI)
+- `safeparts` (CLI)
+- `safeparts-tui` (terminal UI)
 
 Platform-specific install steps live in the docs:
 
@@ -56,7 +56,7 @@ printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine
 
 Passphrases:
 
-- Prefer `--passphrase-file` (`-P`) over `--passphrase` (`-p`) in shells that keep history.
+- If your shell keeps history, prefer `--passphrase-file` (`-P`) over `--passphrase` (`-p`).
 
 Encodings:
 
@@ -80,7 +80,7 @@ safeparts tui
 ## Web UI (local)
 
 The web UI runs split/combine locally in your browser via WASM.
-Nothing is uploaded unless you choose to copy/paste or deploy a modified build.
+It does not upload anything unless you choose to copy/paste or deploy a modified build.
 
 ```bash
 cd web
@@ -91,7 +91,7 @@ bun run dev
 
 Open http://localhost:5173.
 
-Docs site (served under /help/):
+Docs site (served under `/help/`):
 
 ```bash
 cd web/help
@@ -122,12 +122,12 @@ bun run test:a11y
 
 ## Repo layout
 
-- crates/safeparts_core/: core algorithms, packet format, encodings, crypto
-- crates/safeparts/: CLI wrapper (binary: safeparts)
-- crates/safeparts_tui/: terminal UI (binary: safeparts-tui)
-- crates/safeparts_wasm/: wasm-bindgen exports used by the web UI
-- web/: Vite + React app
-- web/help/: Astro + Starlight docs
+- `crates/safeparts_core/`: core algorithms, packet format, encodings, crypto
+- `crates/safeparts/`: CLI wrapper (binary: `safeparts`)
+- `crates/safeparts_tui/`: terminal UI (binary: `safeparts-tui`)
+- `crates/safeparts_wasm/`: wasm-bindgen exports used by the web UI
+- `web/`: Vite + React app
+- `web/help/`: Astro + Starlight docs
 
 ## Release builds
 
@@ -136,7 +136,7 @@ bun run test:a11y
 
 ## Contributing
 
-Contributions are welcome. Start with an issue. Use it to agree on scope, direction, and acceptance criteria before writing code.
+Contributions are welcome. Start with an issue so we can agree on scope, direction, and acceptance criteria before writing code.
 
 Workflow:
 
