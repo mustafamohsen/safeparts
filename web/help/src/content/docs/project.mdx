@@ -1,13 +1,13 @@
 ---
 title: How it works
-description: A short explanation of the “science” behind Safeparts.
+description: A short explanation of the mechanics behind Safeparts.
 ---
 
-Safeparts is built around three ideas:
+Safeparts is built around three simple goals:
 
 1. Split a secret so no single share reveals it.
-2. Reconstruct only when enough shares agree.
-3. Detect mistakes (wrong shares, typos, wrong passphrase).
+2. Reconstruct only when enough shares show up.
+3. Fail loudly when inputs are wrong (wrong shares, typos, wrong passphrase).
 
 ## Threshold sharing (k-of-n)
 
@@ -18,7 +18,7 @@ You choose a threshold (<var>k</var> of <var>n</var>):
 
 Under the hood, this is Shamir-style secret sharing over a finite field (<span class="token token--mono">GF(256)</span>), applied byte-wise.
 
-### What a “share” is
+### What a share is
 
 Conceptually, each share is one point on a polynomial of degree <var>k</var>-1.
 With <var>k</var> points you can reconstruct the polynomial, and therefore the original secret.
@@ -26,16 +26,17 @@ With fewer than <var>k</var> points, you learn nothing useful about the secret.
 
 ### Why <span class="token token--mono">GF(256)</span>
 
-Safeparts works on bytes. <span class="token token--mono">GF(256)</span> lets us do the math over 8-bit values, so “secret sharing” applies cleanly to arbitrary binary data.
+Safeparts works on bytes. <span class="token token--mono">GF(256)</span> lets the math happen on 8-bit values, so secret sharing applies cleanly to arbitrary binary data.
 
 ## Integrity
 
-Safeparts adds an integrity tag so reconstruction can detect incorrect inputs.
+Secret sharing gives you confidentiality (until <var>k</var> shares), but by itself it does not reliably catch user mistakes.
+Safeparts adds an integrity tag so combine can detect incorrect inputs.
 
 - If shares are corrupted or from different sets, combine fails.
 - If you typed a share wrong, combine fails.
 
-In addition to the packet-level tag:
+There are also extra checks at the encoding layer:
 
 - Base58Check includes a checksum.
 - Mnemonic shares include CRC16 to catch many transcription mistakes.
@@ -67,13 +68,13 @@ See [Encodings](encodings/).
 
 ## Packet metadata (why shares must match)
 
-Shares are not just “chunks”. Each share carries enough metadata to ensure it belongs to the same set:
+Shares are not just chunks. Each share carries enough metadata to prove it belongs to the same set:
 
 - threshold (<var>k</var>) and share count (<var>n</var>)
 - set identity / versioning
 - integrity data
 
-This is why mixing shares from different splits should fail loudly.
+That is why mixing shares from different splits should fail loudly.
 
 ## What Safeparts does not do
 

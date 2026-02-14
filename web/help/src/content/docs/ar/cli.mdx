@@ -6,6 +6,7 @@ description: تقسيم واسترداد بطريقة قابلة للأتمتة 
 import { Steps } from '@astrojs/starlight/components';
 
 ملف التنفيذ هو <span class="token token--mono" dir="ltr">safeparts</span>.
+افتراضياً يقرأ من stdin ويكتب إلى stdout ما لم تمرر <span class="token token--mono" dir="ltr">-o</span>.
 
 ## التقسيم
 
@@ -38,7 +39,7 @@ printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -o secret.bin
 ## عبارة المرور
 
 :::caution
-يفضل استخدام <span class="token token--mono" dir="ltr">--passphrase-file</span> بدلاً من <span class="token token--mono" dir="ltr">--passphrase</span> في البيئات التي تحفظ history.
+يفضّل استخدام <span class="token token--mono" dir="ltr">--passphrase-file</span> بدلاً من <span class="token token--mono" dir="ltr">--passphrase</span> في البيئات التي تحتفظ بسجل الأوامر.
 :::
 
 التقسيم مع عبارة مرور:

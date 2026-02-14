@@ -16,7 +16,7 @@ import { Steps } from '@astrojs/starlight/components';
 - <span class="token token--mono" dir="ltr">safeparts</span> (CLI)
 - <span class="token token--mono" dir="ltr">safeparts-tui</span> (واجهة طرفية)
 
-تحقق:
+تحقق سريع:
 
 <Steps>
 1. ضع الملفات التنفيذية على <span class="token token--mono" dir="ltr">PATH</span>.
@@ -37,7 +37,7 @@ cargo build
 cargo test --all-features
 ```
 
-فحص CI:
+فحص بنمط CI:
 
 ```bash
 cargo fmt --all -- --check
@@ -47,12 +47,12 @@ cargo clippy --all-targets --all-features -- -D warnings
 ## تطبيق الويب (Vite + React + WASM)
 
 تطبيق الويب موجود في <span class="token token--mono" dir="ltr">web/</span>.
-عمليات التقسيم/الاسترداد تتم محلياً داخل المتصفح عبر WASM.
+عمليات التقسيم/الاسترداد تتم داخل المتصفح عبر WASM.
 
 المتطلبات:
 
 - Bun
-- <span class="token token--mono" dir="ltr">wasm-pack</span> (أو اترك CI يثبتها)
+- <span class="token token--mono" dir="ltr">wasm-pack</span> (أو اترك سكربت البناء يثبته)
 
 التشغيل محلياً:
 
@@ -75,4 +75,4 @@ bun install
 bun run dev
 ```
 
-افتح [http://localhost:4321/help/](http://localhost:4321/help/) .
+افتح [http://localhost:4321/help/](http://localhost:4321/help/).

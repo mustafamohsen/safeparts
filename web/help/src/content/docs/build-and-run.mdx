@@ -16,7 +16,7 @@ Each release includes:
 - <span class="token token--mono">safeparts</span> (CLI)
 - <span class="token token--mono">safeparts-tui</span> (terminal UI)
 
-Verify:
+Quick sanity check:
 
 <Steps>
 1. Put the binaries on your <span class="token token--mono">PATH</span>.
@@ -46,12 +46,13 @@ cargo clippy --all-targets --all-features -- -D warnings
 
 ## Web UI (Vite + React + WASM)
 
-The web app lives in <span class="token token--mono">web/</span>. It runs split/combine locally in your browser via WASM.
+The web app lives in <span class="token token--mono">web/</span>.
+It runs split/combine in your browser via WASM.
 
 Prereqs:
 
 - Bun
-- <span class="token token--mono">wasm-pack</span> (or let CI install it)
+- <span class="token token--mono">wasm-pack</span> (or let the build script install it)
 
 Run locally:
 

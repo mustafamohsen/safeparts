@@ -5,25 +5,27 @@ description: Real-world scenarios and how to choose a share distribution.
 
 import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
 
-Use cases are not just “what <var>k</var>/<var>n</var> to pick”. They’re about who can realistically collaborate when recovery is needed.
+Use cases are not just "what <var>k</var>/<var>n</var> should I pick?".
+They are about people, logistics, and what you can actually pull off when recovery matters.
 
 :::tip
 If you need a starting point: <span class="token">k=2, n=3</span> for personal recovery, <span class="token">k=3, n=5</span> for teams.
 :::
 
 :::caution
-Safeparts does not prevent reconstruction by someone who holds <var>k</var> shares.
-Security comes from where shares live and who can access them.
+Safeparts does not stop someone who holds <var>k</var> shares from reconstructing.
+The security boundary is where shares live and who can access them.
 :::
 
 ## Scenarios
 
-Use this page to pick a plan you can actually execute: who holds which share, what happens if someone is unavailable, and how you practice recovery.
+Use this page to pick a plan you can execute under pressure:
+who holds which share, what happens if someone is unavailable, and how you'll practice recovery.
 
 <CardGrid>
 	<Card title="Password manager recovery" icon="star">
 		Recommended: <span class="token">k=2, n=3</span>.
-		Two locations you control, one off-site fallback.
+		Two locations you control, plus one off-site fallback.
 	</Card>
 	<Card title="Family / executor planning" icon="open-book">
 		Recommended: <span class="token">k=2, n=4</span>.
@@ -31,15 +33,15 @@ Use this page to pick a plan you can actually execute: who holds which share, wh
 	</Card>
 	<Card title="Small team infra secret" icon="document">
 		Recommended: <span class="token">k=3, n=5</span>.
-		Distribute across roles plus one offline vault.
+		Split across roles, plus one offline vault.
 	</Card>
 	<Card title="Break-glass procedure" icon="setting">
 		Recommended: <span class="token">k=2, n=4</span>.
-		Keep one share offline; require two parties to recover during incidents.
+		Keep one share offline; require two parties during incidents.
 	</Card>
 	<Card title="Two-factor backup codes" icon="laptop">
 		Recommended: <span class="token">k=2, n=3</span>.
-		Store shares so a single device compromise doesn’t disable 2FA.
+		Store shares so a single device compromise doesn't disable 2FA.
 	</Card>
 	<Card title="Agency / client handoff" icon="pen">
 		Recommended: <span class="token">k=2, n=3</span>.
@@ -59,14 +61,15 @@ Suggested distribution:
 
 <Steps>
 1. Split with <span class="token">k=2, n=3</span>.
-2. Place the shares in the three locations.
-3. Perform a recovery drill using any 2 shares.
+2. Put the shares in the three locations.
+3. Do a recovery drill using any 2 shares.
 4. Write down where the third share lives and how to access it.
 </Steps>
 
 ## Pattern: team secret (<span class="token">k=3, n=5</span>)
 
-Good when you want separation of duties: no one person can act alone, but the team can still recover during an incident.
+Good when you want separation of duties:
+no one person can act alone, but the team can still recover during an incident.
 
 Suggested distribution (by role):
 
@@ -78,7 +81,7 @@ Suggested distribution (by role):
 
 <Steps>
 1. Document who holds each share (role + backup contact).
-2. Define an incident runbook: who initiates, how approval happens, where shares are gathered.
+2. Write an incident runbook: who initiates, how approval happens, where shares are gathered.
 3. Practice once before using the plan for production secrets.
 </Steps>
 
@@ -102,10 +105,10 @@ Treat gathered shares as compromised.
 
 <CardGrid>
 	<Card title="Prefer independent failures" icon="setting">
-		Different people, devices, and locations. Avoid “same safe, two envelopes”.
+		Different people, devices, and locations. Avoid "same safe, two envelopes".
 	</Card>
 	<Card title="Design for the worst day" icon="warning">
-		Recovery happens when you’re stressed: outages, travel, illness, or loss.
+		Recovery happens when you're stressed: outages, travel, illness, or loss.
 	</Card>
 	<Card title="Write down the runbook" icon="document">
 		Document who has each share and what to do if a holder is unavailable.
@@ -115,6 +118,6 @@ Treat gathered shares as compromised.
 ## When to add a passphrase
 
 If the risk of share theft is high (travel, shared environments, hostile endpoints), add a passphrase.
-It changes the attacker’s job from “steal <var>k</var> shares” to “steal <var>k</var> shares and the passphrase”.
+That changes the attack from "steal <var>k</var> shares" to "steal <var>k</var> shares and the passphrase".
 
 See [Security](security/).
