@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useState, type FocusEvent, type MouseEvent as ReactMouseEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FocusEvent,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 
 import type { Strings } from "../i18n";
 import { ensureWasm } from "../wasm";
@@ -24,6 +32,7 @@ function toErrorMessage(err: unknown, strings: Strings): string {
 }
 
 export function SplitForm({ strings }: SplitFormProps) {
+  const secretTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [secret, setSecret] = useState("");
   const [k, setK] = useState(2);
   const [n, setN] = useState(3);
@@ -48,6 +57,19 @@ export function SplitForm({ strings }: SplitFormProps) {
     media.addListener(update);
     return () => media.removeListener(update);
   }, []);
+
+  const resizeSecretTextarea = useCallback((textarea: HTMLTextAreaElement) => {
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, []);
+
+  const setSecretTextareaRef = useCallback(
+    (textarea: HTMLTextAreaElement | null) => {
+      secretTextareaRef.current = textarea;
+      if (textarea) resizeSecretTextarea(textarea);
+    },
+    [resizeSecretTextarea],
+  );
 
   function clampK(nextK: number, nextN: number): number {
     if (!Number.isFinite(nextK)) return 2;
@@ -145,17 +167,28 @@ export function SplitForm({ strings }: SplitFormProps) {
           <span className="field-hint mt-1 block" id="secret-hint">{strings.secretHint}</span>
           <div className="relative mt-3">
             <textarea
+              ref={setSecretTextareaRef}
               value={secret}
-              onChange={(e) => setSecret(e.target.value)}
+              onChange={(e) => {
+                setSecret(e.target.value);
+                resizeSecretTextarea(e.currentTarget);
+              }}
               rows={4}
-              className="input input-with-clear min-h-[120px] resize-y font-mono text-xs leading-relaxed"
+              className="input input-with-clear min-h-[120px] resize-none overflow-hidden font-mono text-xs leading-relaxed"
               aria-labelledby="secret-label"
               aria-describedby="secret-hint"
             />
             <ClearButton
               label={strings.clearSecret}
               disabled={secret.length === 0}
-              onClick={() => setSecret("")}
+              onClick={() => {
+                setSecret("");
+                requestAnimationFrame(() => {
+                  if (secretTextareaRef.current) {
+                    resizeSecretTextarea(secretTextareaRef.current);
+                  }
+                });
+              }}
               className="absolute top-2 end-2"
             />
           </div>
