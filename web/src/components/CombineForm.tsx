@@ -118,6 +118,7 @@ export function CombineForm({ strings }: CombineFormProps) {
   const pendingShareBoxFlashIdsRef = useRef<string[] | null>(null);
   const flashTimeoutRef = useRef<number | null>(null);
   const shareBoxFlashTimeoutRef = useRef<number | null>(null);
+  const shareTextareasRef = useRef<Record<string, HTMLTextAreaElement>>({});
 
   const shareBoxCount = shareBoxes.length;
 
@@ -157,6 +158,24 @@ export function CombineForm({ strings }: CombineFormProps) {
     }, 1100);
   }, []);
 
+  const resizeShareTextarea = useCallback((textarea: HTMLTextAreaElement) => {
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, []);
+
+  const setShareTextareaRef = useCallback(
+    (id: string, textarea: HTMLTextAreaElement | null) => {
+      if (!textarea) {
+        delete shareTextareasRef.current[id];
+        return;
+      }
+
+      shareTextareasRef.current[id] = textarea;
+      resizeShareTextarea(textarea);
+    },
+    [resizeShareTextarea],
+  );
+
   useEffect(() => {
     return () => {
       if (flashTimeoutRef.current !== null) {
@@ -175,6 +194,13 @@ export function CombineForm({ strings }: CombineFormProps) {
     pendingShareBoxFlashIdsRef.current = null;
     triggerShareBoxFlash(ids);
   }, [shareBoxCount, triggerShareBoxFlash]);
+
+  useEffect(() => {
+    for (const box of shareBoxes) {
+      const textarea = shareTextareasRef.current[box.id];
+      if (textarea) resizeShareTextarea(textarea);
+    }
+  }, [shareBoxes, resizeShareTextarea]);
 
   useEffect(() => {
     if (!pasteRequestedRef.current) return;
@@ -363,15 +389,19 @@ export function CombineForm({ strings }: CombineFormProps) {
 
                   <div className="relative mt-2" dir="ltr">
                     <textarea
+                      ref={(textarea) => setShareTextareaRef(box.id, textarea)}
                       dir="ltr"
                       value={box.value}
-                      onChange={(e) => setShareBoxValue(box.id, e.target.value)}
+                      onChange={(e) => {
+                        setShareBoxValue(box.id, e.target.value);
+                        resizeShareTextarea(e.currentTarget);
+                      }}
                       onPaste={() => {
                         pasteRequestedRef.current = true;
                       }}
                       rows={3}
                       placeholder={strings.sharePlaceholder}
-                      className={`input input-with-clear resize-y font-mono text-xs leading-relaxous transition-colors duration-700 ${
+                      className={`input input-with-clear resize-none overflow-hidden font-mono text-xs leading-relaxous transition-colors duration-700 ${
                         isInvalid
                           ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
                           : ""
