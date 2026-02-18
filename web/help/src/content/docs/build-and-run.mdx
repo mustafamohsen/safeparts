@@ -24,6 +24,23 @@ Quick sanity check:
 3. Run <span class="token token--mono">safeparts-tui --help</span>.
 </Steps>
 
+### macOS Gatekeeper
+
+If you download the release binaries via a browser, macOS may quarantine them and show "cannot be opened because the developer cannot be verified".
+
+If you built from source, you usually will not see this.
+
+If you trust the download and want to remove the quarantine attribute:
+
+```bash
+# Point this at the folder you extracted the release into
+xattr -dr com.apple.quarantine /path/to/safeparts-release/
+
+# Or remove it per-binary
+xattr -d com.apple.quarantine /path/to/safeparts
+xattr -d com.apple.quarantine /path/to/safeparts-tui
+```
+
 ## Build from source (Rust)
 
 Prereqs:

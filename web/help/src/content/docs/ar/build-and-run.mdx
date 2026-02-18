@@ -24,6 +24,23 @@ import { Steps } from '@astrojs/starlight/components';
 3. شغّل <span class="token token--mono" dir="ltr">safeparts-tui --help</span>.
 </Steps>
 
+### Gatekeeper في macOS
+
+إذا حمّلت الملفات التنفيذية من المتصفح، قد يضع macOS عليها علامة quarantine ويظهر التحذير "لا يمكن فتحه لأن المطور غير موثّق".
+
+إذا بنيت من المصدر، غالباً لن ترى هذا التحذير.
+
+إذا كنت تثق بالمصدر وتريد إزالة علامة quarantine:
+
+```bash
+# عدّل هذا المسار إلى مجلد الإصدار بعد فك الضغط
+xattr -dr com.apple.quarantine /path/to/safeparts-release/
+
+# أو أزلها لكل ملف تنفيذي
+xattr -d com.apple.quarantine /path/to/safeparts
+xattr -d com.apple.quarantine /path/to/safeparts-tui
+```
+
 ## بناء من المصدر (Rust)
 
 المتطلبات:
