@@ -139,8 +139,6 @@ If the repo ends up structured differently, prefer the actual layout over this.
 
 - When editing or creating user-facing docs (for example `README.md`, `web/help/**/*.mdx`, and other end-user/contributor docs), load and apply the `humanizer` skill before finalizing the text.
 - Do not apply this to internal instruction/tooling files (for example `AGENTS.md`, `openspec/**`, `.opencode/**`, or similar).
-- Bilingual README policy: `README.md` (English) and `README.ar.md` (Arabic) must stay in sync. When you change one, update the other in the same PR, keeping section order, links, and code blocks equivalent.
-- Language switcher: keep the mutual links at the top of both README files (`[English](README.md)` / `[العربية](README.ar.md)`).
 
 ### Rust Style
 
