@@ -4,6 +4,8 @@
 
 # Safeparts
 
+[English](README.md) | [العربية](README.ar.md)
+
 Safeparts is a threshold secret-sharing toolkit.
 You split one secret into *n* recovery shares, then later recover it from any *k* of them.
 
