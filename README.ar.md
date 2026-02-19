@@ -2,18 +2,18 @@
   <img src="web/src/assets/logo.svg" width="120" alt="شعار Safeparts" />
 </p>
 
-<div dir="rtl" lang="ar" align="right">
+<div dir="rtl">
 
 # Safeparts
 
-<a href="README.ar.md">العربية</a> | <a dir="ltr" href="README.md">English</a>
+[العربية](README.ar.md) | [English](README.md)
 
 Safeparts هي مجموعة أدوات لمشاركة الأسرار بالعتبة.
 تقوم بتقسيم سر واحد إلى *n* حصص استعادة، ثم تستعيده لاحقا باستخدام أي *k* حصص منها.
 
-- تطبيق الويب: <a dir="ltr" href="https://safeparts.netlify.app">https://safeparts.netlify.app</a>
-- التوثيق: <a dir="ltr" href="https://safeparts.netlify.app/help/">https://safeparts.netlify.app/help/</a> (بالإنجليزية) و <a dir="ltr" href="https://safeparts.netlify.app/help/ar/">https://safeparts.netlify.app/help/ar/</a> (بالعربية)
-- الإصدارات: <a dir="ltr" href="https://github.com/mustafamohsen/safeparts/releases">https://github.com/mustafamohsen/safeparts/releases</a>
+- تطبيق الويب: https://safeparts.netlify.app
+- التوثيق: https://safeparts.netlify.app/help/ (بالإنجليزية) و https://safeparts.netlify.app/help/ar/ (بالعربية)
+- الإصدارات: https://github.com/mustafamohsen/safeparts/releases
 
 ## لماذا تستخدمه
 
@@ -22,8 +22,8 @@ Safeparts مفيدة عندما تريد أن تتطلب عملية الاستع
 أمثلة شائعة:
 
 - مفاتيح الاستعادة / المفاتيح الرئيسية لمدير كلمات المرور
-- رموز النسخ الاحتياطي للمصادقة الثنائية <span dir="ltr">(2FA)</span>
-- رموز <span dir="ltr">API</span>، مفاتيح التوقيع، بيانات اعتماد "حالات الطوارئ" <span dir="ltr">(break-glass)</span>
+- رموز النسخ الاحتياطي للمصادقة الثنائية (2FA)
+- رموز API، مفاتيح التوقيع، بيانات اعتماد "حالات الطوارئ" (break-glass)
 - التخطيط العائلي / لوصي أو منفذ وصية (بحيث لا يحمل شخص واحد الوصول بالكامل)
 - أسرار الفرق عندما تريد فصل الصلاحيات
 
@@ -48,41 +48,41 @@ Safeparts مفيدة عندما تريد أن تتطلب عملية الاستع
 **يتضمن**
 
 - مشاركة سر على طريقة Shamir فوق `GF(256)` (على مستوى البايت)
-- تحقق سلامة عند الدمج (وسم <span dir="ltr">BLAKE3</span>)
-- حماية اختيارية بعبارة مرور (تشفير ثم تقسيم): <span dir="ltr">Argon2id -> ChaCha20-Poly1305</span>
+- تحقق سلامة عند الدمج (وسم BLAKE3)
+- حماية اختيارية بعبارة مرور (تشفير ثم تقسيم): Argon2id -> ChaCha20-Poly1305
 - عدة ترميزات لنفس بايتات حزمة الحصة:
-  - `base64` (`base64url`، بدون <span dir="ltr">padding</span>)
+  - `base64` (`base64url`، بدون padding)
   - `base58` (`base58check`)
-  - `mnemo-words` (ترميز بالكلمات + <span dir="ltr">CRC16</span>)
-  - `mnemo-bip39` (عبارات صالحة وفق <span dir="ltr">BIP-39</span>؛ قد تكون الحصة عدة عبارات مفصولة بـ <span dir="ltr">/</span>)
+  - `mnemo-words` (ترميز بالكلمات + CRC16)
+  - `mnemo-bip39` (عبارات صالحة وفق BIP-39؛ قد تكون الحصة عدة عبارات مفصولة بـ `/`)
 
-واجهة الويب حاليا توفر `base64url` و `mnemo-words`. أما <span dir="ltr">CLI</span> و <span dir="ltr">TUI</span> فتدعمان كل الترميزات.
+واجهة الويب حاليا توفر `base64url` و `mnemo-words`. أما CLI و TUI فتدعمان كل الترميزات.
 
-داخليا، يقوم Safeparts (اختياريا) بالتشفير، ثم يضيف وسم <span dir="ltr">BLAKE3</span>، ثم يطبق مشاركة Shamir بايت-ببايت. عند الدمج، يعيد البناء، يتحقق من الوسم، ثم وفقط بعدها يفك التشفير.
+داخليا، يقوم Safeparts (اختياريا) بالتشفير، ثم يضيف وسم BLAKE3، ثم يطبق مشاركة Shamir بايت-ببايت. عند الدمج، يعيد البناء، يتحقق من الوسم، ثم وفقط بعدها يفك التشفير.
 
 **لا يتضمن**
 
 - التخزين. Safeparts لا يدير أين تعيش الحصص.
 - الحماية ضد شخص يملك بشكل مشروع *k* حصص.
-- وظائف محافظ/بذور. الحصص المرمزة بعبارات <span dir="ltr">mnemonic</span> هي ترميز للحصص، وليست بذور محافظ.
+- وظائف محافظ/بذور. الحصص المرمزة بعبارات mnemonic هي ترميز للحصص، وليست بذور محافظ.
 
 ## قواعد السلامة (يرجى القراءة)
 
 إذا أخذت شيئا واحدا من هذا القسم: **الحصص حساسة بقدر حساسية السر نفسه**.
 
-- لا تلصق أسرارا/حصصا حقيقية في الدردشة، أو التذاكر، أو القضايا <span dir="ltr">(issues)</span>، أو السجلات <span dir="ltr">(logs)</span>، أو لقطات الشاشة.
+- لا تلصق أسرارا/حصصا حقيقية في الدردشة، أو التذاكر، أو القضايا (issues)، أو السجلات (logs)، أو لقطات الشاشة.
 - لا تضع حصتين في نفس المكان (حصتان في نفس الخزنة تعني أن اختراقا واحدا قد يكشف السر).
-- اكتب "دليل التنفيذ" <span dir="ltr">(runbook)</span>: من يحمل أي حصة، وكيف تصل إليهم.
+- اكتب "دليل التنفيذ" (runbook): من يحمل أي حصة، وكيف تصل إليهم.
 - نفّذ تمرينا بسِرٍّ اصطناعي قبل الاعتماد على خطة استعادة حقيقية.
-- بعد أي استعادة "طوارئ" <span dir="ltr">(break-glass)</span>، افترض أن الحصص التي جُمعت قد انكشفت. غيّر السر الأصلي ثم أعد التقسيم.
+- بعد أي استعادة "طوارئ" (break-glass)، افترض أن الحصص التي جُمعت قد انكشفت. غيّر السر الأصلي ثم أعد التقسيم.
 
 ## الواجهات
 
 يأتي Safeparts بعدة واجهات فوق نفس النواة:
 
-- **واجهة ويب** (<span dir="ltr">WASM</span>، تعمل بالكامل داخل المتصفح؛ بدون خادم): الأسهل لسير عمل مرة واحدة.
-- **<span dir="ltr">CLI</span>** (<span dir="ltr"><code>safeparts</code></span>): مناسب للسكربتات؛ جيد لدليل التنفيذ والأتمتة.
-- **<span dir="ltr">TUI</span>** (<span dir="ltr"><code>safeparts-tui</code></span> أو <span dir="ltr"><code>safeparts tui</code></span>): سير عمل تفاعلي في الطرفية؛ مناسب لأجهزة دون اتصال.
+- **واجهة ويب** (WASM، تعمل بالكامل داخل المتصفح؛ بدون خادم): الأسهل لسير عمل مرة واحدة.
+- **CLI** (`safeparts`): مناسب للسكربتات؛ جيد لدليل التنفيذ والأتمتة.
+- **TUI** (`safeparts-tui` أو `safeparts tui`): سير عمل تفاعلي في الطرفية؛ مناسب لأجهزة دون اتصال.
 - **مكتبة Rust** (`safeparts_core`): الخوارزميات الأساسية وصيغ الحزم.
 
 ## مكتبة Rust
@@ -104,16 +104,16 @@ fn main() -> CoreResult<()> {
 
 ## التثبيت
 
-حمّل أرشيف الإصدار من <span dir="ltr">GitHub Releases</span>. كل إصدار يتضمن:
+حمّل أرشيف الإصدار من GitHub Releases. كل إصدار يتضمن:
 
-- `safeparts` (<span dir="ltr">CLI</span>)
+- `safeparts` (CLI)
 - `safeparts-tui` (واجهة طرفية تفاعلية)
 
 الخطوات حسب المنصة (وملاحظات البناء من المصدر) موجودة في التوثيق:
 
-- <a dir="ltr" href="https://safeparts.netlify.app/help/build-and-run/">https://safeparts.netlify.app/help/build-and-run/</a>
+- https://safeparts.netlify.app/help/build-and-run/
 
-## بدء سريع لـ <span dir="ltr">CLI</span>
+## بدء سريع للـ CLI
 
 قسّم سِرّا إلى 3 حصص، بحيث تتطلب الاستعادة أي حصتين:
 
@@ -121,7 +121,7 @@ fn main() -> CoreResult<()> {
 echo -n "my secret" | safeparts split -k 2 -n 3 -e base64
 ```
 
-ادمج (الصق أي *k* حصص على <span dir="ltr">stdin</span>):
+ادمج (الصق أي *k* حصص على stdin):
 
 ```bash
 printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine
@@ -148,7 +148,7 @@ printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -P passphrase.txt
 - `split` يدعم: `base64`, `base58`, `mnemo-words`, `mnemo-bip39`
 - `combine` يمكنه اكتشاف الترميز تلقائيا إذا لم تمرر `--encoding`
 
-## <span dir="ltr">TUI</span>
+## TUI
 
 شغّل واجهة الطرفية التفاعلية:
 
@@ -156,17 +156,17 @@ printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -P passphrase.txt
 safeparts-tui
 ```
 
-أو شغّلها عبر <span dir="ltr">CLI</span>:
+أو شغّلها عبر CLI:
 
 ```bash
 safeparts tui
 ```
 
-للاختصارات وسير عمل دون اتصال، راجع: <a dir="ltr" href="https://safeparts.netlify.app/help/tui/">https://safeparts.netlify.app/help/tui/</a>
+للاختصارات وسير عمل دون اتصال، راجع: https://safeparts.netlify.app/help/tui/
 
 ## واجهة الويب (محليا)
 
-واجهة الويب تقوم بالتقسيم/الدمج محليا داخل المتصفح عبر <span dir="ltr">WASM</span>.
+واجهة الويب تقوم بالتقسيم/الدمج محليا داخل المتصفح عبر WASM.
 لا ترفع أي شيء إلا إذا اخترت النسخ/اللصق في مكان آخر أو نشرت نسخة معدلة.
 
 ```bash
@@ -176,9 +176,9 @@ bun run build:wasm
 bun run dev
 ```
 
-افتح <a dir="ltr" href="http://localhost:5173">http://localhost:5173</a>.
+افتح http://localhost:5173.
 
-موقع التوثيق (يُخدم تحت <span dir="ltr"><code>/help/</code></span>):
+موقع التوثيق (يُخدم تحت `/help/`):
 
 ```bash
 cd web/help
@@ -186,11 +186,11 @@ bun install
 bun run dev
 ```
 
-افتح <a dir="ltr" href="http://localhost:4321/help/">http://localhost:4321/help/</a>.
+افتح http://localhost:4321/help/.
 
 ## التطوير
 
-<span dir="ltr">Rust</span> (مطابق لـ <span dir="ltr">CI</span>):
+Rust (مطابق لـ CI):
 
 ```bash
 cargo fmt --all -- --check
@@ -198,7 +198,7 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 ```
 
-اختبارات إتاحة الويب (<span dir="ltr">Playwright</span> + <span dir="ltr">axe</span>):
+اختبارات إتاحة الويب (Playwright + axe):
 
 ```bash
 cd web
@@ -210,31 +210,31 @@ bun run test:a11y
 ## هيكل المستودع
 
 - `crates/safeparts_core/`: خوارزميات النواة، صيغة الحزم، الترميزات، التشفير
-- `crates/safeparts/`: غلاف <span dir="ltr">CLI</span> (الملف التنفيذي: `safeparts`)
+- `crates/safeparts/`: غلاف CLI (الملف التنفيذي: `safeparts`)
 - `crates/safeparts_tui/`: واجهة طرفية تفاعلية (الملف التنفيذي: `safeparts-tui`)
-- `crates/safeparts_wasm/`: صادرات <span dir="ltr">wasm-bindgen</span> المستخدمة في واجهة الويب
-- `web/`: تطبيق <span dir="ltr">Vite + React</span>
-- `web/help/`: توثيق <span dir="ltr">Astro + Starlight</span>
+- `crates/safeparts_wasm/`: صادرات wasm-bindgen المستخدمة في واجهة الويب
+- `web/`: تطبيق Vite + React
+- `web/help/`: توثيق Astro + Starlight
 
 ## المساهمة
 
 المساهمات مرحب بها.
-ابدأ بقضية <span dir="ltr">(issue)</span> لكي نتفق على النطاق والاتجاه ومعايير القبول قبل كتابة الكود.
+ابدأ بقضية (issue) لكي نتفق على النطاق والاتجاه ومعايير القبول قبل كتابة الكود.
 
 سير العمل:
 
 1. افتح أو اختر قضية.
-2. انسخ المستودع <span dir="ltr">(fork)</span>.
+2. انسخ المستودع (fork).
 3. أنشئ فرعا مخصصا (مثلا `feat/<short-slug>` أو `fix/<short-slug>`).
 4. نفّذ التغييرات وشغّل الفحوصات:
    - `cargo fmt --all`
    - `cargo clippy --all-targets --all-features -- -D warnings`
    - `cargo test --all-features`
    - `cd web && bun run test:a11y` (إذا لمست الويب/التوثيق)
-5. افتح <span dir="ltr">PR</span> واربط القضية (مثلا <span dir="ltr">"Fixes #123"</span>).
+5. افتح PR واربط القضية (مثلا "Fixes #123").
 
 ## الترخيص
 
-<span dir="ltr">MIT</span>. راجع <span dir="ltr">LICENSE</span>.
+MIT. راجع LICENSE.
 
 </div>
