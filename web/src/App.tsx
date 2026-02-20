@@ -70,6 +70,19 @@ function GitHubIcon() {
   );
 }
 
+function DiscordIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M20.317 4.369A19.791 19.791 0 0 0 15.467 3c-.21.375-.445.88-.609 1.275a18.27 18.27 0 0 0-5.716 0A12.945 12.945 0 0 0 8.533 3a19.736 19.736 0 0 0-4.85 1.369C.61 9.007-.22 13.53.195 17.989a19.896 19.896 0 0 0 5.948 2.989c.48-.675.908-1.388 1.275-2.134a12.74 12.74 0 0 1-2.008-.969c.164-.117.324-.241.477-.371 3.873 1.822 8.084 1.822 11.912 0 .156.13.316.254.477.371a12.78 12.78 0 0 1-2.011.971c.366.744.794 1.457 1.275 2.132a19.832 19.832 0 0 0 5.949-2.989c.487-5.165-.83-9.646-3.172-13.62ZM8.02 15.271c-1.155 0-2.102-1.054-2.102-2.349 0-1.294.927-2.348 2.102-2.348 1.185 0 2.113 1.064 2.102 2.348 0 1.295-.927 2.349-2.102 2.349Zm7.959 0c-1.155 0-2.102-1.054-2.102-2.349 0-1.294.927-2.348 2.102-2.348 1.185 0 2.113 1.064 2.102 2.348 0 1.295-.917 2.349-2.102 2.349Z" />
+    </svg>
+  );
+}
+
 function ShieldIcon() {
   return (
     <svg
@@ -192,6 +205,16 @@ export function App() {
                   title={strings.github}
                 >
                   <GitHubIcon />
+                </a>
+                <a
+                  href="https://discord.gg/ZaSfpcy8At"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                  aria-label={strings.discord}
+                  title={strings.discord}
+                >
+                  <DiscordIcon />
                 </a>
                 <button
                   type="button"

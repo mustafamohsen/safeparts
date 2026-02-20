@@ -37,6 +37,11 @@ export default defineConfig({
 					label: 'GitHub',
 					href: 'https://github.com/mustafamohsen/safeparts',
 				},
+				{
+					icon: 'discord',
+					label: 'Discord',
+					href: 'https://discord.gg/ZaSfpcy8At',
+				},
 			],
 			customCss: ['./src/styles/theme.css'],
 			components: {

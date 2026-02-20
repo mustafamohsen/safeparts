@@ -16,6 +16,7 @@ export const STRINGS = {
     english: "English",
     arabic: "العربية",
     github: "GitHub",
+    discord: "Discord",
     help: "Docs",
     privacyNote:
       "Runs locally in your browser. Your secret never leaves your device.",
@@ -93,6 +94,7 @@ export const STRINGS = {
     english: "English",
     arabic: "العربية",
     github: "GitHub",
+    discord: "ديسكورد",
     help: "مساعدة",
     privacyNote: "يعمل محليا في المتصفح. الأسرار لا تغادر جهازك.",
 
