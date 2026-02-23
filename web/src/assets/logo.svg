@@ -1,45 +1,56 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Shield network logo">
   <defs>
-    <linearGradient id="sp_g" x1="120" y1="90" x2="392" y2="422" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#10B981" />
-      <stop offset="0.55" stop-color="#34D399" />
-      <stop offset="1" stop-color="#6EE7B7" />
+    <linearGradient id="gBorder" x1="96" y1="64" x2="416" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#12D6A5"/>
+      <stop offset="0.55" stop-color="#2FE7B8"/>
+      <stop offset="1" stop-color="#0FB989"/>
     </linearGradient>
-    <linearGradient id="sp_bg" x1="120" y1="110" x2="392" y2="402" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#052016" />
-      <stop offset="1" stop-color="#000000" />
+    <radialGradient id="gFill" cx="50%" cy="35%" r="75%">
+      <stop offset="0" stop-color="#0E1516"/>
+      <stop offset="1" stop-color="#050809"/>
+    </radialGradient>
+    <linearGradient id="gIcon" x1="200" y1="140" x2="320" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3AF0C2"/>
+      <stop offset="1" stop-color="#12C894"/>
     </linearGradient>
   </defs>
 
-  <!-- Shield base -->
   <path
-    d="M256 52L122 112v126c0 109.8 69.7 206.5 134 224 64.3-17.5 134-114.2 134-224V112L256 52z"
-    fill="url(#sp_bg)"
-    stroke="url(#sp_g)"
-    stroke-width="18"
+    d="M256 40
+       C312 70 372 92 424 112
+       V256
+       C424 370 346 452 256 484
+       C166 452 88 370 88 256
+       V112
+       C140 92 200 70 256 40
+       Z"
+    fill="url(#gFill)"
+  />
+
+  <path
+    d="M256 40
+       C312 70 372 92 424 112
+       V256
+       C424 370 346 452 256 484
+       C166 452 88 370 88 256
+       V112
+       C140 92 200 70 256 40
+       Z"
+    fill="none"
+    stroke="url(#gBorder)"
+    stroke-width="22"
     stroke-linejoin="round"
   />
 
-  <!-- Split line -->
-  <path
-    d="M256 138v238"
-    stroke="url(#sp_g)"
-    stroke-width="18"
-    stroke-linecap="round"
-    opacity="0.95"
-  />
-
-  <!-- Left share nodes -->
-  <circle cx="202" cy="214" r="18" fill="#000000" stroke="url(#sp_g)" stroke-width="12" />
-  <circle cx="182" cy="302" r="18" fill="#000000" stroke="url(#sp_g)" stroke-width="12" />
-
-  <!-- Right share nodes -->
-  <circle cx="310" cy="214" r="18" fill="#000000" stroke="url(#sp_g)" stroke-width="12" />
-  <circle cx="330" cy="302" r="18" fill="#000000" stroke="url(#sp_g)" stroke-width="12" />
-
-  <!-- Connectors -->
-  <path d="M256 178L214 214" stroke="url(#sp_g)" stroke-width="14" stroke-linecap="round" opacity="0.9" />
-  <path d="M256 178L298 214" stroke="url(#sp_g)" stroke-width="14" stroke-linecap="round" opacity="0.9" />
-  <path d="M214 214L190 302" stroke="url(#sp_g)" stroke-width="14" stroke-linecap="round" opacity="0.75" />
-  <path d="M298 214L322 302" stroke="url(#sp_g)" stroke-width="14" stroke-linecap="round" opacity="0.75" />
+  <g fill="none" stroke="url(#gIcon)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 152 L256 360" />
+    <path d="M256 190 L184 222" />
+    <path d="M256 190 L328 222" />
+    <path d="M256 250 L204 302" />
+    <path d="M256 250 L308 302" />
+    <circle cx="184" cy="222" r="20" />
+    <circle cx="328" cy="222" r="20" />
+    <circle cx="204" cy="302" r="20" />
+    <circle cx="308" cy="302" r="20" />
+  </g>
 </svg>
