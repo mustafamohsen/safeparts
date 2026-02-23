@@ -21,21 +21,11 @@ Safeparts turns one secret into <var>n</var> shares. Recovery requires any <var>
 
 Practical limits: <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>.
 
-## Choose <var>k</var> and <var>n</var>
+## Pick a recovery plan
 
-Think of <var>k</var> as "how many people/places have to show up" and <var>n</var> as "how many you can lose and still recover".
+The hard part is logistics: who holds which share, how you contact them, and what you do when someone is unavailable.
 
-<var>n</var> = <var>k</var> + losses you can tolerate
-
-Defaults that usually work well:
-
-- Personal recovery: <span class="token">k=2, n=3</span>
-- Teams: <span class="token">k=3, n=5</span>
-
-:::tip
-Pick a plan you can execute under stress.
-If the plan is too clever, it will fall apart when you need it.
-:::
+Start with [Use cases](use-cases/) to choose <var>k</var>/<var>n</var> and a distribution you can actually run.
 
 ## Pick an interface
 
@@ -73,42 +63,19 @@ Do this once with a fake secret so you learn the flow before you trust it with a
 5. Delete the synthetic shares.
 </Steps>
 
-## Storage rules
+## Before you split a real key
 
-<Steps>
-1. Don't co-locate shares. Two shares in the same vault is one incident away from disclosure.
-2. Don't centralize "for convenience". A shared drive holding multiple shares defeats the point.
-3. Write down who holds which share and how to contact them.
-4. Practice recovery once per year (or whenever roles/locations change).
-</Steps>
-
-## Example plans
-
-### Personal recovery
-
-Use <span class="token">k=2, n=3</span>.
-
-Example distribution:
-
-- Share A: password manager note (separate account/device)
-- Share B: printed and sealed
-- Share C: a trusted person or an off-site safe
-
-### Team infra secret
-
-Use <span class="token">k=3, n=5</span>.
-
-Example distribution:
-
-- Share 1: ops lead
-- Share 2: security lead
-- Share 3: engineering manager
-- Share 4: offline vault
-- Share 5: exec/backup location
+Read [Security](security/) and follow the storage rules there.
+Safeparts can remove single points of failure, but it can't fix a bad distribution.
 
 ## Next
 
 <CardGrid>
+	<Card title="Use cases" icon="star">
+		Pick <var>k</var>/<var>n</var> and a realistic share distribution.
+		
+		[Use cases](use-cases/)
+	</Card>
 	<Card title="Encodings" icon="open-book">
 		Choose between machine-friendly and human-friendly share formats.
 		
