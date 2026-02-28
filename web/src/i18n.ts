@@ -41,6 +41,9 @@ export const STRINGS = {
     clearSecret: "Clear secret",
     clearPassphrase: "Clear passphrase",
     clearShare: "Clear share",
+    pasteSecret: "Paste secret",
+    pastePassphrase: "Paste passphrase",
+    pasteShare: "Paste share",
 
     splitCta: "Split",
     combineCta: "Combine",
@@ -118,6 +121,9 @@ export const STRINGS = {
     clearSecret: "مسح السر",
     clearPassphrase: "مسح عبارة المرور",
     clearShare: "مسح الحصة",
+    pasteSecret: "لصق السر",
+    pastePassphrase: "لصق عبارة المرور",
+    pasteShare: "لصق الحصة",
 
     splitCta: "قسم",
     combineCta: "استعادة",

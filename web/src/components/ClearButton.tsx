@@ -79,10 +79,10 @@ export function ClearButton({
       className={cn(
         "inline-flex items-center justify-center rounded-lg",
         "h-9 w-9",
-        "text-slate-400 hover:text-slate-200",
-        "bg-transparent hover:bg-white/5",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-        "disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-slate-400",
+        "text-slate-400 transition-colors hover:text-slate-200",
+        "bg-transparent hover:bg-transparent",
+        "focus-visible:outline-none focus-visible:text-slate-100",
+        "disabled:opacity-25 disabled:hover:text-slate-400",
         className,
       )}
     >

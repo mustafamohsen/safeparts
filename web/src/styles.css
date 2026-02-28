@@ -51,8 +51,18 @@
     padding-right: 3rem;
   }
 
+  /* Compact inline action spacing for single-line fields. */
+  .input-with-clear-compact {
+    padding-right: 2.5rem;
+  }
+
   :dir(rtl) .input-with-clear {
     padding-left: 3rem;
+    padding-right: 0.75rem;
+  }
+
+  :dir(rtl) .input-with-clear-compact {
+    padding-left: 2.5rem;
     padding-right: 0.75rem;
   }
 
