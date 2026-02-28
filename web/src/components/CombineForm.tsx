@@ -5,6 +5,7 @@ import { ensureWasm } from "../wasm";
 
 import { ClearButton } from "./ClearButton";
 import { CopyButton } from "./CopyButton";
+import { PasteButton } from "./PasteButton";
 import {
   EncodingSelector,
   type Encoding,
@@ -341,16 +342,23 @@ export function CombineForm({ strings }: CombineFormProps) {
             <input
               value={passphrase}
               onChange={(e) => setPassphrase(e.target.value)}
-              className="input input-with-clear"
+              className="input input-with-clear-compact"
               autoComplete="new-password"
               aria-labelledby="passphrase-label"
             />
-            <ClearButton
-              label={strings.clearPassphrase}
-              disabled={passphrase.length === 0}
-              onClick={() => setPassphrase("")}
-              className="absolute top-1/2 -translate-y-1/2 end-2"
-            />
+            {passphrase.length === 0 ? (
+              <PasteButton
+                label={strings.pastePassphrase}
+                onPaste={setPassphrase}
+                className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
+              />
+            ) : (
+              <ClearButton
+                label={strings.clearPassphrase}
+                onClick={() => setPassphrase("")}
+                className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
+              />
+            )}
           </div>
         </label>
 
@@ -412,12 +420,22 @@ export function CombineForm({ strings }: CombineFormProps) {
                       }
                       aria-invalid={isInvalid}
                     />
-                    <ClearButton
-                      label={`${strings.clearShare} ${i + 1}`}
-                      disabled={box.value.length === 0}
-                      onClick={() => setShareBoxValue(box.id, "")}
-                      className="absolute top-2 end-2"
-                    />
+                    {box.value.length === 0 ? (
+                      <PasteButton
+                        label={`${strings.pasteShare} ${i + 1}`}
+                        onPaste={(text) => {
+                          pasteRequestedRef.current = true;
+                          setShareBoxValue(box.id, text);
+                        }}
+                        className="absolute top-2 end-2"
+                      />
+                    ) : (
+                      <ClearButton
+                        label={`${strings.clearShare} ${i + 1}`}
+                        onClick={() => setShareBoxValue(box.id, "")}
+                        className="absolute top-2 end-2"
+                      />
+                    )}
                   </div>
                   {isInvalid && (
                     <p className="mt-1 text-xs text-rose-400" id={`share-${box.id}-error`} role="alert">

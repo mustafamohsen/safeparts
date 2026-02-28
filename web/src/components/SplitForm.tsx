@@ -13,6 +13,7 @@ import { ensureWasm } from "../wasm";
 
 import { ClearButton } from "./ClearButton";
 import { CopyButton } from "./CopyButton";
+import { PasteButton } from "./PasteButton";
 import {
   EncodingSelector,
   type Encoding,
@@ -178,19 +179,33 @@ export function SplitForm({ strings }: SplitFormProps) {
               aria-labelledby="secret-label"
               aria-describedby="secret-hint"
             />
-            <ClearButton
-              label={strings.clearSecret}
-              disabled={secret.length === 0}
-              onClick={() => {
-                setSecret("");
-                requestAnimationFrame(() => {
-                  if (secretTextareaRef.current) {
-                    resizeSecretTextarea(secretTextareaRef.current);
-                  }
-                });
-              }}
-              className="absolute top-2 end-2"
-            />
+            {secret.length === 0 ? (
+              <PasteButton
+                label={strings.pasteSecret}
+                onPaste={(text) => {
+                  setSecret(text);
+                  requestAnimationFrame(() => {
+                    if (secretTextareaRef.current) {
+                      resizeSecretTextarea(secretTextareaRef.current);
+                    }
+                  });
+                }}
+                className="absolute top-2 end-2"
+              />
+            ) : (
+              <ClearButton
+                label={strings.clearSecret}
+                onClick={() => {
+                  setSecret("");
+                  requestAnimationFrame(() => {
+                    if (secretTextareaRef.current) {
+                      resizeSecretTextarea(secretTextareaRef.current);
+                    }
+                  });
+                }}
+                className="absolute top-2 end-2"
+              />
+            )}
           </div>
         </label>
 
@@ -321,16 +336,23 @@ export function SplitForm({ strings }: SplitFormProps) {
             <input
               value={passphrase}
               onChange={(e) => setPassphrase(e.target.value)}
-              className="input input-with-clear"
+              className="input input-with-clear-compact"
               autoComplete="new-password"
               aria-labelledby="passphrase-label"
             />
-            <ClearButton
-              label={strings.clearPassphrase}
-              disabled={passphrase.length === 0}
-              onClick={() => setPassphrase("")}
-              className="absolute top-1/2 -translate-y-1/2 end-2"
-            />
+            {passphrase.length === 0 ? (
+              <PasteButton
+                label={strings.pastePassphrase}
+                onPaste={setPassphrase}
+                className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
+              />
+            ) : (
+              <ClearButton
+                label={strings.clearPassphrase}
+                onClick={() => setPassphrase("")}
+                className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
+              />
+            )}
           </div>
         </label>
 
