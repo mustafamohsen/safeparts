@@ -10,6 +10,8 @@
     "help:dev": "bash -lc 'cd help && bun run dev'",
     "help:build": "bash -lc 'cd help && bun run build'",
     "test:a11y": "playwright test",
+    "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:e2e:full": "playwright test",
     "test:a11y:install": "playwright install chromium"
   },
   "dependencies": {

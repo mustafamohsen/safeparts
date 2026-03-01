@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { expectNoA11yViolations, waitForWasmReady } from './a11y-utils'
 
-test.describe('Web App Accessibility', () => {
+test.describe('Web App Accessibility @smoke', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
     await waitForWasmReady(page)

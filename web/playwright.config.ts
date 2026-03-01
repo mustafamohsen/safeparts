@@ -1,11 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Playwright configuration for accessibility testing.
- * 
- * This config runs accessibility scans using axe-core on:
- * - Web app (Split and Combine screens)
- * - Docs site (English and Arabic locales)
+ * Playwright configuration for web smoke + full test runs.
+ *
+ * Smoke and full suites are selected via grep tags in npm scripts.
  */
 export default defineConfig({
   testDir: './tests',

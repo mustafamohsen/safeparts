@@ -57,7 +57,7 @@ function getDocsRouteSets(): DocsRouteSets {
 
 const routes = getDocsRouteSets()
 
-test.describe('Docs Site Accessibility', () => {
+test.describe('Docs Site Accessibility @full', () => {
   test('Docs routes are in sync (EN/AR)', async () => {
     // We keep the docs bilingual; Arabic must mirror English route set.
     expect(routes.arabicSlugs).toEqual(routes.englishSlugs)

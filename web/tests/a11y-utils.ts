@@ -83,10 +83,17 @@ export async function expectNoA11yViolations(page: Page): Promise<void> {
  * The web app shows a loading state until WASM is initialized.
  */
 export async function waitForWasmReady(page: Page): Promise<void> {
-  // Wait for the WASM initialization to complete
-  // The app shows a hint when WASM is not ready
-  await page.waitForFunction(() => {
-    const wasmHint = document.querySelector('[data-testid="wasm-hint"]')
-    return !wasmHint || wasmHint.classList.contains('hidden')
-  }, { timeout: 30000 })
+  await expect(page.getByRole('tab', { name: /split|تقسيم/i })).toBeVisible()
+  await page.waitForFunction(
+    async () => {
+      try {
+        const dynamicImport = new Function('p', 'return import(p)') as (path: string) => Promise<unknown>
+        await dynamicImport('/src/wasm_pkg/safeparts_wasm.js')
+        return true
+      } catch {
+        return false
+      }
+    },
+    { timeout: 30000 },
+  )
 }

@@ -77,7 +77,9 @@ Source of truth:
 
 - Tests live under `web/tests/`.
 - Install browser (from `web/`): `bun run test:a11y:install`
-- Run (from `web/`): `bun run test:a11y`
+- Smoke suite (from `web/`): `bun run test:e2e:smoke`
+- Full suite (from `web/`): `bun run test:e2e:full`
+- Legacy/all-tests alias (from `web/`): `bun run test:a11y`
 
 ## OpenSpec tooling
 
