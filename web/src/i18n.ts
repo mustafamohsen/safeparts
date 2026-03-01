@@ -72,6 +72,7 @@ export const STRINGS = {
     wasmCommand: "bun run build:wasm",
 
     errorWasmMissing: "WASM module not found. Run bun run build:wasm.",
+    errorInvalidShare: "Invalid share",
 
     keyboardShortcuts: "Keyboard shortcuts",
     shortcutClose: "Close",
@@ -152,6 +153,7 @@ export const STRINGS = {
     wasmCommand: "bun run build:wasm",
 
     errorWasmMissing: "لم يتم العثور على WASM. شغل bun run build:wasm.",
+    errorInvalidShare: "حصة غير صالحة",
 
     keyboardShortcuts: "اختصارات لوحة المفاتيح",
     shortcutClose: "إغلاق",

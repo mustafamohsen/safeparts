@@ -47,6 +47,8 @@ function toErrorMessage(err: unknown, strings: Strings): string {
   const message = err instanceof Error ? err.message : String(err);
   if (/wasm_pkg|safeparts_wasm|Cannot find module/i.test(message))
     return strings.errorWasmMissing;
+  if (/^(invalid packet|encoding error):/i.test(message))
+    return strings.errorInvalidShare;
   return message;
 }
 
