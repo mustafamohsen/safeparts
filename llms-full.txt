@@ -1,0 +1,396 @@
+# Safeparts
+
+LLM integration + maintenance guide for this repository.
+This is not end-user documentation. It exists to help an LLM locate the right code, use the APIs correctly, and make safe changes.
+
+If you only read one section, read "Non-negotiable safety rules".
+
+## Non-negotiable safety rules
+- Treat share strings, SharePacket bytes, reconstructed secrets, ciphertext, and passphrases as secrets.
+- Do not ask for, paste, or log real secrets/shares/passphrases.
+- In examples and tests, use synthetic inputs ("hello", random bytes created locally).
+- Avoid printing data that could contain secrets (including debug dumps of packets).
+- Do not commit generated build output (notably `web/src/wasm_pkg/`, `target/`, `web/dist/`).
+- This workspace forbids `unsafe` code (see `Cargo.toml`). Do not add `unsafe`.
+- Avoid `unwrap()`/`expect()` in non-test code; return errors instead.
+- Preserve zeroization patterns (`zeroize`, `Zeroizing`) when touching code that handles secrets/passphrases.
+
+## What this repo ships
+- Rust library for integration: `safeparts_core` (`crates/safeparts_core/`)
+- CLI: `safeparts` (`crates/safeparts/`)
+- TUI: `safeparts-tui` (`crates/safeparts_tui/`) + `safeparts tui` launcher
+- WASM bindings: `safeparts_wasm` (`crates/safeparts_wasm/`)
+- Web UI: `web/` (Vite + React; split/combine runs locally in the browser via WASM)
+- Help site: `web/help/` (Astro + Starlight; served under `/help/` and built into `web/dist/help/`)
+
+Repo map (quick)
+- Core logic: `crates/safeparts_core/src/`
+- CLI: `crates/safeparts/src/main.rs`
+- TUI: `crates/safeparts_tui/src/app.rs` + `crates/safeparts_tui/src/domain.rs`
+- WASM exports: `crates/safeparts_wasm/src/lib.rs`
+- Web UI: `web/src/`
+- CI truth: `.github/workflows/`
+
+Secondary references (useful context, but code is the source of truth)
+- Repo overview: `AGENTS.md`
+- Quickstart: `README.md`
+- Intent + threat model: `PRD.md`
+- CI-style local commands: `docs/agents/checks.md`
+- Repo conventions: `docs/agents/conventions.md`
+- End-user docs content: `web/help/src/content/docs/`
+
+## The core model (from code)
+
+Split flow
+- Input is arbitrary bytes.
+- Optional: encrypt the secret first using Argon2id -> ChaCha20-Poly1305.
+  - Current defaults (see `crates/safeparts_core/src/crypto.rs`): mem_cost_kib=65536, time_cost=3, parallelism=1; salt=16 bytes; nonce=12 bytes.
+- Compute integrity tag = BLAKE3(data_to_split) and append it (32 bytes).
+- Shamir split the tagged bytes over GF(256), byte-wise, into n shares.
+- Wrap each share into a versioned SharePacket that carries metadata.
+- Encode SharePacket bytes for transport (base64url/base58check/mnemonics).
+
+Combine flow
+- Decode share strings into SharePackets.
+- Validate the share set is consistent (same set_id/k/n/x/payload length; no duplicate x).
+- Validate crypto params are consistent across packets.
+- Shamir combine to reconstruct the tagged bytes.
+- Verify integrity tag before decrypting.
+- If encrypted: decrypt using passphrase and the per-packet crypto params.
+- Output recovered secret bytes.
+
+Where this logic lives
+- Split/combine API: `crates/safeparts_core/src/lib.rs`
+- Shamir split/combine: `crates/safeparts_core/src/sss.rs` + `crates/safeparts_core/src/gf256.rs`
+- Share packet format: `crates/safeparts_core/src/packet.rs`
+- Encodings: `crates/safeparts_core/src/ascii.rs`, `crates/safeparts_core/src/mnemo_words.rs`, `crates/safeparts_core/src/mnemo_bip39.rs`
+- Optional encryption: `crates/safeparts_core/src/crypto.rs`
+
+Constraints and edge cases
+- Parameters are bytes: `1 <= k <= n <= 255` (type is `u8`).
+- `k=1` is allowed by the core but is a degenerate scheme (any single share reveals the secret).
+- `x=0` is invalid; generated shares use `x = 1..=n`.
+
+## Data structures and formats
+
+### SharePacket (the real share format)
+Type: `crates/safeparts_core/src/packet.rs`
+
+In memory
+- `SharePacket { set_id, k, n, x, payload, crypto_params }`
+- `set_id` is 16 random bytes identifying the share set.
+- `payload` is the per-share y-bytes (same length across shares in a set).
+- `crypto_params` is present when encrypt-then-split was used.
+
+Binary layout (conceptual)
+```text
+magic      : "SMN1"
+version    : u8
+flags      : u8   (bit 0 = encrypted)
+k, n, x    : u8, u8, u8
+set_id     : [u8; 16]
+
+if encrypted:
+  salt         : [u8; 16]
+  nonce        : [u8; 12]
+  mem_cost_kib : u32 (BE)
+  time_cost    : u32 (BE)
+  parallelism  : u32 (BE)
+
+payload_len: u32 (BE)
+payload    : bytes
+```
+
+Versioning
+- Encode uses V2 today; decode supports V1 and V2.
+- If you change this format, add a new version and keep old decode working.
+
+### Encodings (transport, not semantics)
+All encodings are reversible wrappers around SharePacket bytes.
+
+- Base64url (`ascii::Encoding::Base64url`)
+  - URL-safe, no padding.
+  - No checksum beyond SharePacket parsing and the integrity tag.
+- Base58check (`ascii::Encoding::Base58check`)
+  - Includes a checksum.
+- Mnemo-words (`mnemo_words`)
+  - Uses the BIP-39 English word list as an alphabet.
+  - Adds a CRC16 (CCITT-FALSE) over a framed payload.
+  - Decode is case-tolerant.
+- Mnemo-bip39 (`mnemo_bip39`)
+  - Encodes SharePacket bytes into one or more valid BIP-39 mnemonics.
+  - A share may be multiple phrases separated by '/'.
+  - Decode is case-tolerant and rejects missing/duplicate frames.
+
+Important: mnemonic outputs are an encoding for share packets, not wallet seed phrases.
+
+## Public surfaces
+
+### Rust library: `safeparts_core`
+Primary entry point: `crates/safeparts_core/src/lib.rs`
+
+Modules
+- `ascii`: base64url/base58check encoding of SharePacket bytes
+- `mnemo_words`: word-based encoding + CRC16
+- `mnemo_bip39`: BIP-39-valid encoding (multi-frame)
+- `packet`: SharePacket binary format
+- `sss`: Shamir split/combine over GF(256)
+- `crypto`: Argon2id + ChaCha20-Poly1305
+- `error`: `CoreError`, `CoreResult`
+
+Key functions
+- `split_secret(secret: &[u8], k: u8, n: u8, passphrase: Option<&[u8]>) -> CoreResult<Vec<SharePacket>>`
+- `combine_shares(packets: &[SharePacket], passphrase: Option<&[u8]>) -> CoreResult<Vec<u8>>`
+- Convenience aliases:
+  - `tag_and_split(secret, k, n)` (same as `split_secret(..., None)`)
+  - `combine_and_verify(packets)` (same as `combine_shares(..., None)`)
+
+Errors you should handle
+- `NotEnoughShares { k, m }`: fewer than k shares.
+- `InconsistentMetadata`: mixed sets or inconsistent lengths.
+- `DuplicateX { x }` / `InvalidX`: bad share indices.
+- `IntegrityCheckFailed`: wrong shares or corrupted shares.
+- `PassphraseRequired`: share set is encrypted but passphrase not provided.
+- `DecryptFailed`: wrong passphrase or tampered ciphertext.
+- `CryptoParamsMismatch`: mixed encrypted/unencrypted shares or mismatched crypto params.
+
+Rust integration example (encode shares as base64url strings)
+```rust
+use safeparts_core::{ascii, combine_shares, packet::SharePacket, split_secret, CoreResult};
+
+fn main() -> CoreResult<()> {
+    let packets = split_secret(b"secret", 2, 3, None)?;
+
+    // Store/transport as strings.
+    let encoded: Vec<String> = packets
+        .iter()
+        .map(|p| ascii::encode_packet(p, ascii::Encoding::Base64url))
+        .collect::<CoreResult<_>>()?;
+
+    // Later: decode strings back into SharePackets.
+    let decoded: Vec<SharePacket> = encoded
+        .iter()
+        .take(2)
+        .map(|s| ascii::decode_packet(s, ascii::Encoding::Base64url))
+        .collect::<CoreResult<_>>()?;
+
+    let recovered = combine_shares(&decoded, None)?;
+    assert_eq!(recovered, b"secret");
+    Ok(())
+}
+```
+
+### CLI: `safeparts`
+Implementation: `crates/safeparts/src/main.rs`
+
+Commands
+- `safeparts split -k <K> -n <N> [-e <encoding>] [-p <pass>] [-P <file>] [-i <file>] [-o <file>]`
+- `safeparts combine [-e <encoding>] [-p <pass>] [-P <file>] [-i <file>] [-o <file>]`
+- `safeparts tui` (launcher for `safeparts-tui`)
+
+Flag alias note
+- `combine --encoding` also accepts `--from`.
+
+I/O rules
+- `split` reads raw bytes from stdin by default; it does not interpret UTF-8.
+- `combine` reads share text as UTF-8.
+- `combine` writes recovered bytes to stdout/file.
+- `-i -` and `-o -` explicitly select stdin/stdout.
+
+Encoding flags (CLI)
+- `base64` (alias `base64url`)
+- `base58` (alias `base58check`)
+- `mnemo-words`
+- `mnemo-bip39`
+
+Passphrase flags (CLI)
+- `-p/--passphrase <text>` or `-P/--passphrase-file <path>` (file input trims trailing `\n`/`\r`).
+- Prefer `--passphrase-file` in real usage to avoid shell history.
+
+Auto-detect (CLI combine)
+- If any non-empty line contains '/' or has multiple words, treat input as mnemonic.
+  - If any line contains '/', decode as mnemo-bip39.
+  - Otherwise decode as mnemo-words.
+- Otherwise, try base64url decode first; if that fails, try base58check.
+
+Mnemonic parsing (CLI combine)
+- Mnemonic shares may be pasted as blank-line separated blocks (recommended).
+  - Each block is one share.
+  - Lines within a block are joined with spaces before decoding.
+- If there are multiple non-empty lines and no blank lines, the CLI treats each line as a separate share.
+
+Tests that define the CLI contract
+- `crates/safeparts/tests/e2e.rs`
+
+### TUI: `safeparts-tui`
+Entrypoint: `crates/safeparts_tui/src/main.rs`
+
+Core logic
+- UI + key handling: `crates/safeparts_tui/src/app.rs`
+- Encoding and parsing rules: `crates/safeparts_tui/src/domain.rs`
+
+Share parsing rules (TUI)
+- Base64/Base58: whitespace-separated tokens.
+- Mnemonics: one share per paragraph (blank-line separated); line wrapping is normalized.
+
+Keybindings (high signal)
+- `Ctrl+Q`: quit
+- `F1` or `?`: help
+- `Tab` / `Shift+Tab`: focus next/prev
+- `Left` / `Right`: switch tabs
+- `Enter`: run the focused action
+- `Ctrl+L`: load (context-sensitive)
+- `Ctrl+S`: save (context-sensitive)
+- `Ctrl+C`: copy (context-sensitive)
+- `Ctrl+V`: paste (context-sensitive)
+- Passphrase field: `Ctrl+U` clears
+
+Clipboard
+- Uses system clipboard when available, otherwise OSC52 (`crates/safeparts_tui/src/clipboard.rs`).
+
+### WASM: `safeparts_wasm`
+Implementation: `crates/safeparts_wasm/src/lib.rs`
+
+Exported functions
+- `split_secret(secret: &[u8], k: u8, n: u8, encoding: &str, passphrase: Option<String>) -> Array`
+- `combine_shares(shares: Array, encoding: &str, passphrase: Option<String>) -> Uint8Array`
+- `share_threshold(share: &str, encoding: &str) -> u8`
+- `inspect_share(share: &str, encoding: &str) -> { k, n, x, encrypted }`
+
+Encoding strings (WASM/web)
+- `base64url`
+- `base58check`
+- `mnemo-words`
+- `mnemo-bip39`
+These are not the same strings as the CLI flags. Do not mix them.
+
+Minimal JS usage pattern
+```js
+// wasm-pack output exports a default init() function.
+import init, * as sp from "./wasm_pkg/safeparts_wasm.js";
+
+await init();
+const secret = new TextEncoder().encode("secret");
+const shares = sp.split_secret(secret, 2, 3, "base64url", null);
+const recoveredBytes = sp.combine_shares([shares[0], shares[1]], "base64url", null);
+const recovered = new TextDecoder().decode(recoveredBytes);
+```
+
+### Web UI
+- App entry: `web/src/App.tsx`
+- WASM loader: `web/src/wasm.ts` (dynamic import from `web/src/wasm_pkg/`)
+- Split UI: `web/src/components/SplitForm.tsx`
+- Combine UI: `web/src/components/CombineForm.tsx`
+
+Important limitations (current behavior)
+- The web UI currently treats the secret as UTF-8 text.
+  - Split uses `TextEncoder().encode(secretString)`.
+  - Combine uses `TextDecoder().decode(bytes)`.
+- The web UI only exposes `base64url` and `mnemo-words` in the encoding selector.
+  - This is enforced by the `Encoding` union in `web/src/components/ui/encoding-selector.tsx`.
+
+Combine UI share parsing nuance
+- Each share box is intended to hold one share.
+- A single share box can also contain multiple shares if they are separated by blank lines.
+- Base64url shares must be a single token (whitespace inside a share will break decoding).
+
+Combine UI ergonomics (useful when debugging)
+- It heuristically detects encoding from pasted text and may auto-switch the selected encoding.
+- It may auto-add more share boxes by inspecting the first pasted share's threshold (`k`) via WASM.
+
+Generated artifacts
+- `web/src/wasm_pkg/` is produced by `wasm-pack build`.
+- Regenerate it via `bun run build:wasm` (see `web/package.json`).
+- Do not hand-edit or commit generated files in `web/src/wasm_pkg/`.
+
+Build pipeline notes (forks)
+- `web/package.json` includes a `build:wasm` script that builds `crates/safeparts_wasm/` into `web/src/wasm_pkg/`.
+- Netlify build settings and redirects live in `netlify.toml`.
+
+Docs integration (web)
+- Help base URL can be overridden via `VITE_HELP_URL` (see `web/src/App.tsx`).
+- In dev, Vite proxies `/help` to the docs dev server (see `web/vite.config.mjs`).
+
+### Help site (Astro/Starlight)
+- Source: `web/help/`
+- Content: `web/help/src/content/docs/`
+- Route map: `web/help/DOCS_MAP.md`
+
+## Build, tests, CI
+
+Rust (matches `.github/workflows/rust-ci.yml`)
+- `cargo fmt --all -- --check`
+- `cargo clippy --all-targets --all-features -- -D warnings`
+- `cargo test --all-features`
+
+Web + docs + e2e (matches `.github/workflows/web-ci.yml`)
+- From `web/`:
+  - `bun install`
+  - `bun run build:wasm`
+  - `bun run build`
+- From `web/help/`:
+  - `bun install`
+  - `bun run build`
+- Web tests (from `web/`):
+  - `bun run test:e2e:smoke`
+  - `bun run test:e2e:full`
+
+Where tests live
+- CLI e2e: `crates/safeparts/tests/e2e.rs`
+- Web tests: `web/tests/`
+
+## Safe change recipes
+
+Add a new encoding end-to-end
+1. Core encode/decode: `crates/safeparts_core/src/`
+2. CLI mapping + auto-detect (if relevant): `crates/safeparts/src/main.rs`
+3. TUI enum + parsing/detect: `crates/safeparts_tui/src/domain.rs`
+4. WASM string mapping: `crates/safeparts_wasm/src/lib.rs`
+5. Web UI exposure (optional):
+   - `web/src/components/ui/encoding-selector.tsx` (type union)
+   - `web/src/components/SplitForm.tsx` and `web/src/components/CombineForm.tsx` (options + UX)
+6. Tests:
+   - round-trip tests in the encoding module
+   - CLI e2e coverage in `crates/safeparts/tests/e2e.rs`
+
+Change SharePacket format
+- Add a new version constant.
+- Keep old decode paths working.
+- Add binary round-trip tests.
+- Do not silently reinterpret bytes on decode.
+
+Change crypto defaults
+- Defaults: `crates/safeparts_core/src/crypto.rs` (`CryptoParams::random_default`).
+- Params are stored per share packet, so changing defaults affects only new splits.
+- Keep decrypt compatible with older params.
+
+Add binary-secret support to the web UI
+- Today the web UI treats secrets as UTF-8 strings.
+- To support arbitrary bytes, add file input/output and avoid `TextDecoder()` for recovered bytes.
+- Keep the default UX simple; do not accidentally display binary as lossy text.
+
+## Common pitfalls
+- Mixing share sets: different `set_id`/k/n/payload length will fail combine.
+- Mixing encrypted and unencrypted shares: `CryptoParamsMismatch`.
+- Confusing encoding names: CLI uses `base64` but WASM/web uses `base64url`.
+- Base64url shares must be one token per share; whitespace inside a share breaks decode.
+- `k=1` is valid but provides no threshold secrecy.
+
+## Release packaging
+- Local release-style archives are built via `scripts/release/package.py`.
+- Release archives include CLI/TUI binaries; the web UI is not packaged (see `scripts/release/README.md`).
+
+## Ignore / low-signal directories
+- `target/`: Rust build output
+- `web/dist/`: web build output
+- `web/src/wasm_pkg/`: generated by wasm-pack
+- `mobile/`: currently not a supported deliverable (looks like only `node_modules/`)
+- `openspec/` and `.opencode/`: spec/tooling; ignore unless the task is explicitly about specs
+
+## Primary sources (when in doubt)
+- Core: `crates/safeparts_core/src/lib.rs`
+- Packet format: `crates/safeparts_core/src/packet.rs`
+- CLI: `crates/safeparts/src/main.rs`
+- WASM: `crates/safeparts_wasm/src/lib.rs`
+- Web UI: `web/src/components/SplitForm.tsx`, `web/src/components/CombineForm.tsx`
+- CI: `.github/workflows/`

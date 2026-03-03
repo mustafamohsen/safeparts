@@ -1,0 +1,44 @@
+# Safeparts
+
+LLM index for this repository.
+Read `llms-full.txt` for the detailed, code-backed guide (APIs, invariants, change recipes).
+
+## Safety / privacy (treat as secrets)
+- Share strings, SharePacket bytes, reconstructed secrets, ciphertext, and passphrases.
+- Do not paste real secrets/shares into issues, chat, logs, screenshots, or test fixtures.
+- Use synthetic inputs in examples/tests. Do not commit generated build output (notably `web/src/wasm_pkg/` and `target/`).
+
+## What this repo ships
+- Rust library: `crates/safeparts_core/` (split/combine, packet format, encodings, optional encryption)
+- CLI: `crates/safeparts/` -> `safeparts`
+- TUI: `crates/safeparts_tui/` -> `safeparts-tui` (+ `safeparts tui` launcher)
+- WASM bindings: `crates/safeparts_wasm/` (wasm-bindgen API used by the web UI)
+- Web UI: `web/` (Vite + React, local-only WASM)
+- Help site: `web/help/` (Astro/Starlight, built into `web/dist/help/`)
+
+## Read order (entry points)
+1. `llms-full.txt`
+2. Core API + invariants: `crates/safeparts_core/src/lib.rs`
+3. Packet format: `crates/safeparts_core/src/packet.rs`
+4. CLI contract: `crates/safeparts/src/main.rs`
+5. TUI contract: `crates/safeparts_tui/src/domain.rs` and `crates/safeparts_tui/src/app.rs`
+6. WASM contract: `crates/safeparts_wasm/src/lib.rs`
+7. Web UI flows: `web/src/components/SplitForm.tsx` and `web/src/components/CombineForm.tsx`
+8. CI truth: `.github/workflows/`
+
+## High-value repo docs (secondary sources)
+- `AGENTS.md` (repo snapshot + check pointers)
+- `PRD.md` (intent + threat model)
+- `README.md` (quickstart)
+- `docs/agents/checks.md` (commands that match CI)
+- `docs/agents/conventions.md` (repo standards)
+- `web/help/src/content/docs/` (end-user docs; may lag code)
+
+## CI-style commands
+- Rust: `cargo fmt --all -- --check && cargo clippy --all-targets --all-features -- -D warnings && cargo test --all-features`
+- Web (from `web/`): `bun install && bun run build:wasm && bun run build`
+- Docs (from `web/help/`): `bun install && bun run build`
+
+## Encoding name collision (important)
+- CLI flags: `base64`, `base58`, `mnemo-words`, `mnemo-bip39`
+- WASM/web strings: `base64url`, `base58check`, `mnemo-words`, `mnemo-bip39`
