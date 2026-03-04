@@ -1,0 +1,17 @@
+.git/
+.github/
+target/
+**/target/
+
+**/node_modules/
+web/dist/
+web/help/
+web/src/wasm_pkg/
+web/help/dist/
+web/test-results/
+
+openspec/
+docs/
+
+**/.DS_Store
+**/*.log

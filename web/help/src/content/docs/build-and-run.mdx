@@ -82,6 +82,17 @@ bun run dev
 
 Open http://localhost:5173.
 
+### Web UI (Docker)
+
+If you want a single command that builds the WASM + web UI and serves it, you can use the repo's Dockerfile.
+
+```bash
+docker build -t safeparts-webui -f web/Dockerfile .
+docker run --rm -p 8080:8080 safeparts-webui
+```
+
+Open http://localhost:8080.
+
 ## Help/docs site (Astro + Starlight)
 
 This site lives in <span class="token token--mono">web/help/</span> and is served under <span class="token token--mono">/help/</span>.

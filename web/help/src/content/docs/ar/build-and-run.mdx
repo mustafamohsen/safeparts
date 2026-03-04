@@ -82,6 +82,18 @@ bun run dev
 
 افتح http://localhost:5173.
 
+### تطبيق الويب (Docker)
+
+إذا كنت تريد أمراً واحداً يبني WASM + تطبيق الويب ثم يخدمه لك، استخدم Dockerfile الموجود في المستودع.
+لا يوجد خادم خلفي: كل شيء يتم داخل المتصفح.
+
+```bash
+docker build -t safeparts-webui -f web/Dockerfile .
+docker run --rm -p 8080:8080 safeparts-webui
+```
+
+افتح http://localhost:8080.
+
 ## موقع المساعدة (Astro + Starlight)
 
 الموقع موجود في <span class="token token--mono" dir="ltr">web/help/</span> ويُخدم تحت <span class="token token--mono" dir="ltr">/help/</span>.
