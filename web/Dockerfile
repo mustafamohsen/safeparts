@@ -63,6 +63,8 @@ RUN mkdir -p \
 RUN --mount=type=cache,target=/work/target \
     --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
+    # Warm the Cargo cache with stub sources. This is best-effort (it may fail
+    # before real sources are copied), but speeds up subsequent builds.
     cargo build -p safeparts_wasm --release --target wasm32-unknown-unknown || true
 
 # Copy real sources and build the WASM package.
