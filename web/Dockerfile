@@ -85,10 +85,16 @@ COPY web/package.json web/bun.lock ./
 RUN --mount=type=cache,target=/root/.bun \
     bun install --frozen-lockfile
 
+# Cache docs (help) dependencies separately.
+COPY web/help/package.json web/help/bun.lock ./help/
+RUN --mount=type=cache,target=/root/.bun \
+    cd help && bun install --frozen-lockfile
+
 COPY web/ ./
 COPY --from=wasm-builder /out/wasm_pkg ./src/wasm_pkg
 
 RUN bun run build
+RUN cd help && bun run build
 
 FROM ${NGINX_IMAGE} AS runtime
 

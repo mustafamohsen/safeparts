@@ -174,9 +174,9 @@ bun run dev
 
 Open http://localhost:5173.
 
-## Web UI (Docker)
+## Web UI + docs (Docker)
 
-This builds the same static web UI and serves it from a tiny Nginx container.
+This builds the static web UI and the docs site and serves them from a tiny Nginx container.
 There is no backend: your secrets stay in the browser.
 
 ```bash
@@ -185,6 +185,8 @@ docker run --rm -p 8080:8080 safeparts-webui
 ```
 
 Open http://localhost:8080.
+
+Docs: http://localhost:8080/help/
 
 Docs site (served under `/help/`):
 
