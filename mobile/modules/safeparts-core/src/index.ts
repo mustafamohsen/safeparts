@@ -23,14 +23,29 @@ type NativeSafepartsCore = {
   ): Promise<string>;
 };
 
-const Native = requireNativeModule<NativeSafepartsCore>("SafepartsCore");
+let nativeModule: NativeSafepartsCore | null = null;
+
+function getNativeModule(): NativeSafepartsCore {
+  if (nativeModule) {
+    return nativeModule;
+  }
+
+  try {
+    nativeModule = requireNativeModule<NativeSafepartsCore>("SafepartsCore");
+    return nativeModule;
+  } catch {
+    throw new Error(
+      "SafepartsCore native module is unavailable. Use a development build (expo run:ios / expo run:android), not Expo Go.",
+    );
+  }
+}
 
 export function supportedEncodings(): CoreEncoding[] {
-  return Native.supportedEncodings() as CoreEncoding[];
+  return getNativeModule().supportedEncodings() as CoreEncoding[];
 }
 
 export function getVersion(): string {
-  return Native.getVersion();
+  return getNativeModule().getVersion();
 }
 
 export async function splitSecret(
@@ -40,7 +55,7 @@ export async function splitSecret(
   encoding: CoreEncoding,
   passphrase?: string,
 ): Promise<string[]> {
-  return Native.splitSecret(secretB64, k, n, encoding, passphrase ? passphrase : null);
+  return getNativeModule().splitSecret(secretB64, k, n, encoding, passphrase ? passphrase : null);
 }
 
 export async function combineShares(
@@ -48,5 +63,5 @@ export async function combineShares(
   encoding: CoreEncoding,
   passphrase?: string,
 ): Promise<string> {
-  return Native.combineShares(shares, encoding, passphrase ? passphrase : null);
+  return getNativeModule().combineShares(shares, encoding, passphrase ? passphrase : null);
 }

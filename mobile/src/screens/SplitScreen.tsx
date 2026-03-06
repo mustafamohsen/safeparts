@@ -15,7 +15,7 @@ import * as Clipboard from "expo-clipboard";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
-import type { CoreEncoding } from "safeparts-core";
+import type { CoreEncoding } from "../../modules/safeparts-core/src";
 
 import { ENCODINGS } from "../core/encodings";
 import { localizeError } from "../core/errors";

@@ -16,7 +16,7 @@ import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
-import type { CoreEncoding } from "safeparts-core";
+import type { CoreEncoding } from "../../modules/safeparts-core/src";
 
 import { ENCODINGS, detectEncodingFromText } from "../core/encodings";
 import { localizeError } from "../core/errors";

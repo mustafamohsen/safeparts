@@ -17,6 +17,7 @@ export function ScreenHeader(props: { title: string; subtitle?: string }) {
         <Pressable
           onPress={toggle}
           style={styles.lang}
+          hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={t("a11y.toggleLanguage")}
         >

@@ -24,11 +24,12 @@ export function AppRoot() {
 }
 
 function AppRootInner() {
-  const { t } = useI18n();
+  const { lang, t } = useI18n();
 
   return (
     <NavigationContainer>
       <Tabs.Navigator
+        key={`tabs-${lang}`}
         screenOptions={{
           headerShown: false,
         }}
