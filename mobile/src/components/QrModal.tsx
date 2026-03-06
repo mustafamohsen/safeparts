@@ -7,6 +7,11 @@ import { useI18n } from "../i18n/i18n";
 export function QrModal(props: { visible: boolean; title: string; value: string; onClose: () => void }) {
   const { t } = useI18n();
   const reducedMotion = useReducedMotion();
+  const hasValue = props.value.trim().length > 0;
+
+  if (!props.visible || !hasValue) {
+    return null;
+  }
 
   return (
     <Modal
