@@ -1,0 +1,3 @@
+node_modules/
+src-native/target/
+.DS_Store
