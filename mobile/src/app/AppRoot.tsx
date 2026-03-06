@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -30,9 +31,34 @@ function AppRootInner() {
     <NavigationContainer>
       <Tabs.Navigator
         key={`tabs-${lang}`}
-        screenOptions={{
+        screenOptions={({ route }) => ({
           headerShown: false,
-        }}
+          tabBarActiveTintColor: "#7bffd6",
+          tabBarInactiveTintColor: "#7f8aa8",
+          tabBarStyle: {
+            height: 72,
+            paddingTop: 8,
+            paddingBottom: 10,
+            backgroundColor: "#0d1428",
+            borderTopWidth: 1,
+            borderTopColor: "rgba(140, 170, 255, 0.2)",
+          },
+          tabBarItemStyle: {
+            paddingVertical: 4,
+          },
+          tabBarLabelStyle: {
+            fontSize: 14,
+            fontWeight: "700",
+            letterSpacing: 0.2,
+          },
+          tabBarIcon: ({ color, focused }) => (
+            <MaterialCommunityIcons
+              name={route.name === "Split" ? "source-branch" : "source-merge"}
+              size={focused ? 24 : 22}
+              color={color}
+            />
+          ),
+        })}
       >
         <Tabs.Screen name="Split" component={SplitScreen} options={{ title: t("tabs.split") }} />
         <Tabs.Screen
