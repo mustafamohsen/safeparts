@@ -14,6 +14,7 @@ import {
 import * as Clipboard from "expo-clipboard";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { CoreEncoding } from "../../modules/safeparts-core/src";
 
@@ -41,6 +42,7 @@ function clampN(nextN: number): number {
 
 export function SplitScreen() {
   const { isRtl, t } = useI18n();
+  const insets = useSafeAreaInsets();
   const [secret, setSecret] = useState("");
   const [k, setK] = useState(2);
   const [n, setN] = useState(3);
@@ -95,7 +97,14 @@ export function SplitScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: Math.max(insets.top, 16), paddingBottom: 28 + insets.bottom },
+      ]}
+      keyboardShouldPersistTaps="handled"
+    >
       <ScreenHeader title={t("split.title")} subtitle={t("split.subtitle")} />
 
       <Text style={[styles.label, isRtl ? styles.right : styles.left]}>{t("split.secret")}</Text>

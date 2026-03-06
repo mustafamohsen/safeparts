@@ -15,6 +15,7 @@ import * as Clipboard from "expo-clipboard";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { CoreEncoding } from "../../modules/safeparts-core/src";
 
@@ -35,6 +36,7 @@ function parseShares(text: string): string[] {
 
 export function CombineScreen() {
   const { isRtl, t } = useI18n();
+  const insets = useSafeAreaInsets();
   const [raw, setRaw] = useState("");
   const [encoding, setEncoding] = useState<CoreEncoding>("mnemo-words");
   const [passphrase, setPassphrase] = useState("");
@@ -107,7 +109,14 @@ export function CombineScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: Math.max(insets.top, 16), paddingBottom: 28 + insets.bottom },
+      ]}
+      keyboardShouldPersistTaps="handled"
+    >
       <ScreenHeader title={t("combine.title")} subtitle={t("combine.subtitle")} />
 
       <View style={styles.actionsTop}>
