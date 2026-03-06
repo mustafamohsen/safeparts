@@ -1,10 +1,10 @@
-import type { CoreEncoding } from "safeparts-core";
+import type { CoreEncoding } from "../../modules/safeparts-core/src";
 import {
   combineShares as nativeCombineShares,
   getVersion as nativeGetVersion,
   splitSecret as nativeSplitSecret,
   supportedEncodings as nativeSupportedEncodings,
-} from "safeparts-core";
+} from "../../modules/safeparts-core/src";
 
 export function supportedEncodings(): CoreEncoding[] {
   return nativeSupportedEncodings();

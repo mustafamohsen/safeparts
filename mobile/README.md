@@ -15,7 +15,14 @@ Prereqs:
 
 - Node.js (Expo requires Node)
 - Bun (repo default)
-- Xcode (iOS simulator) and/or Android Studio (Android emulator), plus devices as needed
+- Rust toolchain (`cargo` via `rustup`)
+- Xcode + iOS Simulator runtime
+- CocoaPods (`pod`) and Watchman
+- Android Studio (Android emulator), plus devices as needed
+
+iOS Rust targets (one-time):
+
+- `rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios`
 
 Install dependencies:
 
@@ -23,14 +30,21 @@ Install dependencies:
 
 Note: This app includes a local native module (`mobile/modules/safeparts-core`), so it will not run in Expo Go.
 
+If `pod` crashes with a Ruby `Logger` error on macOS, run iOS commands with `RUBYOPT=-rlogger`.
+
 Run dev server:
 
 - `bun run start`
 
 Open on a simulator/emulator:
 
-- iOS: `bunx expo run:ios`
+- iOS: `bun run ios`
 - Android: `bunx expo run:android`
+
+Project checks:
+
+- Expo doctor: `bun run doctor`
+- Reinstall pods: `bun run pods:install`
 
 ## Building
 

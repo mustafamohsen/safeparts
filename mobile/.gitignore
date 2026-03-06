@@ -42,3 +42,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# generated Rust artifacts for local Expo module
+/modules/safeparts-core/ios/rust-libs
+/modules/safeparts-core/ios/ios

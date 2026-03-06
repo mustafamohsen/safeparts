@@ -1,4 +1,4 @@
-import type { CoreEncoding } from "safeparts-core";
+import type { CoreEncoding } from "../../modules/safeparts-core/src";
 
 export const ENCODINGS: {
   value: CoreEncoding;

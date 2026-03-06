@@ -5,7 +5,7 @@ edition = "2024"
 publish = false
 
 [lib]
-crate-type = ["rlib", "cdylib"]
+crate-type = ["rlib", "cdylib", "staticlib"]
 
 [build-dependencies]
 uniffi_build = "0.29"
