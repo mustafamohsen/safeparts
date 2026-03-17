@@ -386,7 +386,7 @@ export function CombineForm({ strings }: CombineFormProps) {
 
                     <button
                       type="button"
-                      className="btn-ghost h-11 w-11 px-0 min-h-[44px]"
+                      className="btn-ghost h-11 w-11 min-h-[44px] px-0 text-slate-400 transition-colors hover:bg-transparent hover:text-slate-200 focus-visible:text-slate-100 disabled:opacity-25 disabled:hover:text-slate-400"
                       onClick={() => removeShareBox(box.id)}
                       disabled={shareBoxes.length <= 2}
                       aria-label={strings.removeShare}
