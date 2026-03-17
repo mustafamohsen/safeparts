@@ -62,7 +62,7 @@ type ClearButtonProps = {
 
 export function ClearButton({
   label,
-  variant = "eraser",
+  variant = "x",
   disabled = false,
   onClick,
   className,
