@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { Strings } from "../i18n";
+import type { Lang, Strings } from "../i18n";
 import { ensureWasm } from "../wasm";
 
 import { ClearButton } from "./ClearButton";
@@ -14,6 +14,7 @@ import {
 import { EncryptedText } from "./ui/encrypted-text";
 
 type CombineFormProps = {
+  lang: Lang;
   strings: Strings;
 };
 
@@ -96,7 +97,7 @@ function createShareBox(): ShareBox {
   return { id: createId(), value: "" };
 }
 
-export function CombineForm({ strings }: CombineFormProps) {
+export function CombineForm({ lang, strings }: CombineFormProps) {
   const [encoding, setEncoding] = useState<Encoding>("mnemo-words");
   const [passphrase, setPassphrase] = useState("");
   const [shareBoxes, setShareBoxes] = useState<ShareBox[]>(() => [
@@ -403,8 +404,7 @@ export function CombineForm({ strings }: CombineFormProps) {
                         pasteRequestedRef.current = true;
                       }}
                       rows={3}
-                      placeholder={strings.sharePlaceholder}
-                      className={`input input-with-clear resize-none overflow-hidden font-mono text-xs leading-relaxous transition-colors duration-700 ${
+                      className={`input input-with-clear input-with-clear-ltr resize-none overflow-hidden font-mono text-xs leading-relaxous transition-colors duration-700 ${
                         isInvalid
                           ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
                           : ""
@@ -415,6 +415,17 @@ export function CombineForm({ strings }: CombineFormProps) {
                       }
                       aria-invalid={isInvalid}
                     />
+                    {box.value.length === 0 ? (
+                      <span
+                        aria-hidden="true"
+                        dir={lang === "ar" ? "rtl" : "ltr"}
+                        className={`pointer-events-none absolute inset-x-3 top-2 overflow-hidden pe-12 text-sm text-slate-500 ${
+                          lang === "ar" ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {strings.sharePlaceholder}
+                      </span>
+                    ) : null}
                     {box.value.length === 0 ? (
                       <PasteButton
                         label={`${strings.pasteShare} ${i + 1}`}

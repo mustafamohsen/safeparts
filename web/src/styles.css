@@ -66,6 +66,11 @@
     padding-right: 0.75rem;
   }
 
+  .input-with-clear.input-with-clear-ltr {
+    padding-left: 0.75rem;
+    padding-right: 3rem;
+  }
+
   /*
    * Mobile: numeric inputs have poor affordances on iOS (no steppers).
    * Use custom +/- controls on coarse pointers.

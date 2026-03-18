@@ -345,7 +345,7 @@ export function App() {
               </div>
             ) : (
               <div role="tabpanel" id="combine-panel" aria-labelledby="combine-tab">
-                <CombineForm strings={strings} />
+                <CombineForm lang={lang} strings={strings} />
               </div>
             )}
           </main>
