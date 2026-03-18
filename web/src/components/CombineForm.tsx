@@ -22,18 +22,11 @@ type ShareBox = {
   value: string;
 };
 
-function TrashIcon() {
+function MinusIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
       <path
-        d="M9 3h6m-7 4h8m-9 0h10l-1 14a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L7 7Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M10 11v7m4-7v7"
+        d="M7 12h10"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -392,7 +385,7 @@ export function CombineForm({ strings }: CombineFormProps) {
                       aria-label={strings.removeShare}
                       title={strings.removeShare}
                     >
-                      <TrashIcon />
+                      <MinusIcon />
                       <span className="sr-only">{strings.removeShare}</span>
                     </button>
                   </div>
