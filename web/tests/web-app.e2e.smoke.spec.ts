@@ -58,6 +58,28 @@ test.describe('Web App E2E Smoke @smoke', () => {
     await expect(page.locator('#combine-panel textarea[aria-invalid="true"]')).toHaveCount(1)
   })
 
+  test('arabic combine share placeholder stays rtl while input stays ltr', async ({ page }) => {
+    await page.getByRole('button', { name: 'العربية' }).click()
+    await page.getByRole('tab', { name: /combine|استعادة/i }).click()
+
+    const shareField = page.locator('#combine-panel textarea').first()
+    const placeholder = page.locator('#combine-panel [aria-hidden="true"]').filter({ hasText: 'الصق الحصة هنا…' }).first()
+
+    await expect(placeholder).toBeVisible()
+    await expect(placeholder).toHaveAttribute('dir', 'rtl')
+    await expect(shareField).toHaveAttribute('dir', 'ltr')
+
+    const padding = await shareField.evaluate((node) => {
+      const styles = window.getComputedStyle(node)
+      return {
+        left: styles.paddingLeft,
+        right: styles.paddingRight,
+      }
+    })
+
+    expect(padding).toEqual({ left: '12px', right: '48px' })
+  })
+
   test('wrong passphrase fails cleanly', async ({ page }) => {
     const shares = await splitAndCollectShares(page, 'smoke-passphrase-secret', { passphrase: 'correct-passphrase' })
 
