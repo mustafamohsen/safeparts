@@ -73,6 +73,8 @@ export const STRINGS = {
 
     errorWasmMissing: "WASM module not found. Run bun run build:wasm.",
     errorInvalidShare: "Invalid share",
+    errorNotEnoughSharesOne: "Add 1 more share to recover this secret.",
+    errorNotEnoughSharesMany: "Add {missing} more shares to recover this secret.",
 
     keyboardShortcuts: "Keyboard shortcuts",
     shortcutClose: "Close",
@@ -154,6 +156,8 @@ export const STRINGS = {
 
     errorWasmMissing: "لم يتم العثور على WASM. شغل bun run build:wasm.",
     errorInvalidShare: "حصة غير صالحة",
+    errorNotEnoughSharesOne: "أضف حصة واحدة أخرى لاستعادة هذا السر.",
+    errorNotEnoughSharesMany: "أضف {missing} حصص أخرى لاستعادة هذا السر.",
 
     keyboardShortcuts: "اختصارات لوحة المفاتيح",
     shortcutClose: "إغلاق",

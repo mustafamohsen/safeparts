@@ -54,7 +54,7 @@ test.describe('Web App E2E Smoke @smoke', () => {
     await shareFields.nth(1).fill('')
 
     await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
-    await expect(page.locator('#combine-panel .alert-error')).toContainText(/need at least k shares/i)
+    await expect(page.locator('#combine-panel .alert-error')).toContainText(/add 1 more share to recover this secret/i)
     await expect(page.locator('#combine-panel textarea[aria-invalid="true"]')).toHaveCount(1)
   })
 

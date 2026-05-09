@@ -37,12 +37,30 @@ function MinusIcon() {
   );
 }
 
+function rawErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function notEnoughSharesMatch(message: string): RegExpExecArray | null {
+  return /need at least k shares: need (\d+), got (\d+)/i.exec(message);
+}
+
 function toErrorMessage(err: unknown, strings: Strings): string {
   const message = err instanceof Error ? err.message : String(err);
   if (/wasm_pkg|safeparts_wasm|Cannot find module/i.test(message))
     return strings.errorWasmMissing;
   if (/^(invalid packet|encoding error):/i.test(message))
     return strings.errorInvalidShare;
+
+  const notEnoughShares = notEnoughSharesMatch(message);
+  if (notEnoughShares) {
+    const k = Number(notEnoughShares[1]);
+    const got = Number(notEnoughShares[2]);
+    const missing = Math.max(0, k - got);
+    if (missing === 1) return strings.errorNotEnoughSharesOne;
+    return strings.errorNotEnoughSharesMany.replace("{missing}", String(missing));
+  }
+
   return message;
 }
 
@@ -287,10 +305,11 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
       setSecret(new TextDecoder().decode(bytes));
       setInvalidShareBoxIds([]);
     } catch (e) {
+      const rawMessage = rawErrorMessage(e);
       const message = toErrorMessage(e, strings);
       setError(message);
 
-      const m = /need at least k shares: need (\d+), got (\d+)/i.exec(message);
+      const m = notEnoughSharesMatch(rawMessage);
       if (m) {
         const k = Number(m[1]);
         const got = Number(m[2]);
