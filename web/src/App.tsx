@@ -48,11 +48,13 @@ function getInitialLang(): Lang {
 function Background() {
   return (
     <>
-      <div className="pointer-events-none absolute inset-0 bg-black" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_55%),radial-gradient(circle_at_bottom,rgba(34,197,94,0.10),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:linear-gradient(to_right,rgba(16,185,129,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.18)_1px,transparent_1px)] [background-size:36px_36px]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:repeating-linear-gradient(to_bottom,rgba(16,185,129,0.28)_0px,rgba(0,0,0,0)_2px,rgba(0,0,0,0)_6px)]" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
+      <div className="pointer-events-none absolute inset-0 bg-[#05060a]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_28%_0%,rgba(191,231,255,0.26),transparent_44%),radial-gradient(circle_at_82%_8%,rgba(246,201,121,0.18),transparent_34%),radial-gradient(circle_at_55%_80%,rgba(37,99,235,0.16),transparent_52%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:linear-gradient(to_right,rgba(191,231,255,0.16)_1px,transparent_1px),linear-gradient(to_bottom,rgba(191,231,255,0.11)_1px,transparent_1px)] [background-size:54px_54px]" />
+      <div className="pointer-events-none absolute -left-24 top-44 h-72 w-[42rem] rotate-[-18deg] rounded-full bg-[#bfe7ff]/[0.055] blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-20 h-80 w-[44rem] rotate-[14deg] rounded-full bg-[#f6c979]/[0.055] blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.055)_0%,transparent_22%,transparent_72%,rgba(96,165,250,0.05)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[#05060a]/10 to-[#05060a]" />
     </>
   );
 }
@@ -88,7 +90,7 @@ function ShieldIcon() {
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      className="h-4 w-4 text-emerald-300"
+      className="h-4 w-4 text-[#bfe7ff]"
       aria-hidden="true"
     >
       <path
@@ -165,7 +167,7 @@ export function App() {
                   decoding="async"
                 />
                 <div className="text-start">
-                  <h1 className="text-xl font-semibold tracking-tight text-emerald-100">
+                  <h1 className="text-xl font-semibold tracking-[-0.03em] text-[#f8fbff]">
                     {strings.appName}
                   </h1>
                   {lang === "en" ? (
@@ -174,7 +176,7 @@ export function App() {
                       text={strings.tagline}
                       revealDelayMs={20}
                       flipDelayMs={20}
-                      encryptedClassName="text-emerald-300/40"
+                      encryptedClassName="text-[#bfe7ff]/40"
                       revealedClassName="text-slate-300"
                     />
                   ) : (
@@ -190,7 +192,7 @@ export function App() {
                   href={helpUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="grid h-11 min-w-[44px] px-3 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-xs font-semibold tracking-wide uppercase text-slate-200 transition hover:bg-white/5"
+                  className="chrome-button min-w-[44px] px-3 text-xs font-semibold uppercase tracking-wide"
                   aria-label={strings.help}
                   title={strings.help}
                 >
@@ -200,7 +202,7 @@ export function App() {
                   href="https://github.com/mustafamohsen/safeparts"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                  className="chrome-button w-11"
                   aria-label={strings.github}
                   title={strings.github}
                 >
@@ -210,7 +212,7 @@ export function App() {
                   href="https://discord.gg/ZaSfpcy8At"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                  className="chrome-button w-11"
                   aria-label={strings.discord}
                   title={strings.discord}
                 >
@@ -223,17 +225,17 @@ export function App() {
                   onMouseLeave={() => setKeytipsActive(false)}
                   onTouchStart={() => setKeytipsActive(true)}
                   onTouchEnd={() => setKeytipsActive(false)}
-                  className="hidden sm:grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                  className="chrome-button hidden w-11 sm:grid"
                   aria-label={strings.keyboardShortcuts}
                   title={strings.keyboardShortcuts}
                 >
                   ?
                 </button>
-                <div className="dir-row items-center gap-1 rounded-xl border border-emerald-500/15 bg-black/35 p-1">
+                <div className="dir-row items-center gap-1 rounded-xl border border-[#bfe7ff]/15 bg-white/[0.055] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                   <button
                     type="button"
                     className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
-                      lang === "en" ? "bg-white/10" : "hover:bg-white/5"
+                      lang === "en" ? "bg-[#bfe7ff]/14 text-white" : "hover:bg-white/5"
                     }`}
                     onClick={() => setLang("en")}
                     aria-label={strings.english}
@@ -245,7 +247,7 @@ export function App() {
                   <button
                     type="button"
                     className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
-                      lang === "ar" ? "bg-white/10" : "hover:bg-white/5"
+                      lang === "ar" ? "bg-[#bfe7ff]/14 text-white" : "hover:bg-white/5"
                     }`}
                     onClick={() => setLang("ar")}
                     aria-label={strings.arabic}
@@ -331,7 +333,7 @@ export function App() {
                 </button>
               </div>
 
-              <div className="dir-row items-center gap-2 rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2 text-xs text-slate-200">
+              <div className="dir-row items-center gap-2 rounded-xl border border-[#bfe7ff]/15 bg-[#60a5fa]/[0.08] px-3 py-2 text-xs text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 <ShieldIcon />
                 <span>{strings.privacyNote}</span>
               </div>
