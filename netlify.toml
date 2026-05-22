@@ -4,7 +4,7 @@
   command = "curl https://sh.rustup.rs -sSf | sh -s -- -y && . $HOME/.cargo/env && rustup target add wasm32-unknown-unknown && curl -fsSL https://bun.sh/install | bash && export PATH=\"$HOME/.bun/bin:$PATH\" && bun install && bun run build:wasm && bun run build && cd help && bun install && bun run build"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "22.12.0"
 
 [[redirects]]
   from = "/help"
