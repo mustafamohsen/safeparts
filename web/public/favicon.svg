@@ -1,46 +1,42 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Safeparts shield network logo">
   <defs>
-    <linearGradient id="gBorder" x1="84" y1="58" x2="430" y2="454" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F8FCFF"/>
-      <stop offset="0.28" stop-color="#BFE7FF"/>
-      <stop offset="0.68" stop-color="#3B82F6"/>
-      <stop offset="1" stop-color="#F6C979"/>
+    <linearGradient id="gBorder" x1="92" y1="62" x2="420" y2="452" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#EAF7FF"/>
+      <stop offset="0.42" stop-color="#2A679B"/>
+      <stop offset="1" stop-color="#0D2B4F"/>
     </linearGradient>
-    <radialGradient id="gFill" cx="38%" cy="18%" r="85%">
-      <stop offset="0" stop-color="#203B5A"/>
-      <stop offset="0.42" stop-color="#0B1220"/>
-      <stop offset="1" stop-color="#04060B"/>
+    <radialGradient id="gFill" cx="38%" cy="18%" r="82%">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.58" stop-color="#F2F7FB"/>
+      <stop offset="1" stop-color="#E5EEF6"/>
     </radialGradient>
-    <linearGradient id="gIcon" x1="178" y1="134" x2="340" y2="360" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#DDF4FF"/>
-      <stop offset="0.58" stop-color="#60A5FA"/>
-      <stop offset="1" stop-color="#F6C979"/>
+    <linearGradient id="gIcon" x1="184" y1="140" x2="332" y2="356" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0D2B4F"/>
+      <stop offset="0.62" stop-color="#1D5B9F"/>
+      <stop offset="1" stop-color="#C9963E"/>
     </linearGradient>
-    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#60A5FA" flood-opacity="0.34"/>
-      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#020617" flood-opacity="0.60"/>
+    <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#092044" flood-opacity="0.20"/>
     </filter>
   </defs>
 
   <path
     d="M256 38 C313 70 374 91 426 111 V254 C426 368 348 451 256 484 C164 451 86 368 86 254 V111 C138 91 199 70 256 38 Z"
     fill="url(#gFill)"
-    filter="url(#glow)"
+    filter="url(#shadow)"
   />
-
   <path
     d="M256 38 C313 70 374 91 426 111 V254 C426 368 348 451 256 484 C164 451 86 368 86 254 V111 C138 91 199 70 256 38 Z"
     fill="none"
     stroke="url(#gBorder)"
-    stroke-width="20"
+    stroke-width="18"
     stroke-linejoin="round"
   />
-
   <path
-    d="M139 124 C185 104 223 86 256 68 C289 86 327 104 373 124"
+    d="M140 123 C183 105 224 86 256 68 C288 86 329 105 372 123"
     fill="none"
     stroke="#FFFFFF"
-    stroke-opacity="0.34"
+    stroke-opacity="0.85"
     stroke-width="8"
     stroke-linecap="round"
   />
@@ -51,9 +47,9 @@
     <path d="M256 190 L328 224" />
     <path d="M256 252 L205 305" />
     <path d="M256 252 L307 305" />
-    <circle cx="184" cy="224" r="20" fill="#0B1220" />
-    <circle cx="328" cy="224" r="20" fill="#0B1220" />
-    <circle cx="205" cy="305" r="20" fill="#0B1220" />
-    <circle cx="307" cy="305" r="20" fill="#0B1220" />
+    <circle cx="184" cy="224" r="20" fill="#F8FBFE" />
+    <circle cx="328" cy="224" r="20" fill="#F8FBFE" />
+    <circle cx="205" cy="305" r="20" fill="#F8FBFE" />
+    <circle cx="307" cy="305" r="20" fill="#F8FBFE" />
   </g>
 </svg>

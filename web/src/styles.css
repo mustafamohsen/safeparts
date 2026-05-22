@@ -4,23 +4,23 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
-    --sp-bg: #05060a;
-    --sp-ink: #0b1220;
-    --sp-ink-2: #111a2b;
-    --sp-panel: rgb(7 16 28 / 0.68);
-    --sp-panel-strong: rgb(8 15 26 / 0.86);
-    --sp-border: rgb(191 231 255 / 0.16);
-    --sp-border-strong: rgb(191 231 255 / 0.34);
-    --sp-text: #f8fbff;
-    --sp-muted: #91a4bd;
-    --sp-muted-2: #6f839c;
-    --sp-ice: #bfe7ff;
-    --sp-blue: #3b82f6;
-    --sp-blue-soft: rgb(96 165 250 / 0.16);
-    --sp-gold: #f6c979;
-    --sp-danger: #fb7185;
-    --sp-shadow: 0 26px 80px rgb(0 8 20 / 0.42), inset 0 1px 0 rgb(255 255 255 / 0.07);
+    color-scheme: light;
+    --sp-bg: #f4f7fa;
+    --sp-paper: #fafbf7;
+    --sp-panel: rgb(255 255 255 / 0.84);
+    --sp-panel-strong: rgb(255 255 255 / 0.94);
+    --sp-field: #f8fbfe;
+    --sp-border: rgb(13 43 79 / 0.13);
+    --sp-border-strong: rgb(42 103 155 / 0.34);
+    --sp-text: #101827;
+    --sp-muted: #5e6c7b;
+    --sp-muted-2: #7a8796;
+    --sp-navy: #0d2b4f;
+    --sp-blue: #2a679b;
+    --sp-blue-soft: rgb(42 103 155 / 0.09);
+    --sp-gold: #c9963e;
+    --sp-danger: #be123c;
+    --sp-shadow: 0 26px 80px rgb(9 32 68 / 0.12), 0 1px 0 rgb(255 255 255 / 0.84) inset;
   }
 
   html {
@@ -34,13 +34,13 @@
   }
 
   body {
-    @apply min-h-screen text-slate-100 antialiased;
+    @apply min-h-screen text-slate-900 antialiased;
     background: var(--sp-bg);
   }
 
   ::selection {
-    background: rgb(191 231 255 / 0.24);
-    color: #ffffff;
+    background: rgb(42 103 155 / 0.18);
+    color: var(--sp-navy);
   }
 
   code {
@@ -50,9 +50,9 @@
 
 @layer components {
   .glass {
-    @apply rounded-2xl backdrop-blur-xl;
+    @apply rounded-[1.75rem] backdrop-blur-xl;
     background:
-      linear-gradient(135deg, rgb(255 255 255 / 0.105), rgb(96 165 250 / 0.045) 38%, rgb(7 16 28 / 0.72)),
+      linear-gradient(135deg, rgb(255 255 255 / 0.94), rgb(248 251 254 / 0.84) 48%, rgb(238 243 248 / 0.74)),
       var(--sp-panel);
     border: 1px solid var(--sp-border);
     box-shadow: var(--sp-shadow);
@@ -60,7 +60,7 @@
 
   .field-label {
     @apply text-sm font-semibold;
-    color: rgb(226 236 248 / 0.96);
+    color: #293548;
   }
 
   .field-hint {
@@ -69,10 +69,10 @@
   }
 
   .input {
-    @apply w-full rounded-xl px-3 py-2 text-sm text-slate-100 shadow-sm outline-none transition;
-    background: rgb(5 11 20 / 0.72);
-    border: 1px solid var(--sp-border);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+    @apply w-full rounded-2xl px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition;
+    background: var(--sp-field);
+    border: 1px solid rgb(13 43 79 / 0.14);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9);
   }
 
   .input::placeholder {
@@ -80,10 +80,10 @@
   }
 
   .input:focus {
-    border-color: rgb(191 231 255 / 0.68);
+    border-color: rgb(42 103 155 / 0.56);
     box-shadow:
-      0 0 0 4px rgb(96 165 250 / 0.16),
-      inset 0 1px 0 rgb(255 255 255 / 0.06);
+      0 0 0 4px rgb(42 103 155 / 0.12),
+      inset 0 1px 0 rgb(255 255 255 / 0.96);
   }
 
   /* Extra padding for an in-field clear button (RTL-safe). */
@@ -126,19 +126,19 @@
   }
 
   .input-stepper-shell {
-    @apply w-full rounded-xl text-sm text-slate-100 shadow-sm outline-none transition;
-    background: rgb(5 11 20 / 0.72);
-    border: 1px solid var(--sp-border);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+    @apply w-full rounded-2xl text-sm text-slate-900 shadow-sm outline-none transition;
+    background: var(--sp-field);
+    border: 1px solid rgb(13 43 79 / 0.14);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9);
     display: flex;
     align-items: stretch;
   }
 
   .input-stepper-shell:focus-within {
-    border-color: rgb(191 231 255 / 0.68);
+    border-color: rgb(42 103 155 / 0.56);
     box-shadow:
-      0 0 0 4px rgb(96 165 250 / 0.16),
-      inset 0 1px 0 rgb(255 255 255 / 0.06);
+      0 0 0 4px rgb(42 103 155 / 0.12),
+      inset 0 1px 0 rgb(255 255 255 / 0.96);
   }
 
   .input-stepper-field {
@@ -156,107 +156,106 @@
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
-    --tw-ring-color: var(--sp-ice);
+    --tw-ring-color: var(--sp-blue);
     --tw-ring-offset-color: var(--sp-bg);
   }
 
   .btn-primary {
-    @apply btn;
-    color: #06111f;
-    background: linear-gradient(135deg, #ddf4ff 0%, #60a5fa 48%, #2563eb 100%);
-    box-shadow: 0 18px 44px rgb(37 99 235 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.55);
+    @apply btn text-white;
+    background: linear-gradient(135deg, #0d2b4f 0%, #1d5b9f 100%);
+    box-shadow: 0 18px 38px rgb(13 43 79 / 0.20), inset 0 1px 0 rgb(255 255 255 / 0.16);
   }
 
   .btn-primary:hover:not(:disabled) {
     filter: brightness(1.06);
-    box-shadow: 0 22px 54px rgb(37 99 235 / 0.34), inset 0 1px 0 rgb(255 255 255 / 0.62);
+    box-shadow: 0 22px 48px rgb(13 43 79 / 0.24), inset 0 1px 0 rgb(255 255 255 / 0.2);
   }
 
   .btn-secondary {
-    @apply btn text-slate-100;
-    background: rgb(255 255 255 / 0.055);
+    @apply btn text-slate-800;
+    background: rgb(255 255 255 / 0.74);
     border: 1px solid var(--sp-border);
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background: rgb(191 231 255 / 0.09);
+    background: #ffffff;
     border-color: var(--sp-border-strong);
   }
 
   .btn-ghost {
-    @apply btn bg-transparent text-slate-200 shadow-none;
+    @apply btn bg-transparent text-slate-700 shadow-none;
   }
 
   .btn-ghost:hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.06);
+    background: rgb(13 43 79 / 0.06);
   }
 
   .pill {
-    @apply inline-flex items-center gap-1 rounded-xl p-1 text-sm text-slate-100;
-    background: rgb(2 8 19 / 0.58);
+    @apply inline-flex items-center gap-1 rounded-2xl p-1 text-sm text-slate-800;
+    background: rgb(239 245 250 / 0.88);
     border: 1px solid var(--sp-border);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.86);
   }
 
   .pill-btn {
-    @apply rounded-lg px-4 py-2.5 text-xs font-semibold transition min-h-[44px];
+    @apply rounded-xl px-4 py-2.5 text-xs font-semibold transition min-h-[44px];
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
-    --tw-ring-color: var(--sp-ice);
+    --tw-ring-color: var(--sp-blue);
     --tw-ring-offset-color: var(--sp-bg);
   }
 
   .pill-btn-active {
-    color: #06111f;
-    background: linear-gradient(135deg, #ddf4ff 0%, #60a5fa 60%, #3b82f6 100%);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.48), 0 12px 28px rgb(37 99 235 / 0.24);
+    @apply text-white;
+    background: linear-gradient(135deg, #0d2b4f 0%, #1d5b9f 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.20), 0 10px 24px rgb(13 43 79 / 0.16);
   }
 
   .pill-btn-inactive {
-    @apply text-slate-200;
+    @apply text-slate-700;
   }
 
   .pill-btn-inactive:hover {
-    background: rgb(255 255 255 / 0.06);
+    background: rgb(255 255 255 / 0.72);
   }
 
   .alert-error {
-    @apply rounded-xl px-3 py-2 text-sm text-rose-100;
-    border: 1px solid rgb(251 113 133 / 0.34);
-    background: rgb(159 18 57 / 0.18);
+    @apply rounded-2xl px-3 py-2 text-sm text-rose-800;
+    border: 1px solid rgb(190 18 60 / 0.22);
+    background: rgb(255 241 242 / 0.88);
   }
 
   .alert-info {
-    @apply rounded-xl px-3 py-2 text-xs text-slate-200;
+    @apply rounded-2xl px-3 py-2 text-xs text-slate-700;
     border: 1px solid var(--sp-border);
-    background: rgb(96 165 250 / 0.08);
+    background: rgb(42 103 155 / 0.06);
   }
 
   .chrome-button {
-    @apply grid h-11 place-items-center rounded-xl text-slate-200 transition;
-    background: rgb(255 255 255 / 0.055);
+    @apply grid h-11 place-items-center rounded-2xl text-slate-700 transition;
+    background: rgb(255 255 255 / 0.76);
     border: 1px solid var(--sp-border);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 10px 24px rgb(9 32 68 / 0.07);
   }
 
   .chrome-button:hover {
-    background: rgb(191 231 255 / 0.09);
+    background: #ffffff;
     border-color: var(--sp-border-strong);
   }
 
   .stepper-button {
-    @apply grid h-10 w-10 place-items-center rounded-lg text-sm text-slate-200 transition disabled:cursor-not-allowed disabled:opacity-50;
-    background: rgb(255 255 255 / 0.055);
+    @apply grid h-10 w-10 place-items-center rounded-xl text-sm text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50;
+    background: rgb(255 255 255 / 0.76);
     border: 1px solid var(--sp-border);
   }
 
   .stepper-button:hover:not(:disabled) {
-    background: rgb(191 231 255 / 0.09);
+    background: #ffffff;
   }
 
   .secret-divider {
-    border-color: rgb(191 231 255 / 0.1);
+    border-color: rgb(13 43 79 / 0.09);
   }
 
   .dir-row {
