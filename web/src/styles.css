@@ -5,23 +5,42 @@
 @layer base {
   :root {
     color-scheme: dark;
+    --sp-bg: #05060a;
+    --sp-ink: #0b1220;
+    --sp-ink-2: #111a2b;
+    --sp-panel: rgb(7 16 28 / 0.68);
+    --sp-panel-strong: rgb(8 15 26 / 0.86);
+    --sp-border: rgb(191 231 255 / 0.16);
+    --sp-border-strong: rgb(191 231 255 / 0.34);
+    --sp-text: #f8fbff;
+    --sp-muted: #91a4bd;
+    --sp-muted-2: #6f839c;
+    --sp-ice: #bfe7ff;
+    --sp-blue: #3b82f6;
+    --sp-blue-soft: rgb(96 165 250 / 0.16);
+    --sp-gold: #f6c979;
+    --sp-danger: #fb7185;
+    --sp-shadow: 0 26px 80px rgb(0 8 20 / 0.42), inset 0 1px 0 rgb(255 255 255 / 0.07);
   }
 
   html {
-    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--sp-bg);
   }
 
   html[lang='ar'] {
-    font-family: "IBM Plex Sans Arabic", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    font-family: "IBM Plex Sans Arabic", "Instrument Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
       "Segoe UI", sans-serif;
   }
 
   body {
-    @apply min-h-screen bg-black text-slate-100 antialiased;
+    @apply min-h-screen text-slate-100 antialiased;
+    background: var(--sp-bg);
   }
 
   ::selection {
-    @apply bg-emerald-500/25 text-emerald-50;
+    background: rgb(191 231 255 / 0.24);
+    color: #ffffff;
   }
 
   code {
@@ -31,19 +50,40 @@
 
 @layer components {
   .glass {
-    @apply rounded-2xl border border-emerald-500/15 bg-black/55 shadow-lg shadow-emerald-500/5 backdrop-blur-md;
+    @apply rounded-2xl backdrop-blur-xl;
+    background:
+      linear-gradient(135deg, rgb(255 255 255 / 0.105), rgb(96 165 250 / 0.045) 38%, rgb(7 16 28 / 0.72)),
+      var(--sp-panel);
+    border: 1px solid var(--sp-border);
+    box-shadow: var(--sp-shadow);
   }
 
   .field-label {
-    @apply text-sm font-medium text-slate-200;
+    @apply text-sm font-semibold;
+    color: rgb(226 236 248 / 0.96);
   }
 
   .field-hint {
-    @apply text-xs text-slate-400;
+    @apply text-xs;
+    color: var(--sp-muted);
   }
 
   .input {
-    @apply w-full rounded-xl border border-emerald-500/15 bg-black/40 px-3 py-2 text-sm text-slate-100 shadow-sm outline-none placeholder:text-slate-500 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/15;
+    @apply w-full rounded-xl px-3 py-2 text-sm text-slate-100 shadow-sm outline-none transition;
+    background: rgb(5 11 20 / 0.72);
+    border: 1px solid var(--sp-border);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  }
+
+  .input::placeholder {
+    color: var(--sp-muted-2);
+  }
+
+  .input:focus {
+    border-color: rgb(191 231 255 / 0.68);
+    box-shadow:
+      0 0 0 4px rgb(96 165 250 / 0.16),
+      inset 0 1px 0 rgb(255 255 255 / 0.06);
   }
 
   /* Extra padding for an in-field clear button (RTL-safe). */
@@ -86,10 +126,19 @@
   }
 
   .input-stepper-shell {
-    @apply w-full rounded-xl border border-emerald-500/15 bg-black/40 text-sm text-slate-100 shadow-sm outline-none;
-    @apply focus-within:border-emerald-400 focus-within:ring-4 focus-within:ring-emerald-500/15;
+    @apply w-full rounded-xl text-sm text-slate-100 shadow-sm outline-none transition;
+    background: rgb(5 11 20 / 0.72);
+    border: 1px solid var(--sp-border);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
     display: flex;
     align-items: stretch;
+  }
+
+  .input-stepper-shell:focus-within {
+    border-color: rgb(191 231 255 / 0.68);
+    box-shadow:
+      0 0 0 4px rgb(96 165 250 / 0.16),
+      inset 0 1px 0 rgb(255 255 255 / 0.06);
   }
 
   .input-stepper-field {
@@ -107,45 +156,107 @@
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    --tw-ring-color: var(--sp-ice);
+    --tw-ring-offset-color: var(--sp-bg);
   }
 
   .btn-primary {
-    @apply btn bg-emerald-500 text-black shadow-emerald-500/15 hover:bg-emerald-400;
+    @apply btn;
+    color: #06111f;
+    background: linear-gradient(135deg, #ddf4ff 0%, #60a5fa 48%, #2563eb 100%);
+    box-shadow: 0 18px 44px rgb(37 99 235 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.55);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.06);
+    box-shadow: 0 22px 54px rgb(37 99 235 / 0.34), inset 0 1px 0 rgb(255 255 255 / 0.62);
   }
 
   .btn-secondary {
-    @apply btn border border-emerald-500/15 bg-black/35 text-slate-100 hover:bg-black/55;
+    @apply btn text-slate-100;
+    background: rgb(255 255 255 / 0.055);
+    border: 1px solid var(--sp-border);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: rgb(191 231 255 / 0.09);
+    border-color: var(--sp-border-strong);
   }
 
   .btn-ghost {
-    @apply btn bg-transparent text-slate-200 shadow-none hover:bg-white/5;
+    @apply btn bg-transparent text-slate-200 shadow-none;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.06);
   }
 
   .pill {
-    @apply inline-flex items-center gap-1 rounded-xl border border-emerald-500/15 bg-black/35 p-1 text-sm text-slate-100;
+    @apply inline-flex items-center gap-1 rounded-xl p-1 text-sm text-slate-100;
+    background: rgb(2 8 19 / 0.58);
+    border: 1px solid var(--sp-border);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
   }
 
   .pill-btn {
-    @apply rounded-lg px-4 py-2.5 text-xs font-medium transition min-h-[44px];
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black;
+    @apply rounded-lg px-4 py-2.5 text-xs font-semibold transition min-h-[44px];
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    --tw-ring-color: var(--sp-ice);
+    --tw-ring-offset-color: var(--sp-bg);
   }
 
   .pill-btn-active {
-    @apply bg-emerald-500 text-black shadow-sm;
+    color: #06111f;
+    background: linear-gradient(135deg, #ddf4ff 0%, #60a5fa 60%, #3b82f6 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.48), 0 12px 28px rgb(37 99 235 / 0.24);
   }
 
   .pill-btn-inactive {
-    @apply text-slate-200 hover:bg-white/5;
+    @apply text-slate-200;
+  }
+
+  .pill-btn-inactive:hover {
+    background: rgb(255 255 255 / 0.06);
   }
 
   .alert-error {
-    @apply rounded-xl border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-sm text-rose-200;
+    @apply rounded-xl px-3 py-2 text-sm text-rose-100;
+    border: 1px solid rgb(251 113 133 / 0.34);
+    background: rgb(159 18 57 / 0.18);
   }
 
   .alert-info {
-    @apply rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2 text-xs text-slate-200;
+    @apply rounded-xl px-3 py-2 text-xs text-slate-200;
+    border: 1px solid var(--sp-border);
+    background: rgb(96 165 250 / 0.08);
+  }
+
+  .chrome-button {
+    @apply grid h-11 place-items-center rounded-xl text-slate-200 transition;
+    background: rgb(255 255 255 / 0.055);
+    border: 1px solid var(--sp-border);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  }
+
+  .chrome-button:hover {
+    background: rgb(191 231 255 / 0.09);
+    border-color: var(--sp-border-strong);
+  }
+
+  .stepper-button {
+    @apply grid h-10 w-10 place-items-center rounded-lg text-sm text-slate-200 transition disabled:cursor-not-allowed disabled:opacity-50;
+    background: rgb(255 255 255 / 0.055);
+    border: 1px solid var(--sp-border);
+  }
+
+  .stepper-button:hover:not(:disabled) {
+    background: rgb(191 231 255 / 0.09);
+  }
+
+  .secret-divider {
+    border-color: rgb(191 231 255 / 0.1);
   }
 
   .dir-row {
