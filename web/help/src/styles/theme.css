@@ -1,27 +1,27 @@
-/* Starlight theme: align with the main Safeparts web UI (emerald-on-black). */
+/* Starlight theme: align with the main Safeparts web UI (obsidian glass). */
 
 :root,
 :root[data-theme='light'] {
-  --sl-font: 'IBM Plex Sans';
+  --sl-font: 'Instrument Sans';
   --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 
   --sl-color-white: hsl(0 0% 100%);
-  --sl-color-black: hsl(0 0% 0%);
+  --sl-color-black: hsl(240 33% 3%);
 
   /* Slate-ish scale */
-  --sl-color-gray-1: hsl(215 20% 92%);
-  --sl-color-gray-2: hsl(215 16% 80%);
-  --sl-color-gray-3: hsl(215 14% 62%);
-  --sl-color-gray-4: hsl(215 14% 44%);
-  --sl-color-gray-5: hsl(215 18% 18%);
-  --sl-color-gray-6: hsl(215 22% 12%);
-  --sl-color-gray-7: hsl(215 26% 8%);
+  --sl-color-gray-1: hsl(213 45% 94%);
+  --sl-color-gray-2: hsl(214 30% 80%);
+  --sl-color-gray-3: hsl(214 22% 62%);
+  --sl-color-gray-4: hsl(215 18% 44%);
+  --sl-color-gray-5: hsl(217 27% 18%);
+  --sl-color-gray-6: hsl(220 35% 12%);
+  --sl-color-gray-7: hsl(228 33% 6%);
 
-  /* Emerald accent */
-  --sl-color-accent-low: hsl(163 70% 14%);
-  --sl-color-accent: hsl(160 84% 39%);
-  --sl-color-accent-high: hsl(158 82% 86%);
+  /* Sapphire glass accent */
+  --sl-color-accent-low: hsl(217 70% 16%);
+  --sl-color-accent: hsl(217 91% 60%);
+  --sl-color-accent-high: hsl(202 100% 88%);
 
   /*
     Starlight uses semantic color scales for callouts (note/info/warning/etc)
@@ -52,26 +52,26 @@
   --sl-color-purple: hsl(265 82% 62%);
   --sl-color-purple-high: hsl(266 92% 88%);
 
-  --sl-color-text: hsl(215 20% 82%);
-  --sl-color-text-accent: hsl(158 82% 86%);
-  --sl-color-bg: hsl(0 0% 0%);
-  --sl-color-bg-nav: hsl(0 0% 0% / 0.72);
-  --sl-color-bg-sidebar: hsl(0 0% 0% / 0.72);
-  --sl-color-bg-inline-code: hsl(215 18% 16%);
-  --sl-color-hairline: hsl(160 84% 39% / 0.16);
-  --sl-color-hairline-light: hsl(160 84% 39% / 0.12);
-  --sl-color-hairline-shade: hsl(0 0% 0%);
+  --sl-color-text: hsl(214 30% 82%);
+  --sl-color-text-accent: hsl(202 100% 88%);
+  --sl-color-bg: hsl(240 33% 3%);
+  --sl-color-bg-nav: hsl(222 49% 7% / 0.78);
+  --sl-color-bg-sidebar: hsl(222 49% 7% / 0.74);
+  --sl-color-bg-inline-code: hsl(220 35% 12%);
+  --sl-color-hairline: hsl(202 100% 88% / 0.16);
+  --sl-color-hairline-light: hsl(202 100% 88% / 0.12);
+  --sl-color-hairline-shade: hsl(240 33% 3%);
 
-  --sl-shadow-md: 0px 10px 30px hsl(160 84% 39% / 0.07);
+  --sl-shadow-md: 0px 18px 45px hsl(217 91% 60% / 0.10);
 }
 
 html {
-  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system,
+  font-family: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 html[lang='ar'] {
-  font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', ui-sans-serif,
+  font-family: 'IBM Plex Sans Arabic', 'Instrument Sans', ui-sans-serif,
     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -81,7 +81,7 @@ html[lang='ar'] {
 
 /* Match the web app's "atmosphere" without hurting readability. */
 body {
-  background: hsl(0 0% 0%);
+  background: hsl(240 33% 3%);
 }
 
 body::before,
@@ -95,17 +95,18 @@ body::after {
 
 body::before {
   background:
-    radial-gradient(circle at top, hsl(160 84% 39% / 0.18), transparent 55%),
-    radial-gradient(circle at bottom, hsl(142 71% 45% / 0.12), transparent 55%),
-    linear-gradient(to bottom, transparent, transparent, hsl(0 0% 0%));
+    radial-gradient(circle at 28% 0%, hsl(202 100% 88% / 0.22), transparent 48%),
+    radial-gradient(circle at 82% 8%, hsl(39 90% 72% / 0.16), transparent 38%),
+    radial-gradient(circle at 55% 85%, hsl(217 91% 60% / 0.12), transparent 54%),
+    linear-gradient(to bottom, transparent, transparent, hsl(240 33% 3%));
 }
 
 body::after {
   opacity: 0.1;
   background-image:
-    linear-gradient(to right, hsl(160 84% 39% / 0.22) 1px, transparent 1px),
-    linear-gradient(to bottom, hsl(160 84% 39% / 0.18) 1px, transparent 1px);
-  background-size: 36px 36px;
+    linear-gradient(to right, hsl(202 100% 88% / 0.13) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(202 100% 88% / 0.10) 1px, transparent 1px);
+  background-size: 54px 54px;
 }
 
 /* Keep docs feeling like "an app" by tightening nav chrome. */
@@ -126,51 +127,6 @@ starlight-theme-select {
 */
 :root[data-theme='light'] {
   color-scheme: dark;
-
-  --sl-color-white: hsl(0 0% 100%);
-  --sl-color-black: hsl(0 0% 0%);
-
-  --sl-color-gray-1: hsl(215 20% 92%);
-  --sl-color-gray-2: hsl(215 16% 80%);
-  --sl-color-gray-3: hsl(215 14% 62%);
-  --sl-color-gray-4: hsl(215 14% 44%);
-  --sl-color-gray-5: hsl(215 18% 18%);
-  --sl-color-gray-6: hsl(215 22% 12%);
-  --sl-color-gray-7: hsl(215 26% 8%);
-
-  --sl-color-accent-low: hsl(163 70% 14%);
-  --sl-color-accent: hsl(160 84% 39%);
-  --sl-color-accent-high: hsl(158 82% 86%);
-
-  --sl-color-blue-low: hsl(204 70% 14%);
-  --sl-color-blue: hsl(204 88% 48%);
-  --sl-color-blue-high: hsl(204 92% 86%);
-
-  --sl-color-green-low: hsl(142 60% 14%);
-  --sl-color-green: hsl(142 71% 45%);
-  --sl-color-green-high: hsl(141 75% 86%);
-
-  --sl-color-orange-low: hsl(28 70% 14%);
-  --sl-color-orange: hsl(28 90% 52%);
-  --sl-color-orange-high: hsl(30 94% 86%);
-
-  --sl-color-red-low: hsl(0 62% 14%);
-  --sl-color-red: hsl(0 84% 60%);
-  --sl-color-red-high: hsl(0 93% 86%);
-
-  --sl-color-purple-low: hsl(265 55% 14%);
-  --sl-color-purple: hsl(265 82% 62%);
-  --sl-color-purple-high: hsl(266 92% 88%);
-
-  --sl-color-text: hsl(215 20% 82%);
-  --sl-color-text-accent: hsl(158 82% 86%);
-  --sl-color-bg: hsl(0 0% 0%);
-  --sl-color-bg-nav: hsl(0 0% 0% / 0.72);
-  --sl-color-bg-sidebar: hsl(0 0% 0% / 0.72);
-  --sl-color-bg-inline-code: hsl(215 18% 16%);
-  --sl-color-hairline: hsl(160 84% 39% / 0.16);
-  --sl-color-hairline-light: hsl(160 84% 39% / 0.12);
-  --sl-color-hairline-shade: hsl(0 0% 0%);
 }
 
 /* Subtle rounding similar to the app. */
@@ -215,7 +171,7 @@ starlight-theme-select {
   padding: 0.12em 0.45em;
   border-radius: 0.45rem;
   border: 1px solid var(--sl-color-hairline);
-  background: hsl(215 22% 12% / 0.65);
+  background: hsl(220 35% 12% / 0.72);
   color: var(--sl-color-text);
   font-family: var(--sl-font-mono);
   font-size: 0.85em;
@@ -227,8 +183,8 @@ starlight-theme-select {
   display: inline-block;
   padding: 0.12em 0.4em;
   border-radius: 0.45rem;
-  border: 1px solid hsl(204 88% 48% / 0.28);
-  background: hsl(204 70% 14% / 0.55);
+  border: 1px solid hsl(202 100% 88% / 0.24);
+  background: hsl(217 70% 16% / 0.55);
   color: var(--sl-color-text);
   font-family: var(--sl-font-mono);
   font-size: 0.9em;
@@ -241,7 +197,7 @@ starlight-theme-select {
   padding: 0.12em 0.5em;
   border-radius: 999px;
   border: 1px solid var(--sl-color-hairline);
-  background: hsl(215 22% 12% / 0.55);
+  background: hsl(220 35% 12% / 0.62);
   color: var(--sl-color-text);
   font-weight: 650;
   font-size: 0.92em;

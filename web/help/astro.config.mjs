@@ -50,7 +50,7 @@ export default defineConfig({
 			},
 			head: [
 				{ tag: 'meta', attrs: { name: 'color-scheme', content: 'dark' } },
-				{ tag: 'meta', attrs: { name: 'theme-color', content: '#000000' } },
+				{ tag: 'meta', attrs: { name: 'theme-color', content: '#05060a' } },
 				{
 					tag: 'script',
 					content: `
@@ -125,7 +125,7 @@ for (const a of document.querySelectorAll('a[href]')) {
 					attrs: {
 						rel: 'stylesheet',
 						href:
-							'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap',
+							'https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;750&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap',
 					},
 				},
 			],
