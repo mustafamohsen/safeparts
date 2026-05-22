@@ -49,30 +49,27 @@ export default defineConfig({
 				Footer: './src/components/Footer.astro',
 			},
 			head: [
-				{ tag: 'meta', attrs: { name: 'color-scheme', content: 'dark' } },
-				{ tag: 'meta', attrs: { name: 'theme-color', content: '#05060a' } },
+				{ tag: 'meta', attrs: { name: 'color-scheme', content: 'light' } },
+				{ tag: 'meta', attrs: { name: 'theme-color', content: '#f4f7fa' } },
 				{
 					tag: 'script',
 					content: `
 ;(() => {
-  // Keep docs consistent with the main app (dark-only). Some mobile browsers
-  // default to light mode which makes callouts (note/warning/etc) too bright.
+  // Keep docs consistent with the main app's frosted light theme.
   try {
-    localStorage.setItem('starlight-theme', 'dark');
+    localStorage.setItem('starlight-theme', 'light');
   } catch {
     // ignore
   }
 
-  // Ensure the attribute-based theme is also dark.
-  // (Some tests assert on this, and it avoids a flash of light theme.)
   try {
-    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', 'light');
   } catch {
     // ignore
   }
 
   // Starlight still renders a theme select UI by default; remove it entirely.
-  // (CSS hiding keeps it in the DOM, which breaks our dark-only tests.)
+  // (CSS hiding keeps it in the DOM, which breaks our fixed-theme tests.)
   const removeThemeUi = () => {
     for (const el of document.querySelectorAll('starlight-theme-select')) {
       el.remove();

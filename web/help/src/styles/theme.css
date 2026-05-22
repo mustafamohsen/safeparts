@@ -1,68 +1,61 @@
-/* Starlight theme: align with the main Safeparts web UI (obsidian glass). */
+/* Starlight theme: align with the main Safeparts web UI (frosted ledger). */
 
 :root,
 :root[data-theme='light'] {
+  color-scheme: light;
+
   --sl-font: 'Instrument Sans';
   --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 
-  --sl-color-white: hsl(0 0% 100%);
-  --sl-color-black: hsl(240 33% 3%);
+  --sl-color-white: hsl(222 47% 11%);
+  --sl-color-black: hsl(0 0% 100%);
 
-  /* Slate-ish scale */
-  --sl-color-gray-1: hsl(213 45% 94%);
-  --sl-color-gray-2: hsl(214 30% 80%);
-  --sl-color-gray-3: hsl(214 22% 62%);
-  --sl-color-gray-4: hsl(215 18% 44%);
-  --sl-color-gray-5: hsl(217 27% 18%);
-  --sl-color-gray-6: hsl(220 35% 12%);
-  --sl-color-gray-7: hsl(228 33% 6%);
+  /* Frosted slate scale */
+  --sl-color-gray-1: hsl(222 35% 16%);
+  --sl-color-gray-2: hsl(217 22% 28%);
+  --sl-color-gray-3: hsl(215 16% 45%);
+  --sl-color-gray-4: hsl(214 17% 63%);
+  --sl-color-gray-5: hsl(210 29% 86%);
+  --sl-color-gray-6: hsl(207 37% 93%);
+  --sl-color-gray-7: hsl(204 38% 97%);
 
-  /* Sapphire glass accent */
-  --sl-color-accent-low: hsl(217 70% 16%);
-  --sl-color-accent: hsl(217 91% 60%);
-  --sl-color-accent-high: hsl(202 100% 88%);
+  /* Deep ledger blue accent */
+  --sl-color-accent-low: hsl(207 75% 94%);
+  --sl-color-accent: hsl(207 57% 39%);
+  --sl-color-accent-high: hsl(211 72% 18%);
 
-  /*
-    Starlight uses semantic color scales for callouts (note/info/warning/etc)
-    and badges. If the theme resolves to `data-theme='light'` (common on mobile
-    when the OS is in light mode), Starlight's defaults make these surfaces very
-    bright against our always-dark background.
+  --sl-color-blue-low: hsl(207 75% 94%);
+  --sl-color-blue: hsl(207 57% 39%);
+  --sl-color-blue-high: hsl(211 72% 18%);
 
-    We define these scales explicitly so callouts remain readable and consistent
-    across devices, regardless of the selected theme.
-  */
-  --sl-color-blue-low: hsl(204 70% 14%);
-  --sl-color-blue: hsl(204 88% 48%);
-  --sl-color-blue-high: hsl(204 92% 86%);
+  --sl-color-green-low: hsl(142 52% 92%);
+  --sl-color-green: hsl(142 58% 36%);
+  --sl-color-green-high: hsl(143 64% 18%);
 
-  --sl-color-green-low: hsl(142 60% 14%);
-  --sl-color-green: hsl(142 71% 45%);
-  --sl-color-green-high: hsl(141 75% 86%);
+  --sl-color-orange-low: hsl(38 76% 91%);
+  --sl-color-orange: hsl(36 57% 52%);
+  --sl-color-orange-high: hsl(34 70% 24%);
 
-  --sl-color-orange-low: hsl(28 70% 14%);
-  --sl-color-orange: hsl(28 90% 52%);
-  --sl-color-orange-high: hsl(30 94% 86%);
+  --sl-color-red-low: hsl(356 76% 94%);
+  --sl-color-red: hsl(348 75% 46%);
+  --sl-color-red-high: hsl(345 74% 25%);
 
-  --sl-color-red-low: hsl(0 62% 14%);
-  --sl-color-red: hsl(0 84% 60%);
-  --sl-color-red-high: hsl(0 93% 86%);
+  --sl-color-purple-low: hsl(266 70% 94%);
+  --sl-color-purple: hsl(265 55% 52%);
+  --sl-color-purple-high: hsl(266 60% 28%);
 
-  --sl-color-purple-low: hsl(265 55% 14%);
-  --sl-color-purple: hsl(265 82% 62%);
-  --sl-color-purple-high: hsl(266 92% 88%);
+  --sl-color-text: hsl(215 17% 30%);
+  --sl-color-text-accent: hsl(207 57% 39%);
+  --sl-color-bg: hsl(210 33% 97%);
+  --sl-color-bg-nav: hsl(0 0% 100% / 0.78);
+  --sl-color-bg-sidebar: hsl(0 0% 100% / 0.74);
+  --sl-color-bg-inline-code: hsl(207 37% 93%);
+  --sl-color-hairline: hsl(211 72% 18% / 0.13);
+  --sl-color-hairline-light: hsl(211 72% 18% / 0.09);
+  --sl-color-hairline-shade: hsl(207 37% 90%);
 
-  --sl-color-text: hsl(214 30% 82%);
-  --sl-color-text-accent: hsl(202 100% 88%);
-  --sl-color-bg: hsl(240 33% 3%);
-  --sl-color-bg-nav: hsl(222 49% 7% / 0.78);
-  --sl-color-bg-sidebar: hsl(222 49% 7% / 0.74);
-  --sl-color-bg-inline-code: hsl(220 35% 12%);
-  --sl-color-hairline: hsl(202 100% 88% / 0.16);
-  --sl-color-hairline-light: hsl(202 100% 88% / 0.12);
-  --sl-color-hairline-shade: hsl(240 33% 3%);
-
-  --sl-shadow-md: 0px 18px 45px hsl(217 91% 60% / 0.10);
+  --sl-shadow-md: 0px 18px 45px hsl(211 72% 18% / 0.10);
 }
 
 html {
@@ -79,9 +72,9 @@ html[lang='ar'] {
   --sl-font: 'IBM Plex Sans Arabic';
 }
 
-/* Match the web app's "atmosphere" without hurting readability. */
+/* Match the web app's frosted atmosphere without hurting readability. */
 body {
-  background: hsl(240 33% 3%);
+  background: hsl(210 33% 97%);
 }
 
 body::before,
@@ -95,18 +88,18 @@ body::after {
 
 body::before {
   background:
-    radial-gradient(circle at 28% 0%, hsl(202 100% 88% / 0.22), transparent 48%),
-    radial-gradient(circle at 82% 8%, hsl(39 90% 72% / 0.16), transparent 38%),
-    radial-gradient(circle at 55% 85%, hsl(217 91% 60% / 0.12), transparent 54%),
-    linear-gradient(to bottom, transparent, transparent, hsl(240 33% 3%));
+    radial-gradient(circle at 20% 0%, hsl(0 0% 100% / 0.95), transparent 40%),
+    radial-gradient(circle at 82% 8%, hsl(38 57% 52% / 0.10), transparent 32%),
+    radial-gradient(circle at 45% 82%, hsl(207 57% 39% / 0.09), transparent 50%),
+    linear-gradient(to bottom, transparent, transparent, hsl(207 37% 93%));
 }
 
 body::after {
-  opacity: 0.1;
+  opacity: 0.24;
   background-image:
-    linear-gradient(to right, hsl(202 100% 88% / 0.13) 1px, transparent 1px),
-    linear-gradient(to bottom, hsl(202 100% 88% / 0.10) 1px, transparent 1px);
-  background-size: 54px 54px;
+    linear-gradient(to right, hsl(211 72% 18% / 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(211 72% 18% / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
 }
 
 /* Keep docs feeling like "an app" by tightening nav chrome. */
@@ -117,16 +110,6 @@ body::after {
 /* Starlight renders a theme picker by default; we keep docs consistent with the app. */
 starlight-theme-select {
   display: none !important;
-}
-
-/*
-  Starlight can still set `data-theme="light"` automatically based on the
-  user's OS preference. Since the docs are designed to visually match the main
-  (always-dark) web app, we restate our dark palette for the light theme too.
-  This keeps callouts (info/warning/etc) and other surfaces consistent on mobile.
-*/
-:root[data-theme='light'] {
-  color-scheme: dark;
 }
 
 /* Subtle rounding similar to the app. */
@@ -171,7 +154,7 @@ starlight-theme-select {
   padding: 0.12em 0.45em;
   border-radius: 0.45rem;
   border: 1px solid var(--sl-color-hairline);
-  background: hsl(220 35% 12% / 0.72);
+  background: hsl(207 37% 93% / 0.78);
   color: var(--sl-color-text);
   font-family: var(--sl-font-mono);
   font-size: 0.85em;
@@ -183,8 +166,8 @@ starlight-theme-select {
   display: inline-block;
   padding: 0.12em 0.4em;
   border-radius: 0.45rem;
-  border: 1px solid hsl(202 100% 88% / 0.24);
-  background: hsl(217 70% 16% / 0.55);
+  border: 1px solid hsl(207 57% 39% / 0.24);
+  background: hsl(207 75% 94% / 0.82);
   color: var(--sl-color-text);
   font-family: var(--sl-font-mono);
   font-size: 0.9em;
@@ -197,7 +180,7 @@ starlight-theme-select {
   padding: 0.12em 0.5em;
   border-radius: 999px;
   border: 1px solid var(--sl-color-hairline);
-  background: hsl(220 35% 12% / 0.62);
+  background: hsl(207 37% 93% / 0.72);
   color: var(--sl-color-text);
   font-weight: 650;
   font-size: 0.92em;
