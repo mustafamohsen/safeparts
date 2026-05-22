@@ -18,7 +18,7 @@ export default defineConfig({
 			// If you change `base`, update the explicit `/help/...` paths below.
 			title: { en: 'Safeparts Help', ar: 'مساعدة Safeparts' },
 			description:
-				'Split a secret into shares and recover it with k of n. Guides for Web, CLI, and TUI.',
+				'Recover critical secrets without keeping them in one place. Guides for Web, CLI, and TUI.',
 			defaultLocale: 'root',
 			locales: {
 				root: { label: 'English', lang: 'en' },

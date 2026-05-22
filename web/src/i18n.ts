@@ -3,7 +3,7 @@ export type Lang = "en" | "ar";
 export const STRINGS = {
   en: {
     appName: "Safeparts",
-    tagline: "Split a secret into shares. Recover with k of n.",
+    tagline: "Recover critical secrets without keeping them in one place.",
 
     splitTab: "Split",
     combineTab: "Combine",
@@ -87,7 +87,7 @@ export const STRINGS = {
   },
   ar: {
     appName: "Safeparts",
-    tagline: "قسم السر إلى حصص. استعده باستخدام k من n.",
+    tagline: "استعد أسرارك المهمة دون إبقائها في مكان واحد.",
 
     splitTab: "تقسيم",
     combineTab: "استعادة",
