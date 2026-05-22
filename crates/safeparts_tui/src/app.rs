@@ -181,12 +181,10 @@ impl App {
 
             if crossterm::event::poll(Duration::from_millis(50))? {
                 match crossterm::event::read()? {
-                    Event::Key(key) => {
-                        if self.on_key(key)? {
-                            break;
-                        }
+                    Event::Key(key) if self.on_key(key)? => {
+                        break;
                     }
-                    Event::Resize(_, _) => {}
+                    Event::Key(_) | Event::Resize(_, _) => {}
                     _ => {}
                 }
             }
@@ -340,12 +338,11 @@ impl App {
             KeyCode::Backspace => {
                 buf.pop();
             }
-            KeyCode::Char(c) => {
+            KeyCode::Char(c)
                 if !key.modifiers.contains(KeyModifiers::CONTROL)
-                    && !key.modifiers.contains(KeyModifiers::ALT)
-                {
-                    buf.push(c);
-                }
+                    && !key.modifiers.contains(KeyModifiers::ALT) =>
+            {
+                buf.push(c);
             }
             _ => {}
         }
@@ -375,12 +372,11 @@ impl App {
 
     fn on_down(&mut self) {
         match self.focus {
-            Focus::SplitShares => {
-                if !self.split_shares.is_empty() {
-                    self.split_selected_share =
-                        (self.split_selected_share + 1).min(self.split_shares.len() - 1);
-                }
+            Focus::SplitShares if !self.split_shares.is_empty() => {
+                self.split_selected_share =
+                    (self.split_selected_share + 1).min(self.split_shares.len() - 1);
             }
+            Focus::SplitShares => {}
             Focus::SplitK => {
                 self.split_k = self.split_k.saturating_sub(1).max(1);
             }
