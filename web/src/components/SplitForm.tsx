@@ -232,7 +232,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                 <div className="stepper-controls items-center gap-1 p-1">
                   <button
                     type="button"
-                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="stepper-button"
                     onClick={() => setK((prev) => clampK(prev - 1, n))}
                     disabled={k <= 2}
                     aria-label={strings.decrement}
@@ -242,7 +242,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   </button>
                   <button
                     type="button"
-                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="stepper-button"
                     onClick={() => setK((prev) => clampK(prev + 1, n))}
                     disabled={k >= Math.min(255, n)}
                     aria-label={strings.increment}
@@ -288,7 +288,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                 <div className="stepper-controls items-center gap-1 p-1">
                   <button
                     type="button"
-                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="stepper-button"
                     onClick={() => setNClamped(n - 1)}
                     disabled={n <= 2}
                     aria-label={strings.decrement}
@@ -298,7 +298,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   </button>
                   <button
                     type="button"
-                    className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="stepper-button"
                     onClick={() => setNClamped(n + 1)}
                     disabled={n >= 255}
                     aria-label={strings.increment}
@@ -389,7 +389,7 @@ export function SplitForm({ strings }: SplitFormProps) {
             </div>
           </div>
 
-          <div className="mt-3 divide-y divide-emerald-500/10">
+          <div className="mt-3 divide-y secret-divider">
             {shares.map((s, i) => (
               <div
                 key={`${i}-${s.slice(0, 16)}`}
@@ -417,7 +417,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                       Math.min(24, Math.floor(1100 / Math.max(1, s.length))),
                     )}
                     flipDelayMs={35}
-                    encryptedClassName="text-emerald-300/45"
+                    encryptedClassName="text-[#bfe7ff]/45"
                     revealedClassName="text-slate-200"
                   />
                 </div>

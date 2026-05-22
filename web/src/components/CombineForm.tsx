@@ -372,7 +372,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
             </div>
           </div>
 
-          <div className="mt-3 divide-y divide-emerald-500/10">
+          <div className="mt-3 divide-y secret-divider">
             {shareBoxes.map((box, i) => {
               const isInvalid = invalidShareBoxIds.includes(box.id);
               const isFlashing = shareBoxFlashIds.includes(box.id);
@@ -410,11 +410,11 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
                         pasteRequestedRef.current = true;
                       }}
                       rows={3}
-                      className={`input input-with-clear input-with-clear-ltr resize-none overflow-hidden font-mono text-xs leading-relaxous transition-colors duration-700 ${
+                      className={`input input-with-clear input-with-clear-ltr resize-none overflow-hidden font-mono text-xs leading-relaxed transition-colors duration-700 ${
                         isInvalid
                           ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
                           : ""
-                      } ${isFlashing ? "border-emerald-300/70 bg-emerald-500/15" : ""}`}
+                      } ${isFlashing ? "border-[#bfe7ff]/70 bg-[#60a5fa]/15" : ""}`}
                       aria-labelledby="shares-label"
                       aria-describedby={
                         isInvalid ? `share-${box.id}-error` : "shares-hint"
@@ -491,7 +491,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
       </div>
 
       {secret ? (
-        <div className="mt-6 rounded-2xl border border-emerald-500/15 bg-black/35 p-3">
+        <div className="mt-6 rounded-2xl border border-[#bfe7ff]/15 bg-white/[0.055] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
           <div className="dir-row items-start justify-between gap-3">
             <div className="text-start">
               <h3 className="text-sm font-semibold text-slate-200">
@@ -521,7 +521,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
                 Math.min(24, Math.floor(1100 / Math.max(1, secret.length))),
               )}
               flipDelayMs={35}
-              encryptedClassName="text-emerald-300/45"
+              encryptedClassName="text-[#bfe7ff]/45"
               revealedClassName="text-slate-200"
             />
           </div>

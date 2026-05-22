@@ -39,11 +39,11 @@ export function EncodingSelector({
             htmlFor={optionId}
             className={cn(
               "cursor-pointer rounded-xl border px-3 py-2.5 text-start transition-colors duration-200",
-              "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-emerald-400 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-black",
+              "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bfe7ff] has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-[#05060a]",
               isSelected
-                ? "border-emerald-500/40 bg-emerald-500/10 text-slate-100"
-                : "border-emerald-500/15 bg-black/40 text-slate-300 hover:bg-black/60",
-              flash && isSelected && "border-emerald-300/70 bg-emerald-500/20"
+                ? "border-[#bfe7ff]/40 bg-[#60a5fa]/10 text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                : "border-[#bfe7ff]/15 bg-[#050b14]/70 text-slate-300 hover:bg-white/[0.055]",
+              flash && isSelected && "border-[#f6c979]/70 bg-[#f6c979]/15"
             )}
           >
             <input
