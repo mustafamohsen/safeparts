@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 use js_sys::{Array, Object, Reflect, Uint8Array};
+use safeparts_core::encoding::{self, Encoding};
 
 #[wasm_bindgen]
 pub fn share_threshold(share: &str, encoding: &str) -> Result<u8, JsValue> {
@@ -86,40 +87,13 @@ fn encode_packet(
     packet: &safeparts_core::packet::SharePacket,
     encoding: &str,
 ) -> Result<String, String> {
-    match encoding {
-        "base58check" => safeparts_core::ascii::encode_packet(
-            packet,
-            safeparts_core::ascii::Encoding::Base58check,
-        )
-        .map_err(|e| e.to_string()),
-        "base64url" => {
-            safeparts_core::ascii::encode_packet(packet, safeparts_core::ascii::Encoding::Base64url)
-                .map_err(|e| e.to_string())
-        }
-        "mnemo-words" => {
-            safeparts_core::mnemo_words::encode_packet(packet).map_err(|e| e.to_string())
-        }
-        "mnemo-bip39" => {
-            safeparts_core::mnemo_bip39::encode_packet(packet).map_err(|e| e.to_string())
-        }
-        _ => Err(format!("unknown encoding: {encoding}")),
-    }
+    let encoding = Encoding::parse_name(encoding).map_err(|e| e.to_string())?;
+    encoding::encode_packet(packet, encoding).map_err(|e| e.to_string())
 }
 
 fn decode_packet(s: &str, encoding: &str) -> Result<safeparts_core::packet::SharePacket, String> {
-    match encoding {
-        "base58check" => {
-            safeparts_core::ascii::decode_packet(s, safeparts_core::ascii::Encoding::Base58check)
-                .map_err(|e| e.to_string())
-        }
-        "base64url" => {
-            safeparts_core::ascii::decode_packet(s, safeparts_core::ascii::Encoding::Base64url)
-                .map_err(|e| e.to_string())
-        }
-        "mnemo-words" => safeparts_core::mnemo_words::decode_packet(s).map_err(|e| e.to_string()),
-        "mnemo-bip39" => safeparts_core::mnemo_bip39::decode_packet(s).map_err(|e| e.to_string()),
-        _ => Err(format!("unknown encoding: {encoding}")),
-    }
+    let encoding = Encoding::parse_name(encoding).map_err(|e| e.to_string())?;
+    encoding::decode_packet(s, encoding).map_err(|e| e.to_string())
 }
 
 #[cfg(test)]

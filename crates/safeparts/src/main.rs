@@ -5,8 +5,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, anyhow, bail};
 use clap::{Parser, Subcommand};
-use safeparts_core::packet::SharePacket;
-use safeparts_core::{ascii, mnemo_bip39, mnemo_words};
+use safeparts_core::encoding::{self, Encoding};
 use zeroize::Zeroizing;
 
 #[derive(Debug, Parser)]
@@ -31,7 +30,7 @@ enum Commands {
         n: u8,
 
         /// Output encoding for shares.
-        #[arg(short = 'e', long, value_enum, default_value_t = CliEncoding::Base64)]
+        #[arg(short = 'e', long, value_enum, default_value_t = CliEncoding::Base64url)]
         encoding: CliEncoding,
 
         /// Encrypt secret before splitting (prefer --passphrase-file to avoid shell history).
@@ -80,17 +79,28 @@ enum Commands {
 
 #[derive(Clone, Copy, Debug, clap::ValueEnum)]
 enum CliEncoding {
-    #[value(name = "base64", alias = "base64url")]
-    Base64,
+    #[value(name = "base64url", alias = "base64")]
+    Base64url,
 
-    #[value(name = "base58", alias = "base58check")]
-    Base58,
+    #[value(name = "base58check", alias = "base58")]
+    Base58check,
 
     #[value(name = "mnemo-words")]
     MnemoWords,
 
     #[value(name = "mnemo-bip39")]
     MnemoBip39,
+}
+
+impl From<CliEncoding> for Encoding {
+    fn from(value: CliEncoding) -> Self {
+        match value {
+            CliEncoding::Base64url => Encoding::Base64url,
+            CliEncoding::Base58check => Encoding::Base58check,
+            CliEncoding::MnemoWords => Encoding::MnemoWords,
+            CliEncoding::MnemoBip39 => Encoding::MnemoBip39,
+        }
+    }
 }
 
 fn main() -> Result<()> {
@@ -171,131 +181,21 @@ fn launch_tui() -> Result<()> {
     Ok(())
 }
 
-fn encode_packet_cli(packet: &SharePacket, encoding: CliEncoding) -> Result<String> {
-    match encoding {
-        CliEncoding::Base58 => {
-            ascii::encode_packet(packet, ascii::Encoding::Base58check).map_err(|e| anyhow!(e))
-        }
-        CliEncoding::Base64 => {
-            ascii::encode_packet(packet, ascii::Encoding::Base64url).map_err(|e| anyhow!(e))
-        }
-        CliEncoding::MnemoWords => mnemo_words::encode_packet(packet).map_err(|e| anyhow!(e)),
-        CliEncoding::MnemoBip39 => mnemo_bip39::encode_packet(packet).map_err(|e| anyhow!(e)),
-    }
+fn encode_packet_cli(
+    packet: &safeparts_core::packet::SharePacket,
+    encoding: CliEncoding,
+) -> Result<String> {
+    encoding::encode_packet(packet, encoding.into()).map_err(|e| anyhow!(e))
 }
 
-fn parse_share_packets(input: &str, encoding: Option<CliEncoding>) -> Result<Vec<SharePacket>> {
-    let nonempty_lines: Vec<&str> = input
-        .lines()
-        .map(str::trim)
-        .filter(|l| !l.is_empty())
-        .collect();
-
-    if nonempty_lines.is_empty() {
-        bail!("no shares provided");
-    }
-
-    match encoding {
-        Some(enc) => decode_share_packets_known(input, enc),
-        None => decode_share_packets_auto(&nonempty_lines, input),
-    }
-}
-
-fn decode_share_packets_known(full_input: &str, encoding: CliEncoding) -> Result<Vec<SharePacket>> {
-    match encoding {
-        CliEncoding::MnemoWords => split_mnemonic_input(full_input)
-            .iter()
-            .map(|block| mnemo_words::decode_packet(block).map_err(|e| anyhow!(e)))
-            .collect::<Result<Vec<_>>>(),
-        CliEncoding::MnemoBip39 => split_mnemonic_input(full_input)
-            .iter()
-            .map(|block| mnemo_bip39::decode_packet(block).map_err(|e| anyhow!(e)))
-            .collect::<Result<Vec<_>>>(),
-        CliEncoding::Base64 => {
-            let tokens: Vec<&str> = full_input.split_whitespace().collect();
-            tokens
-                .into_iter()
-                .map(|t| {
-                    ascii::decode_packet(t, ascii::Encoding::Base64url).map_err(|e| anyhow!(e))
-                })
-                .collect::<Result<Vec<_>>>()
-        }
-        CliEncoding::Base58 => {
-            let tokens: Vec<&str> = full_input.split_whitespace().collect();
-            tokens
-                .into_iter()
-                .map(|t| {
-                    ascii::decode_packet(t, ascii::Encoding::Base58check).map_err(|e| anyhow!(e))
-                })
-                .collect::<Result<Vec<_>>>()
-        }
-    }
-}
-
-fn decode_share_packets_auto(
-    nonempty_lines: &[&str],
-    full_input: &str,
-) -> Result<Vec<SharePacket>> {
-    let looks_mnemonic = nonempty_lines
-        .iter()
-        .any(|l| l.contains('/') || l.split_whitespace().count() > 1);
-
-    if looks_mnemonic {
-        let looks_bip39 = nonempty_lines.iter().any(|l| l.contains('/'));
-        return if looks_bip39 {
-            decode_share_packets_known(full_input, CliEncoding::MnemoBip39)
-        } else {
-            decode_share_packets_known(full_input, CliEncoding::MnemoWords)
-        };
-    }
-
-    let base64_attempt = decode_share_packets_known(full_input, CliEncoding::Base64);
-    if base64_attempt.is_ok() {
-        return base64_attempt;
-    }
-
-    let base58_attempt = decode_share_packets_known(full_input, CliEncoding::Base58);
-    if base58_attempt.is_ok() {
-        return base58_attempt;
-    }
-
-    bail!("could not detect share encoding; try --encoding");
-}
-
-fn split_mnemonic_input(input: &str) -> Vec<String> {
-    let normalized = input.replace("\r\n", "\n");
-
-    if normalized.contains("\n\n") {
-        return split_mnemonic_blocks(&normalized);
-    }
-
-    let lines: Vec<String> = normalized
-        .lines()
-        .map(str::trim)
-        .filter(|l| !l.is_empty())
-        .map(|l| l.to_string())
-        .collect();
-
-    if lines.len() > 1 {
-        return lines;
-    }
-
-    split_mnemonic_blocks(&normalized)
-}
-
-fn split_mnemonic_blocks(input: &str) -> Vec<String> {
-    input
-        .split("\n\n")
-        .map(|b| {
-            b.lines()
-                .map(str::trim)
-                .filter(|l| !l.is_empty())
-                .collect::<Vec<_>>()
-                .join(" ")
-        })
-        .map(|b| b.trim().to_string())
-        .filter(|b| !b.is_empty())
-        .collect()
+fn parse_share_packets(
+    input: &str,
+    encoding: Option<CliEncoding>,
+) -> Result<Vec<safeparts_core::packet::SharePacket>> {
+    let encoding = encoding.map_or(Encoding::Auto, Into::into);
+    encoding::parse_share_packets(input, encoding)
+        .map(|parsed| parsed.packets)
+        .map_err(|e| anyhow!(e))
 }
 
 fn is_dash_path(p: &Path) -> bool {

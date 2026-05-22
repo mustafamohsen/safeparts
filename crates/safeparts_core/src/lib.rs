@@ -1,5 +1,6 @@
 pub mod ascii;
 pub mod crypto;
+pub mod encoding;
 pub mod error;
 pub mod gf256;
 pub mod mnemo_bip39;
