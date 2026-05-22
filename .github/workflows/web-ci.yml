@@ -6,12 +6,14 @@ on:
       - 'web/**'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_wasm/**'
+      - 'netlify.toml'
       - '.github/workflows/web-ci.yml'
   pull_request:
     paths:
       - 'web/**'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_wasm/**'
+      - 'netlify.toml'
       - '.github/workflows/web-ci.yml'
   schedule:
     - cron: '0 3 * * *'
