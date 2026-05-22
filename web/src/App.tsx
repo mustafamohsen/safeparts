@@ -7,7 +7,6 @@ import { KeytipsOverlay } from "./components/KeytipsOverlay";
 import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
 import { LiveRegion } from "./components/LiveRegion";
 import { SplitForm } from "./components/SplitForm";
-import { EncryptedText } from "./components/ui/encrypted-text";
 import { LiveRegionProvider } from "./context/LiveRegionContext";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useLiveRegion } from "./hooks/useLiveRegion";
@@ -169,20 +168,9 @@ export function App() {
                   <h1 className="text-xl font-semibold tracking-[-0.03em] text-[#101827]">
                     {strings.appName}
                   </h1>
-                  {lang === "en" ? (
-                    <EncryptedText
-                      className="mt-0.5 block text-xs"
-                      text={strings.tagline}
-                      revealDelayMs={20}
-                      flipDelayMs={20}
-                      encryptedClassName="text-[#2a679b]/35"
-                      revealedClassName="text-slate-600"
-                    />
-                  ) : (
-                    <p className="mt-0.5 text-xs text-slate-600">
-                      {strings.tagline}
-                    </p>
-                  )}
+                  <p className="mt-0.5 text-xs text-slate-600">
+                    {strings.tagline}
+                  </p>
                 </div>
               </div>
 
