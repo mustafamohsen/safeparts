@@ -48,16 +48,58 @@ pub fn combine_shares(
         packets.push(packet);
     }
 
-    let secret = safeparts_core::combine_shares(&packets, passphrase_bytes)
+    combine_packets(&packets, passphrase_bytes)
+}
+
+#[wasm_bindgen]
+pub fn combine_share_input(
+    input: &str,
+    encoding: &str,
+    passphrase: Option<String>,
+) -> Result<Uint8Array, JsValue> {
+    let passphrase_bytes = passphrase.as_deref().map(str::as_bytes);
+    let encoding = Encoding::parse_name(encoding).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let parsed = encoding::parse_share_packets(input, encoding)
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
 
-    Ok(Uint8Array::from(secret.as_slice()))
+    combine_packets(&parsed.packets, passphrase_bytes)
 }
 
 #[wasm_bindgen]
 pub fn inspect_share(share: &str, encoding: &str) -> Result<JsValue, JsValue> {
     let packet = decode_packet(share, encoding).map_err(|e| JsValue::from_str(&e))?;
+    let encoding = Encoding::parse_name(encoding).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    packet_info(&packet, encoding, 1)
+}
 
+#[wasm_bindgen]
+pub fn inspect_share_input(input: &str, encoding: &str) -> Result<JsValue, JsValue> {
+    let encoding = Encoding::parse_name(encoding).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let parsed = encoding::parse_share_packets(input, encoding)
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let first = parsed
+        .packets
+        .first()
+        .ok_or_else(|| JsValue::from_str("no shares provided"))?;
+
+    packet_info(first, parsed.encoding, parsed.packets.len())
+}
+
+fn combine_packets(
+    packets: &[safeparts_core::packet::SharePacket],
+    passphrase: Option<&[u8]>,
+) -> Result<Uint8Array, JsValue> {
+    let secret = safeparts_core::combine_shares(packets, passphrase)
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+    Ok(Uint8Array::from(secret.as_slice()))
+}
+
+fn packet_info(
+    packet: &safeparts_core::packet::SharePacket,
+    encoding: Encoding,
+    share_count: usize,
+) -> Result<JsValue, JsValue> {
     let obj = Object::new();
     Reflect::set(
         &obj,
@@ -78,6 +120,16 @@ pub fn inspect_share(share: &str, encoding: &str) -> Result<JsValue, JsValue> {
         &obj,
         &JsValue::from_str("encrypted"),
         &JsValue::from_bool(packet.crypto_params.is_some()),
+    )?;
+    Reflect::set(
+        &obj,
+        &JsValue::from_str("encoding"),
+        &JsValue::from_str(encoding.label()),
+    )?;
+    Reflect::set(
+        &obj,
+        &JsValue::from_str("shareCount"),
+        &JsValue::from_f64(share_count as f64),
     )?;
 
     Ok(obj.into())
