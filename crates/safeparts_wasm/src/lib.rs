@@ -59,7 +59,7 @@ pub fn combine_share_input(
 ) -> Result<Uint8Array, JsValue> {
     let passphrase_bytes = passphrase.as_deref().map(str::as_bytes);
     let encoding = Encoding::parse_name(encoding).map_err(|e| JsValue::from_str(&e.to_string()))?;
-    let parsed = encoding::parse_share_packets(input, encoding)
+    let parsed = encoding::parse_share_packets_wrapped_mnemonics(input, encoding)
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
 
     combine_packets(&parsed.packets, passphrase_bytes)
@@ -75,7 +75,7 @@ pub fn inspect_share(share: &str, encoding: &str) -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub fn inspect_share_input(input: &str, encoding: &str) -> Result<JsValue, JsValue> {
     let encoding = Encoding::parse_name(encoding).map_err(|e| JsValue::from_str(&e.to_string()))?;
-    let parsed = encoding::parse_share_packets(input, encoding)
+    let parsed = encoding::parse_share_packets_wrapped_mnemonics(input, encoding)
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
     let first = parsed
         .packets

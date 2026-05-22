@@ -46,8 +46,8 @@ if ! command -v wasm-pack >/dev/null 2>&1 || ! wasm-pack --version | grep -q "wa
   install_wasm_pack_binary || cargo install wasm-pack --locked --version "$WASM_PACK_VERSION" --force
 fi
 
-if ! command -v wasm-bindgen >/dev/null 2>&1; then
-  cargo install wasm-bindgen-cli --version "$WASM_BINDGEN_VERSION" --locked
+if ! command -v wasm-bindgen >/dev/null 2>&1 || ! wasm-bindgen --version | grep -q "wasm-bindgen ${WASM_BINDGEN_VERSION}"; then
+  cargo install wasm-bindgen-cli --version "$WASM_BINDGEN_VERSION" --locked --force
 fi
 
 wasm-pack build ../crates/safeparts_wasm --mode no-install --target web --out-dir ../../web/src/wasm_pkg

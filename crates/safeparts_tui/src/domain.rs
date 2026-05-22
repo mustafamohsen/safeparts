@@ -48,6 +48,7 @@ impl Encoding {
             core_encoding::Encoding::Base58check => Encoding::Base58check,
             core_encoding::Encoding::MnemoWords => Encoding::MnemoWords,
             core_encoding::Encoding::MnemoBip39 => Encoding::MnemoBip39,
+            _ => Encoding::Auto,
         }
     }
 }
@@ -76,8 +77,8 @@ pub fn combine_shares(
     encoding: Encoding,
     passphrase: Option<&[u8]>,
 ) -> Result<(Vec<SharePacket>, Vec<u8>, Encoding)> {
-    let parsed =
-        core_encoding::parse_share_packets(input, encoding.core()).map_err(|e| anyhow!(e))?;
+    let parsed = core_encoding::parse_share_packets_wrapped_mnemonics(input, encoding.core())
+        .map_err(|e| anyhow!(e))?;
     let secret = safeparts_core::combine_shares(&parsed.packets, passphrase)
         .map_err(|e| anyhow!(e))
         .context("combine failed")?;

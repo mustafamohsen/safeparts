@@ -9,6 +9,7 @@ use crate::packet::SharePacket;
 use crate::{ascii, mnemo_bip39, mnemo_words};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Encoding {
     Auto,
     Base64url,
@@ -96,6 +97,21 @@ pub fn decode_packet(s: &str, encoding: Encoding) -> CoreResult<SharePacket> {
 }
 
 pub fn parse_share_packets(input: &str, encoding: Encoding) -> CoreResult<ParsedSharePackets> {
+    parse_share_packets_with_mnemonic_lines(input, encoding, MnemonicLineMode::Shares)
+}
+
+pub fn parse_share_packets_wrapped_mnemonics(
+    input: &str,
+    encoding: Encoding,
+) -> CoreResult<ParsedSharePackets> {
+    parse_share_packets_with_mnemonic_lines(input, encoding, MnemonicLineMode::WrappedShare)
+}
+
+fn parse_share_packets_with_mnemonic_lines(
+    input: &str,
+    encoding: Encoding,
+    mnemonic_line_mode: MnemonicLineMode,
+) -> CoreResult<ParsedSharePackets> {
     let nonempty_lines: Vec<&str> = input
         .lines()
         .map(str::trim)
@@ -113,7 +129,7 @@ pub fn parse_share_packets(input: &str, encoding: Encoding) -> CoreResult<Parsed
         encoding
     };
 
-    let packets = decode_share_packets_known(input, encoding)?;
+    let packets = decode_share_packets_known(input, encoding, mnemonic_line_mode)?;
     Ok(ParsedSharePackets { packets, encoding })
 }
 
@@ -148,25 +164,32 @@ fn detect_encoding_from_lines(
         }));
     }
 
-    if decode_share_packets_known(full_input, Encoding::Base64url).is_ok() {
+    if decode_share_packets_known(full_input, Encoding::Base64url, MnemonicLineMode::Shares).is_ok()
+    {
         return Ok(Some(Encoding::Base64url));
     }
 
-    if decode_share_packets_known(full_input, Encoding::Base58check).is_ok() {
+    if decode_share_packets_known(full_input, Encoding::Base58check, MnemonicLineMode::Shares)
+        .is_ok()
+    {
         return Ok(Some(Encoding::Base58check));
     }
 
     Ok(None)
 }
 
-fn decode_share_packets_known(input: &str, encoding: Encoding) -> CoreResult<Vec<SharePacket>> {
+fn decode_share_packets_known(
+    input: &str,
+    encoding: Encoding,
+    mnemonic_line_mode: MnemonicLineMode,
+) -> CoreResult<Vec<SharePacket>> {
     match encoding {
         Encoding::Auto => Err(CoreError::CouldNotDetectEncoding),
-        Encoding::MnemoWords => split_mnemonic_input(input)
+        Encoding::MnemoWords => split_mnemonic_input(input, mnemonic_line_mode)
             .iter()
             .map(|block| mnemo_words::decode_packet(block))
             .collect::<CoreResult<Vec<_>>>(),
-        Encoding::MnemoBip39 => split_mnemonic_input(input)
+        Encoding::MnemoBip39 => split_mnemonic_input(input, mnemonic_line_mode)
             .iter()
             .map(|block| mnemo_bip39::decode_packet(block))
             .collect::<CoreResult<Vec<_>>>(),
@@ -181,7 +204,13 @@ fn decode_share_packets_known(input: &str, encoding: Encoding) -> CoreResult<Vec
     }
 }
 
-fn split_mnemonic_input(input: &str) -> Vec<String> {
+#[derive(Clone, Copy)]
+enum MnemonicLineMode {
+    Shares,
+    WrappedShare,
+}
+
+fn split_mnemonic_input(input: &str, line_mode: MnemonicLineMode) -> Vec<String> {
     let normalized = input.replace("\r\n", "\n");
 
     if normalized.contains("\n\n") {
@@ -195,7 +224,7 @@ fn split_mnemonic_input(input: &str) -> Vec<String> {
         .map(ToOwned::to_owned)
         .collect();
 
-    if lines.len() > 1 {
+    if lines.len() > 1 && matches!(line_mode, MnemonicLineMode::Shares) {
         return lines;
     }
 
@@ -267,10 +296,29 @@ mod tests {
 
     #[test]
     fn split_mnemonic_input_treats_multiple_lines_as_multiple_shares() {
-        let blocks = split_mnemonic_input("alpha beta\ngamma delta\n");
+        let blocks = split_mnemonic_input("alpha beta\ngamma delta\n", MnemonicLineMode::Shares);
         assert_eq!(
             blocks,
             vec!["alpha beta".to_string(), "gamma delta".to_string()]
         );
+    }
+
+    #[test]
+    fn split_mnemonic_input_can_treat_multiple_lines_as_wrapped_share() {
+        let blocks =
+            split_mnemonic_input("alpha beta\ngamma delta\n", MnemonicLineMode::WrappedShare);
+        assert_eq!(blocks, vec!["alpha beta gamma delta".to_string()]);
+    }
+
+    #[test]
+    fn wrapped_mnemonic_parser_decodes_single_wrapped_share() {
+        let encoded = encode_packet(&packet(), Encoding::MnemoWords).unwrap();
+        let mut words = encoded.split_whitespace();
+        let first_line = words.by_ref().take(8).collect::<Vec<_>>().join(" ");
+        let second_line = words.collect::<Vec<_>>().join(" ");
+        let wrapped = format!("{first_line}\n{second_line}");
+
+        let parsed = parse_share_packets_wrapped_mnemonics(&wrapped, Encoding::MnemoWords).unwrap();
+        assert_eq!(parsed.packets, vec![packet()]);
     }
 }
