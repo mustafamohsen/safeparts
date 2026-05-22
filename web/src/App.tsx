@@ -48,13 +48,12 @@ function getInitialLang(): Lang {
 function Background() {
   return (
     <>
-      <div className="pointer-events-none absolute inset-0 bg-[#05060a]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_28%_0%,rgba(191,231,255,0.26),transparent_44%),radial-gradient(circle_at_82%_8%,rgba(246,201,121,0.18),transparent_34%),radial-gradient(circle_at_55%_80%,rgba(37,99,235,0.16),transparent_52%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:linear-gradient(to_right,rgba(191,231,255,0.16)_1px,transparent_1px),linear-gradient(to_bottom,rgba(191,231,255,0.11)_1px,transparent_1px)] [background-size:54px_54px]" />
-      <div className="pointer-events-none absolute -left-24 top-44 h-72 w-[42rem] rotate-[-18deg] rounded-full bg-[#bfe7ff]/[0.055] blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 bottom-20 h-80 w-[44rem] rotate-[14deg] rounded-full bg-[#f6c979]/[0.055] blur-3xl" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.055)_0%,transparent_22%,transparent_72%,rgba(96,165,250,0.05)_100%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[#05060a]/10 to-[#05060a]" />
+      <div className="pointer-events-none absolute inset-0 bg-[#f4f7fa]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,255,255,0.96),transparent_38%),radial-gradient(circle_at_82%_8%,rgba(201,150,62,0.11),transparent_30%),radial-gradient(circle_at_45%_72%,rgba(42,103,155,0.10),transparent_48%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.28] [background-image:linear-gradient(to_right,rgba(13,43,79,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,43,79,0.05)_1px,transparent_1px)] [background-size:56px_56px]" />
+      <div className="pointer-events-none absolute -left-28 top-44 h-72 w-[42rem] rotate-[-18deg] rounded-full bg-white/70 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-20 h-80 w-[44rem] rotate-[14deg] rounded-full bg-[#dcebf7]/50 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#eef3f8]" />
     </>
   );
 }
@@ -90,7 +89,7 @@ function ShieldIcon() {
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      className="h-4 w-4 text-[#bfe7ff]"
+      className="h-4 w-4 text-[#2a679b]"
       aria-hidden="true"
     >
       <path
@@ -167,7 +166,7 @@ export function App() {
                   decoding="async"
                 />
                 <div className="text-start">
-                  <h1 className="text-xl font-semibold tracking-[-0.03em] text-[#f8fbff]">
+                  <h1 className="text-xl font-semibold tracking-[-0.03em] text-[#101827]">
                     {strings.appName}
                   </h1>
                   {lang === "en" ? (
@@ -176,11 +175,11 @@ export function App() {
                       text={strings.tagline}
                       revealDelayMs={20}
                       flipDelayMs={20}
-                      encryptedClassName="text-[#bfe7ff]/40"
-                      revealedClassName="text-slate-300"
+                      encryptedClassName="text-[#2a679b]/35"
+                      revealedClassName="text-slate-600"
                     />
                   ) : (
-                    <p className="mt-0.5 text-xs text-slate-300">
+                    <p className="mt-0.5 text-xs text-slate-600">
                       {strings.tagline}
                     </p>
                   )}
@@ -231,11 +230,11 @@ export function App() {
                 >
                   ?
                 </button>
-                <div className="dir-row items-center gap-1 rounded-xl border border-[#bfe7ff]/15 bg-white/[0.055] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <div className="dir-row items-center gap-1 rounded-2xl border border-[#0d2b4f]/10 bg-[#eff5fa]/80 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                   <button
                     type="button"
                     className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
-                      lang === "en" ? "bg-[#bfe7ff]/14 text-white" : "hover:bg-white/5"
+                      lang === "en" ? "bg-[#0d2b4f] text-white shadow-sm" : "text-slate-700 hover:bg-white/70"
                     }`}
                     onClick={() => setLang("en")}
                     aria-label={strings.english}
@@ -247,7 +246,7 @@ export function App() {
                   <button
                     type="button"
                     className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
-                      lang === "ar" ? "bg-[#bfe7ff]/14 text-white" : "hover:bg-white/5"
+                      lang === "ar" ? "bg-[#0d2b4f] text-white shadow-sm" : "text-slate-700 hover:bg-white/70"
                     }`}
                     onClick={() => setLang("ar")}
                     aria-label={strings.arabic}
@@ -333,7 +332,7 @@ export function App() {
                 </button>
               </div>
 
-              <div className="dir-row items-center gap-2 rounded-xl border border-[#bfe7ff]/15 bg-[#60a5fa]/[0.08] px-3 py-2 text-xs text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="dir-row items-center gap-2 rounded-2xl border border-[#0d2b4f]/10 bg-white/65 px-3 py-2 text-xs text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                 <ShieldIcon />
                 <span>{strings.privacyNote}</span>
               </div>
@@ -352,11 +351,11 @@ export function App() {
             )}
           </main>
 
-          <footer className="dir-row flex-wrap items-center justify-between gap-2 text-start text-xs text-slate-400">
+          <footer className="dir-row flex-wrap items-center justify-between gap-2 text-start text-xs text-slate-500">
             <div>
               © Mustafa Mohsen ·{' '}
               <a
-                className="underline decoration-slate-400/30 underline-offset-4 hover:decoration-slate-400/60"
+                className="underline decoration-slate-400/50 underline-offset-4 hover:decoration-slate-600/70"
                 href="https://github.com/mustafamohsen/safeparts/blob/main/LICENSE"
                 target="_blank"
                 rel="noreferrer"

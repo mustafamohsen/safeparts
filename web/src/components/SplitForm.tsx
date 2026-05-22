@@ -158,7 +158,7 @@ export function SplitForm({ strings }: SplitFormProps) {
       <div className="dir-row items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">{strings.splitTitle}</h2>
-          <p className="mt-1 text-sm text-slate-300">{strings.splitSubtitle}</p>
+          <p className="mt-1 text-sm text-slate-600">{strings.splitSubtitle}</p>
         </div>
       </div>
 
@@ -380,10 +380,10 @@ export function SplitForm({ strings }: SplitFormProps) {
         <div className="mt-6">
           <div className="dir-row items-start justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-slate-200">
+              <h3 className="text-sm font-semibold text-slate-800">
                 {strings.sharesTitle}
               </h3>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-500">
                 {strings.sharesHint}
               </p>
             </div>
@@ -396,7 +396,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                 className="py-4 first:pt-0 last:pb-0"
               >
                 <div className="dir-row items-center justify-between gap-3">
-                  <div className="text-xs font-semibold text-slate-200">
+                  <div className="text-xs font-semibold text-slate-700">
                     {strings.shareNumber} {i + 1}
                   </div>
                   <CopyButton
@@ -417,8 +417,8 @@ export function SplitForm({ strings }: SplitFormProps) {
                       Math.min(24, Math.floor(1100 / Math.max(1, s.length))),
                     )}
                     flipDelayMs={35}
-                    encryptedClassName="text-[#bfe7ff]/45"
-                    revealedClassName="text-slate-200"
+                    encryptedClassName="text-[#2a679b]/35"
+                    revealedClassName="text-slate-800"
                   />
                 </div>
               </div>

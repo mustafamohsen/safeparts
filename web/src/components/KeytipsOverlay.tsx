@@ -39,8 +39,8 @@ type KeytipsOverlayProps = {
 function Keycap({ label }: { label: string }) {
   const isSingle = /^[0-9]$/.test(label)
   const className = isSingle
-    ? 'rounded-md border border-white/80 bg-[#dff4ff] px-2.5 py-1.5 font-mono text-[12px] font-semibold text-slate-950 shadow-[0_18px_50px_rgba(0,0,0,0.35)]'
-    : 'rounded-md border border-white/70 bg-[#bfe7ff] px-2.5 py-1.5 font-mono text-[12px] font-semibold text-slate-950 shadow-[0_18px_50px_rgba(0,0,0,0.3)]'
+    ? 'rounded-md border border-[#0d2b4f]/10 bg-white px-2.5 py-1.5 font-mono text-[12px] font-semibold text-slate-900 shadow-[0_18px_50px_rgba(0,0,0,0.35)]'
+    : 'rounded-md border border-[#0d2b4f]/10 bg-[#eef6ff] px-2.5 py-1.5 font-mono text-[12px] font-semibold text-slate-900 shadow-[0_18px_50px_rgba(0,0,0,0.3)]'
   return (
     <span dir="ltr" className={className}>
       {label}
@@ -86,7 +86,7 @@ export function KeytipsOverlay({ active, lang, strings }: KeytipsOverlayProps) {
 
   return (
     <div className={className} aria-hidden="true">
-      <div className="absolute inset-0 bg-[#05060a]/50" />
+      <div className="absolute inset-0 bg-[#101827]/28" />
 
       {tips.map((tip) => {
         // Prefer the top-right corner (reads like a "key hint" badge).
@@ -97,13 +97,13 @@ export function KeytipsOverlay({ active, lang, strings }: KeytipsOverlayProps) {
         const isSingleKey = /^[0-9]$/.test(text)
 
         const tipClassName = isSingleKey
-          ? 'fixed -translate-x-full -translate-y-full rounded-md border border-white/80 bg-[#dff4ff] px-2.5 py-1.5 text-[12px] font-semibold text-slate-950 shadow-[0_18px_50px_rgba(0,0,0,0.35)]'
-          : 'fixed -translate-x-full -translate-y-full rounded-lg border border-white/70 bg-[#bfe7ff] px-3 py-1.5 text-[12px] font-semibold text-slate-950 shadow-[0_18px_50px_rgba(0,0,0,0.3)]'
+          ? 'fixed -translate-x-full -translate-y-full rounded-md border border-[#0d2b4f]/10 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-slate-900 shadow-[0_18px_50px_rgba(0,0,0,0.35)]'
+          : 'fixed -translate-x-full -translate-y-full rounded-lg border border-[#0d2b4f]/10 bg-[#eef6ff] px-3 py-1.5 text-[12px] font-semibold text-slate-900 shadow-[0_18px_50px_rgba(0,0,0,0.3)]'
 
         return (
           <div key={tip.id}>
             <div
-              className="fixed rounded-2xl border border-[#bfe7ff]/35 bg-[#60a5fa]/5 shadow-[0_0_0_1px_rgba(191,231,255,0.18),0_0_0_8px_rgba(96,165,250,0.12)]"
+              className="fixed rounded-2xl border border-[#2a679b]/35 bg-[#2a679b]/5 shadow-[0_0_0_1px_rgba(42,103,155,0.16),0_0_0_8px_rgba(42,103,155,0.10)]"
               style={{ left: tip.rect.left - 3, top: tip.rect.top - 3, width: tip.rect.width + 6, height: tip.rect.height + 6 }}
             />
             <div className={tipClassName} style={{ left, top }}>
@@ -119,14 +119,14 @@ export function KeytipsOverlay({ active, lang, strings }: KeytipsOverlayProps) {
         className={[
           'fixed bottom-4 left-4 right-4',
           'mx-auto max-w-[46rem]',
-          'rounded-xl border border-[#bfe7ff]/22 bg-[#05060a]/80 px-3 py-2 shadow-[0_18px_50px_rgba(0,0,0,0.55)]',
+          'rounded-2xl border border-[#0d2b4f]/10 bg-white/90 px-3 py-2 shadow-[0_18px_50px_rgba(9,32,68,0.16)]',
         ].join(' ')}
       >
         <div
           className={[
             'flex flex-wrap items-center gap-x-4 gap-y-2',
             lang === 'ar' ? 'justify-end' : 'justify-start',
-            'text-[13px] leading-tight text-slate-50',
+            'text-[13px] leading-tight text-slate-700',
           ].join(' ')}
         >
           <div className="inline-flex items-center gap-2">

@@ -19,12 +19,12 @@ function kbdLabel(keys: string) {
   return (
     <span
       dir="ltr"
-      className="inline-flex items-center gap-1 font-mono text-[11px] text-slate-200"
+      className="inline-flex items-center gap-1 font-mono text-[11px] text-slate-700"
     >
       {keys.split("+").map((k, i) => (
         <span
           key={`${i}-${k}`}
-          className="rounded-md border border-[#bfe7ff]/20 bg-white/[0.055] px-2 py-1"
+          className="rounded-md border border-[#0d2b4f]/10 bg-[#f8fbfe] px-2 py-1"
         >
           {k.trim()}
         </span>
@@ -119,7 +119,7 @@ export function KeyboardShortcutsHelp({
         type="button"
         aria-label={strings.shortcutClose}
         tabIndex={-1}
-        className="absolute inset-0 bg-[#05060a]/65 backdrop-blur-sm"
+        className="absolute inset-0 bg-[#101827]/30 backdrop-blur-sm"
         onClick={onClose}
       />
 
@@ -133,10 +133,10 @@ export function KeyboardShortcutsHelp({
         >
           <div className="dir-row items-start justify-between gap-4">
             <div className="text-start">
-              <h2 className="text-lg font-semibold text-[#f8fbff]">
+              <h2 className="text-lg font-semibold text-slate-900">
                 {strings.keyboardShortcuts}
               </h2>
-              <p className="mt-1 text-xs text-slate-300">
+              <p className="mt-1 text-xs text-slate-600">
                 {lang === "en"
                   ? "These shortcuts work on desktop keyboards."
                   : "تعمل هذه الاختصارات على لوحات المفاتيح."}
@@ -155,7 +155,7 @@ export function KeyboardShortcutsHelp({
             </button>
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-xl border border-[#bfe7ff]/15 bg-white/[0.055]">
+          <div className="mt-4 overflow-hidden rounded-2xl border border-[#0d2b4f]/10 bg-white/70">
             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 p-3 sm:p-4">
               {rows.map((row) => (
                 <div
@@ -163,7 +163,7 @@ export function KeyboardShortcutsHelp({
                   className="contents"
                 >
                   <div className="text-start">{kbdLabel(row.keys)}</div>
-                  <div className="text-start text-sm text-slate-200">
+                  <div className="text-start text-sm text-slate-700">
                     {row.action}
                   </div>
                 </div>
@@ -171,7 +171,7 @@ export function KeyboardShortcutsHelp({
             </div>
           </div>
 
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-3 text-xs text-slate-500">
             {lang === "en"
               ? "Tip: use Left/Right arrows on the Split/Combine tabs."
               : "تلميح: استخدم السهمين يمينا ويسارا على تبويبات التقسيم والاستعادة."}

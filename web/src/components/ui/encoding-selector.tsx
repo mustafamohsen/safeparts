@@ -39,11 +39,11 @@ export function EncodingSelector({
             htmlFor={optionId}
             className={cn(
               "cursor-pointer rounded-xl border px-3 py-2.5 text-start transition-colors duration-200",
-              "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#bfe7ff] has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-[#05060a]",
+              "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#2a679b] has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-[#f4f7fa]",
               isSelected
-                ? "border-[#bfe7ff]/40 bg-[#60a5fa]/10 text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                : "border-[#bfe7ff]/15 bg-[#050b14]/70 text-slate-300 hover:bg-white/[0.055]",
-              flash && isSelected && "border-[#f6c979]/70 bg-[#f6c979]/15"
+                ? "border-[#2a679b]/38 bg-[#eef6ff] text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]"
+                : "border-[#0d2b4f]/12 bg-white/72 text-slate-700 hover:bg-white",
+              flash && isSelected && "border-[#c9963e]/70 bg-[#c9963e]/12"
             )}
           >
             <input
@@ -56,7 +56,7 @@ export function EncodingSelector({
               className="sr-only"
             />
             <span className="block text-sm font-medium">{opt.label}</span>
-            <span className="mt-0.5 block text-xs text-slate-400">
+            <span className="mt-0.5 block text-xs text-slate-500">
               {opt.description}
             </span>
           </label>

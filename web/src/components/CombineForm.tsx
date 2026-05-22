@@ -321,7 +321,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
       <div className="dir-row items-start justify-between gap-4">
         <div className="text-start">
           <h2 className="text-lg font-semibold">{strings.combineTitle}</h2>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-slate-600">
             {strings.combineSubtitle}
           </p>
         </div>
@@ -380,13 +380,13 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
               return (
                 <div key={box.id} className="py-4 first:pt-0 last:pb-0">
                   <div className="dir-row items-center justify-between gap-3">
-                    <div className="text-start text-xs font-semibold text-slate-200">
+                    <div className="text-start text-xs font-semibold text-slate-700">
                       {strings.shareNumber} {i + 1}
                     </div>
 
                     <button
                       type="button"
-                      className="btn-ghost h-11 w-11 min-h-[44px] px-0 text-slate-400 transition-colors hover:bg-transparent hover:text-slate-200 focus-visible:text-slate-100 disabled:opacity-25 disabled:hover:text-slate-400"
+                      className="btn-ghost h-11 w-11 min-h-[44px] px-0 text-slate-500 transition-colors hover:bg-transparent hover:text-slate-700 focus-visible:text-slate-900 disabled:opacity-25 disabled:hover:text-slate-500"
                       onClick={() => removeShareBox(box.id)}
                       disabled={shareBoxes.length <= 2}
                       aria-label={strings.removeShare}
@@ -414,7 +414,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
                         isInvalid
                           ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/15"
                           : ""
-                      } ${isFlashing ? "border-[#bfe7ff]/70 bg-[#60a5fa]/15" : ""}`}
+                      } ${isFlashing ? "border-[#2a679b]/55 bg-[#2a679b]/10" : ""}`}
                       aria-labelledby="shares-label"
                       aria-describedby={
                         isInvalid ? `share-${box.id}-error` : "shares-hint"
@@ -425,7 +425,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
                       <span
                         aria-hidden="true"
                         dir={lang === "ar" ? "rtl" : "ltr"}
-                        className={`pointer-events-none absolute inset-x-3 top-2 overflow-hidden pe-12 text-sm text-slate-500 ${
+                        className={`pointer-events-none absolute inset-x-3 top-2 overflow-hidden pe-12 text-sm text-slate-400 ${
                           lang === "ar" ? "text-right" : "text-left"
                         }`}
                       >
@@ -491,13 +491,13 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
       </div>
 
       {secret ? (
-        <div className="mt-6 rounded-2xl border border-[#bfe7ff]/15 bg-white/[0.055] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <div className="mt-6 rounded-2xl border border-[#0d2b4f]/10 bg-white/70 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
           <div className="dir-row items-start justify-between gap-3">
             <div className="text-start">
-              <h3 className="text-sm font-semibold text-slate-200">
+              <h3 className="text-sm font-semibold text-slate-800">
                 {strings.recoveredTitle}
               </h3>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-500">
                 {strings.recoveredHint}
               </p>
             </div>
@@ -521,8 +521,8 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
                 Math.min(24, Math.floor(1100 / Math.max(1, secret.length))),
               )}
               flipDelayMs={35}
-              encryptedClassName="text-[#bfe7ff]/45"
-              revealedClassName="text-slate-200"
+              encryptedClassName="text-[#2a679b]/35"
+              revealedClassName="text-slate-800"
             />
           </div>
         </div>
