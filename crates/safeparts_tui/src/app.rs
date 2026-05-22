@@ -146,7 +146,7 @@ impl App {
             split_secret_file_len: None,
             split_k: 2,
             split_n: 3,
-            split_encoding: Encoding::Base64,
+            split_encoding: Encoding::Base64url,
             split_passphrase: Zeroizing::new(String::new()),
             split_shares: Vec::new(),
             split_packets: Vec::new(),
@@ -170,7 +170,7 @@ impl App {
     fn new_combine_shares_text() -> TextArea<'static> {
         let mut combine_shares_text = TextArea::default();
         combine_shares_text.set_placeholder_text(
-            "Paste shares here.\n\n- base64/base58: whitespace-separated\n- mnemonics: one share per paragraph (blank-line separated)",
+            "Paste shares here.\n\n- base64url/base58check: whitespace-separated\n- mnemonics: one share per paragraph (blank-line separated)",
         );
         combine_shares_text
     }
@@ -1130,7 +1130,7 @@ impl App {
                 "Input formats",
                 Style::default().add_modifier(Modifier::BOLD),
             )),
-            Line::from("  base64/base58: whitespace-separated shares"),
+            Line::from("  base64url/base58check: whitespace-separated shares"),
             Line::from("  mnemonics: one share per paragraph (blank-line separated)"),
         ];
 

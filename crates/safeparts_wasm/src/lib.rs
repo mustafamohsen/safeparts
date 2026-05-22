@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 use js_sys::{Array, Object, Reflect, Uint8Array};
+use safeparts_core::encoding::{self, Encoding};
 
 #[wasm_bindgen]
 pub fn share_threshold(share: &str, encoding: &str) -> Result<u8, JsValue> {
@@ -47,16 +48,58 @@ pub fn combine_shares(
         packets.push(packet);
     }
 
-    let secret = safeparts_core::combine_shares(&packets, passphrase_bytes)
+    combine_packets(&packets, passphrase_bytes)
+}
+
+#[wasm_bindgen]
+pub fn combine_share_input(
+    input: &str,
+    encoding: &str,
+    passphrase: Option<String>,
+) -> Result<Uint8Array, JsValue> {
+    let passphrase_bytes = passphrase.as_deref().map(str::as_bytes);
+    let encoding = Encoding::parse_name(encoding).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let parsed = encoding::parse_share_packets_wrapped_mnemonics(input, encoding)
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
 
-    Ok(Uint8Array::from(secret.as_slice()))
+    combine_packets(&parsed.packets, passphrase_bytes)
 }
 
 #[wasm_bindgen]
 pub fn inspect_share(share: &str, encoding: &str) -> Result<JsValue, JsValue> {
     let packet = decode_packet(share, encoding).map_err(|e| JsValue::from_str(&e))?;
+    let encoding = Encoding::parse_name(encoding).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    packet_info(&packet, encoding, 1)
+}
 
+#[wasm_bindgen]
+pub fn inspect_share_input(input: &str, encoding: &str) -> Result<JsValue, JsValue> {
+    let encoding = Encoding::parse_name(encoding).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let parsed = encoding::parse_share_packets_wrapped_mnemonics(input, encoding)
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let first = parsed
+        .packets
+        .first()
+        .ok_or_else(|| JsValue::from_str("no shares provided"))?;
+
+    packet_info(first, parsed.encoding, parsed.packets.len())
+}
+
+fn combine_packets(
+    packets: &[safeparts_core::packet::SharePacket],
+    passphrase: Option<&[u8]>,
+) -> Result<Uint8Array, JsValue> {
+    let secret = safeparts_core::combine_shares(packets, passphrase)
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+    Ok(Uint8Array::from(secret.as_slice()))
+}
+
+fn packet_info(
+    packet: &safeparts_core::packet::SharePacket,
+    encoding: Encoding,
+    share_count: usize,
+) -> Result<JsValue, JsValue> {
     let obj = Object::new();
     Reflect::set(
         &obj,
@@ -78,6 +121,16 @@ pub fn inspect_share(share: &str, encoding: &str) -> Result<JsValue, JsValue> {
         &JsValue::from_str("encrypted"),
         &JsValue::from_bool(packet.crypto_params.is_some()),
     )?;
+    Reflect::set(
+        &obj,
+        &JsValue::from_str("encoding"),
+        &JsValue::from_str(encoding.label()),
+    )?;
+    Reflect::set(
+        &obj,
+        &JsValue::from_str("shareCount"),
+        &JsValue::from_f64(share_count as f64),
+    )?;
 
     Ok(obj.into())
 }
@@ -86,40 +139,13 @@ fn encode_packet(
     packet: &safeparts_core::packet::SharePacket,
     encoding: &str,
 ) -> Result<String, String> {
-    match encoding {
-        "base58check" => safeparts_core::ascii::encode_packet(
-            packet,
-            safeparts_core::ascii::Encoding::Base58check,
-        )
-        .map_err(|e| e.to_string()),
-        "base64url" => {
-            safeparts_core::ascii::encode_packet(packet, safeparts_core::ascii::Encoding::Base64url)
-                .map_err(|e| e.to_string())
-        }
-        "mnemo-words" => {
-            safeparts_core::mnemo_words::encode_packet(packet).map_err(|e| e.to_string())
-        }
-        "mnemo-bip39" => {
-            safeparts_core::mnemo_bip39::encode_packet(packet).map_err(|e| e.to_string())
-        }
-        _ => Err(format!("unknown encoding: {encoding}")),
-    }
+    let encoding = Encoding::parse_name(encoding).map_err(|e| e.to_string())?;
+    encoding::encode_packet(packet, encoding).map_err(|e| e.to_string())
 }
 
 fn decode_packet(s: &str, encoding: &str) -> Result<safeparts_core::packet::SharePacket, String> {
-    match encoding {
-        "base58check" => {
-            safeparts_core::ascii::decode_packet(s, safeparts_core::ascii::Encoding::Base58check)
-                .map_err(|e| e.to_string())
-        }
-        "base64url" => {
-            safeparts_core::ascii::decode_packet(s, safeparts_core::ascii::Encoding::Base64url)
-                .map_err(|e| e.to_string())
-        }
-        "mnemo-words" => safeparts_core::mnemo_words::decode_packet(s).map_err(|e| e.to_string()),
-        "mnemo-bip39" => safeparts_core::mnemo_bip39::decode_packet(s).map_err(|e| e.to_string()),
-        _ => Err(format!("unknown encoding: {encoding}")),
-    }
+    let encoding = Encoding::parse_name(encoding).map_err(|e| e.to_string())?;
+    encoding::decode_packet(s, encoding).map_err(|e| e.to_string())
 }
 
 #[cfg(test)]

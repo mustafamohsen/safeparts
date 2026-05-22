@@ -71,38 +71,8 @@ function parseSharesFromBox(text: string): string[] {
     .filter(Boolean);
 }
 
-function detectEncodingFromText(text: string): Encoding | null {
-  const trimmed = text.trim();
-  if (!trimmed) return null;
-
-  const tokens = trimmed.split(/\s+/).filter(Boolean);
-  if (tokens.length === 0) return null;
-
-  const allBase64Urlish = tokens.every((t) => /^[A-Za-z0-9_-]+$/.test(t));
-  const allLowerWords = tokens.every((t) => /^[a-z]+$/.test(t));
-
-  const lens = tokens
-    .map((t) => t.length)
-    .sort((a, b) => a - b);
-  const medianLen = lens[Math.floor(lens.length / 2)] ?? 0;
-
-  const hasBase64Hints = tokens.some((t) => /[-_0-9A-Z]/.test(t));
-
-  // Base64url shares are typically a single long token, or multiple long tokens
-  // if the user pasted multiple shares separated by whitespace.
-  if (
-    allBase64Urlish &&
-    (hasBase64Hints || medianLen >= 16 || (tokens.length === 1 && medianLen >= 24))
-  ) {
-    return "base64url";
-  }
-
-  // Mnemo-words shares are many short lowercase words.
-  if (allLowerWords && tokens.length >= 6 && medianLen <= 12) {
-    return "mnemo-words";
-  }
-
-  return null;
+function isSupportedEncoding(value: unknown): value is Encoding {
+  return value === "base64url" || value === "mnemo-words";
 }
 
 function createId(): string {
@@ -224,14 +194,6 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
     const firstNonEmpty = shareBoxes.find((b) => b.value.trim().length > 0);
     if (!firstNonEmpty) return;
 
-    const detected = detectEncodingFromText(firstNonEmpty.value);
-    const encodingForDecode = detected ?? encoding;
-
-    if (detected && detected !== encoding) {
-      setEncoding(detected);
-      triggerEncodingFlash();
-    }
-
     const firstShare = parseSharesFromBox(firstNonEmpty.value)[0];
     if (!firstShare) return;
 
@@ -239,13 +201,22 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
       try {
         const wasm = await ensureWasm();
 
-        const k =
-          typeof wasm.share_threshold === "function"
-            ? Number(wasm.share_threshold(firstShare, encodingForDecode))
+        const info =
+          typeof wasm.inspect_share_input === "function"
+            ? wasm.inspect_share_input(firstNonEmpty.value, "auto")
             : typeof wasm.inspect_share === "function"
-              ? Number(wasm.inspect_share(firstShare, encodingForDecode)?.k)
-              : NaN;
+              ? wasm.inspect_share(firstShare, encoding)
+              : typeof wasm.share_threshold === "function"
+                ? { k: wasm.share_threshold(firstShare, encoding) }
+                : null;
 
+        const detected = info?.encoding;
+        if (isSupportedEncoding(detected) && detected !== encoding) {
+          setEncoding(detected);
+          triggerEncodingFlash();
+        }
+
+        const k = Number(info?.k);
         if (!Number.isFinite(k) || k < 2) return;
 
         setShareBoxes((prev) => {
@@ -264,6 +235,15 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
 
   const shares = useMemo(
     () => shareBoxes.flatMap((b) => parseSharesFromBox(b.value)),
+    [shareBoxes],
+  );
+
+  const combinedShareInput = useMemo(
+    () =>
+      shareBoxes
+        .map((b) => b.value.trim())
+        .filter(Boolean)
+        .join("\n\n"),
     [shareBoxes],
   );
 
@@ -296,11 +276,18 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
 
     try {
       const wasm = await ensureWasm();
-      const out = wasm.combine_shares(
-        shares as any,
-        encoding,
-        passphrase ? passphrase : undefined,
-      );
+      const out =
+        typeof wasm.combine_share_input === "function"
+          ? wasm.combine_share_input(
+              combinedShareInput,
+              encoding,
+              passphrase ? passphrase : undefined,
+            )
+          : wasm.combine_shares(
+              shares as any,
+              encoding,
+              passphrase ? passphrase : undefined,
+            );
       const bytes = new Uint8Array(out);
       setSecret(new TextDecoder().decode(bytes));
       setInvalidShareBoxIds([]);

@@ -4,10 +4,14 @@ on:
   push:
     paths:
       - 'web/**'
+      - 'crates/safeparts_core/**'
+      - 'crates/safeparts_wasm/**'
       - '.github/workflows/web-ci.yml'
   pull_request:
     paths:
       - 'web/**'
+      - 'crates/safeparts_core/**'
+      - 'crates/safeparts_wasm/**'
       - '.github/workflows/web-ci.yml'
   schedule:
     - cron: '0 3 * * *'
@@ -36,17 +40,12 @@ jobs:
         with:
           cache-targets: false
 
-      - name: Install WASM build deps
-        run: |
-          cargo install wasm-pack --locked --version 0.13.1
-          cargo install wasm-bindgen-cli --locked --version 0.2.108
-
       - name: Install web deps
         run: bun install
         working-directory: web
 
       - name: Build WASM
-        run: wasm-pack build ../crates/safeparts_wasm --mode no-install --target web --out-dir ../../web/src/wasm_pkg
+        run: bun run build:wasm
         working-directory: web
 
       - name: Build web app
@@ -127,17 +126,12 @@ jobs:
         with:
           cache-targets: false
 
-      - name: Install WASM build deps
-        run: |
-          cargo install wasm-pack --locked --version 0.13.1
-          cargo install wasm-bindgen-cli --locked --version 0.2.108
-
       - name: Install web deps
         run: bun install
         working-directory: web
 
       - name: Build WASM
-        run: wasm-pack build ../crates/safeparts_wasm --mode no-install --target web --out-dir ../../web/src/wasm_pkg
+        run: bun run build:wasm
         working-directory: web
 
       - name: Build web app

@@ -1,12 +1,12 @@
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{Context, Result, anyhow};
+use safeparts_core::encoding as core_encoding;
 use safeparts_core::packet::SharePacket;
-use safeparts_core::{ascii, mnemo_bip39, mnemo_words};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Encoding {
     Auto,
-    Base64,
-    Base58,
+    Base64url,
+    Base58check,
     MnemoWords,
     MnemoBip39,
 }
@@ -14,26 +14,41 @@ pub enum Encoding {
 impl Encoding {
     pub const ALL: &'static [Encoding] = &[
         Encoding::Auto,
-        Encoding::Base64,
-        Encoding::Base58,
+        Encoding::Base64url,
+        Encoding::Base58check,
         Encoding::MnemoWords,
         Encoding::MnemoBip39,
     ];
 
     pub const SPLIT: &'static [Encoding] = &[
-        Encoding::Base64,
-        Encoding::Base58,
+        Encoding::Base64url,
+        Encoding::Base58check,
         Encoding::MnemoWords,
         Encoding::MnemoBip39,
     ];
 
     pub fn label(self) -> &'static str {
+        self.core().label()
+    }
+
+    fn core(self) -> core_encoding::Encoding {
         match self {
-            Encoding::Auto => "auto",
-            Encoding::Base64 => "base64",
-            Encoding::Base58 => "base58",
-            Encoding::MnemoWords => "mnemo-words",
-            Encoding::MnemoBip39 => "mnemo-bip39",
+            Encoding::Auto => core_encoding::Encoding::Auto,
+            Encoding::Base64url => core_encoding::Encoding::Base64url,
+            Encoding::Base58check => core_encoding::Encoding::Base58check,
+            Encoding::MnemoWords => core_encoding::Encoding::MnemoWords,
+            Encoding::MnemoBip39 => core_encoding::Encoding::MnemoBip39,
+        }
+    }
+
+    fn from_core(value: core_encoding::Encoding) -> Self {
+        match value {
+            core_encoding::Encoding::Auto => Encoding::Auto,
+            core_encoding::Encoding::Base64url => Encoding::Base64url,
+            core_encoding::Encoding::Base58check => Encoding::Base58check,
+            core_encoding::Encoding::MnemoWords => Encoding::MnemoWords,
+            core_encoding::Encoding::MnemoBip39 => Encoding::MnemoBip39,
+            _ => Encoding::Auto,
         }
     }
 }
@@ -51,7 +66,7 @@ pub fn split_secret(
 
     let shares = packets
         .iter()
-        .map(|p| encode_packet(p, encoding))
+        .map(|packet| core_encoding::encode_packet(packet, encoding.core()).map_err(|e| anyhow!(e)))
         .collect::<Result<Vec<_>>>()?;
 
     Ok((packets, shares))
@@ -62,117 +77,13 @@ pub fn combine_shares(
     encoding: Encoding,
     passphrase: Option<&[u8]>,
 ) -> Result<(Vec<SharePacket>, Vec<u8>, Encoding)> {
-    let packets = parse_share_packets(input, encoding)?;
-    let used_encoding = if encoding == Encoding::Auto {
-        detect_encoding(input)?.unwrap_or(Encoding::Auto)
-    } else {
-        encoding
-    };
-
-    let secret = safeparts_core::combine_shares(&packets, passphrase)
+    let parsed = core_encoding::parse_share_packets_wrapped_mnemonics(input, encoding.core())
+        .map_err(|e| anyhow!(e))?;
+    let secret = safeparts_core::combine_shares(&parsed.packets, passphrase)
         .map_err(|e| anyhow!(e))
         .context("combine failed")?;
 
-    Ok((packets, secret, used_encoding))
-}
-
-pub fn encode_packet(packet: &SharePacket, encoding: Encoding) -> Result<String> {
-    match encoding {
-        Encoding::Auto => bail!("auto encoding is not valid for output"),
-        Encoding::Base64 => {
-            ascii::encode_packet(packet, ascii::Encoding::Base64url).map_err(|e| anyhow!(e))
-        }
-        Encoding::Base58 => {
-            ascii::encode_packet(packet, ascii::Encoding::Base58check).map_err(|e| anyhow!(e))
-        }
-        Encoding::MnemoWords => mnemo_words::encode_packet(packet).map_err(|e| anyhow!(e)),
-        Encoding::MnemoBip39 => mnemo_bip39::encode_packet(packet).map_err(|e| anyhow!(e)),
-    }
-}
-
-pub fn parse_share_packets(input: &str, encoding: Encoding) -> Result<Vec<SharePacket>> {
-    let input = input.trim();
-    if input.is_empty() {
-        bail!("no shares provided");
-    }
-
-    let enc = if encoding == Encoding::Auto {
-        detect_encoding(input)?.unwrap_or(Encoding::Auto)
-    } else {
-        encoding
-    };
-
-    if enc == Encoding::Auto {
-        bail!("could not detect share encoding; select encoding");
-    }
-
-    decode_share_packets_known(input, enc)
-}
-
-pub fn detect_encoding(input: &str) -> Result<Option<Encoding>> {
-    let blocks = split_blocks(input);
-
-    let looks_bip39 = blocks.iter().any(|b| b.contains('/'));
-    if looks_bip39 {
-        return Ok(Some(Encoding::MnemoBip39));
-    }
-
-    let looks_words = blocks.iter().any(|b| b.split_whitespace().count() > 1);
-    if looks_words {
-        return Ok(Some(Encoding::MnemoWords));
-    }
-
-    if decode_share_packets_known(input, Encoding::Base64).is_ok() {
-        return Ok(Some(Encoding::Base64));
-    }
-
-    if decode_share_packets_known(input, Encoding::Base58).is_ok() {
-        return Ok(Some(Encoding::Base58));
-    }
-
-    Ok(None)
-}
-
-fn decode_share_packets_known(input: &str, encoding: Encoding) -> Result<Vec<SharePacket>> {
-    match encoding {
-        Encoding::Auto => bail!("auto"),
-        Encoding::MnemoWords => split_blocks(input)
-            .into_iter()
-            .map(|b| mnemo_words::decode_packet(&b).map_err(|e| anyhow!(e)))
-            .collect::<Result<Vec<_>>>(),
-        Encoding::MnemoBip39 => split_blocks(input)
-            .into_iter()
-            .map(|b| mnemo_bip39::decode_packet(&b).map_err(|e| anyhow!(e)))
-            .collect::<Result<Vec<_>>>(),
-        Encoding::Base64 => input
-            .split_whitespace()
-            .map(|t| ascii::decode_packet(t, ascii::Encoding::Base64url).map_err(|e| anyhow!(e)))
-            .collect::<Result<Vec<_>>>(),
-        Encoding::Base58 => input
-            .split_whitespace()
-            .map(|t| ascii::decode_packet(t, ascii::Encoding::Base58check).map_err(|e| anyhow!(e)))
-            .collect::<Result<Vec<_>>>(),
-    }
-}
-
-fn split_blocks(input: &str) -> Vec<String> {
-    // Blank-line separated blocks; each block is one share.
-    // For mnemo-bip39, a share may contain many phrases separated by '/'.
-    // For mnemo-words, a share is a single sentence; users may paste with wrapping.
-    let normalized = input.replace("\r\n", "\n");
-
-    normalized
-        .split("\n\n")
-        .map(|b| {
-            b.lines()
-                .map(str::trim)
-                .filter(|l| !l.is_empty())
-                .collect::<Vec<_>>()
-                .join(" ")
-        })
-        .map(|b| b.trim().to_string())
-        .filter(|b| !b.is_empty())
-        .collect()
+    Ok((parsed.packets, secret, Encoding::from_core(parsed.encoding)))
 }
 
 pub fn set_id_hex(packets: &[SharePacket]) -> Option<String> {
@@ -189,15 +100,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn split_blocks_normalizes_windows_newlines() {
-        let input = "one\r\n\r\ntwo\r\n";
-        let blocks = split_blocks(input);
-        assert_eq!(blocks, vec!["one".to_string(), "two".to_string()]);
-    }
-
-    #[test]
-    fn detect_encoding_prefers_bip39_when_slashes_present() {
-        let input = "word word / word word";
-        assert_eq!(detect_encoding(input).unwrap(), Some(Encoding::MnemoBip39));
+    fn labels_use_core_canonical_names() {
+        assert_eq!(Encoding::Base64url.label(), "base64url");
+        assert_eq!(Encoding::Base58check.label(), "base58check");
     }
 }

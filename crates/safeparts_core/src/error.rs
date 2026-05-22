@@ -34,6 +34,18 @@ pub enum CoreError {
     #[error("encoding error: {0}")]
     Encoding(String),
 
+    #[error("unknown encoding: {0}")]
+    UnknownEncoding(String),
+
+    #[error("no shares provided")]
+    EmptyShareInput,
+
+    #[error("could not detect share encoding")]
+    CouldNotDetectEncoding,
+
+    #[error("auto encoding is not valid for output")]
+    AutoEncodingForOutput,
+
     #[error("crypto error: {0}")]
     Crypto(String),
 
