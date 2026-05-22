@@ -22,6 +22,7 @@ Keep this file short. It contains only the essentials and links to the deeper, t
 
 - Build / lint / test commands: `docs/agents/checks.md`
 - CI workflows (source of truth): `.github/workflows/rust-ci.yml`, `.github/workflows/web-ci.yml`, `.github/workflows/release.yml`
+- For browser-based Web UI checks, use the `browser` skill / `browse` CLI in local mode (`browse env local`) instead of Playwright. Do not use Playwright for local smoke testing unless the user explicitly asks for it.
 
 ## Standards (do not change)
 
