@@ -10,7 +10,7 @@ ARG RUST_IMAGE=rust:1-slim-bookworm
 ARG BUN_IMAGE=oven/bun:1-alpine
 ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.27-alpine
 
-ARG WASM_PACK_VERSION=0.13.1
+ARG WASM_PACK_VERSION=0.15.0
 ARG WASM_BINDGEN_CLI_VERSION=0.2.108
 
 FROM ${RUST_IMAGE} AS rust-tools
@@ -102,6 +102,8 @@ FROM ${NGINX_IMAGE} AS runtime
 
 COPY web/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=web-builder /work/web/dist /usr/share/nginx/html
+
+USER 101
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/ || exit 1
