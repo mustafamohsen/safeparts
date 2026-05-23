@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "studio": "remotion studio src/index.tsx",
-    "render": "remotion render src/index.tsx SafepartsExplainer out/safeparts-explainer.mp4",
+    "render": "remotion render src/index.tsx SafepartsExplainer out/safeparts-explainer.mp4 --gl=angle",
     "still": "remotion still src/index.tsx SafepartsPoster out/poster.png",
     "check": "tsc --noEmit"
   },
