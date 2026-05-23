@@ -21,7 +21,7 @@ The main composition is `SafepartsExplainer`. A still poster is available as `Sa
 
 ## Files
 
-- `SCRIPT.md` — narration and scene map for v0.6
+- `SCRIPT.md` — narration and scene map for v0.7
 - `src/SafepartsExplainer.tsx` — scene sequencing and animation components
 - `src/styles.css` — visual system and static styling
 - `public/logo.svg` — Safeparts logo used by Remotion via `staticFile()`

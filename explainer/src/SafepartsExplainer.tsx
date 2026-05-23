@@ -140,7 +140,7 @@ const SceneChrome = ({
           <Img src={staticFile("logo.svg")} className="brand-logo" />
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.6</div>
+            <div className="brand-sub">threshold recovery explainer · v0.7</div>
           </div>
         </div>
         <div className="timecode">{formatTime(frame)}</div>
@@ -163,6 +163,44 @@ const SceneChrome = ({
     </AbsoluteFill>
   );
 };
+
+const LockGlyph = ({ className = "", style }: { className?: string; style?: React.CSSProperties }) => (
+  <svg className={className} style={style} viewBox="0 0 64 64" aria-hidden="true">
+    <defs>
+      <linearGradient id="lockBody" x1="16" y1="24" x2="50" y2="58" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stopColor="#06231d" />
+        <stop offset="1" stopColor="#010b09" />
+      </linearGradient>
+      <linearGradient id="lockShackle" x1="18" y1="5" x2="46" y2="36" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stopColor="#eafff8" />
+        <stop offset="0.45" stopColor="#86ffe4" />
+        <stop offset="1" stopColor="#2fe7b8" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M20 27v-7c0-7.2 5.1-12.5 12-12.5S44 12.8 44 20v7"
+      fill="none"
+      stroke="url(#lockShackle)"
+      strokeWidth="7"
+      strokeLinecap="round"
+    />
+    <rect
+      x="14"
+      y="25"
+      width="36"
+      height="31"
+      rx="10"
+      fill="url(#lockBody)"
+      stroke="#b9fff0"
+      strokeWidth="3"
+    />
+    <path
+      d="M32 36.5a5.2 5.2 0 0 0-2.3 9.9v4.1h4.6v-4.1A5.2 5.2 0 0 0 32 36.5Z"
+      fill="#2fe7b8"
+    />
+    <path d="M18 31h28" stroke="rgba(234,255,248,.26)" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
 
 const SecretCore = ({
   x,
@@ -189,7 +227,7 @@ const SecretCore = ({
   >
     <div className="core-orbit core-orbit-a" />
     <div className="core-orbit core-orbit-b" />
-    <div className="core-inner" />
+    <LockGlyph className="core-lock" />
     {label ? <div className="core-label">{label}</div> : null}
   </div>
 );
@@ -323,7 +361,7 @@ const ThresholdGate = ({ frame }: { frame: number }) => {
         <div className="gate-door" style={{ transform: `translateX(${-open * 115}px)` }} />
         <div className="gate-door" style={{ transform: `translateX(${open * 115}px)` }} />
       </div>
-      <div className="gate-secret" style={{ opacity: open, transform: `translate(-50%, -50%) scale(${open})` }} />
+      <LockGlyph className="gate-secret" style={{ opacity: open, transform: `translate(-50%, -50%) scale(${open})` }} />
     </div>
   );
 };
