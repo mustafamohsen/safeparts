@@ -683,7 +683,7 @@ body {
   z-index: 1;
   left: 210px;
   right: 210px;
-  top: 520px;
+  top: 360px;
   height: 3px;
   background: linear-gradient(90deg, transparent, rgba(47, 231, 184, 0.32), transparent);
 }
@@ -691,7 +691,7 @@ body {
 .pipeline-stage {
   position: absolute;
   z-index: 8;
-  top: 520px;
+  top: 560px;
   width: 236px;
   min-height: 178px;
   padding: 22px;

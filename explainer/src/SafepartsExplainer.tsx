@@ -140,7 +140,7 @@ const SceneChrome = ({
           <Img src={staticFile("logo.svg")} className="brand-logo" />
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.9</div>
+            <div className="brand-sub">threshold recovery explainer · v0.10</div>
           </div>
         </div>
         <div className="timecode">{formatTime(frame)}</div>
@@ -593,7 +593,7 @@ const SplitScene = ({ duration }: SceneProps) => {
     ["encoding", "base64url · words · bip39"],
   ] as const;
   const tokenX = interpolate(frame, [80, 1550], [230, 1690], { ...clamp, easing: easeInOut });
-  const tokenScale = 0.72 + Math.sin(frame / 18) * 0.015;
+  const tokenScale = 0.58 + Math.sin(frame / 18) * 0.012;
   return (
     <SceneChrome
       eyebrow="06 / split flow"
@@ -608,7 +608,7 @@ const SplitScene = ({ duration }: SceneProps) => {
       ]}
     >
       <div className="pipeline-line" />
-      <SecretCore x={tokenX} y={520} scale={tokenScale} pulse={frame} />
+      <SecretCore x={tokenX} y={360} scale={tokenScale} pulse={frame} />
       {stages.map(([label, detail], i) => {
         const start = 90 + i * 230;
         return <PipelineStage key={label} label={label} detail={detail} x={260 + i * 280} active={fade(frame, start, start + 55)} index={i + 1} />;
