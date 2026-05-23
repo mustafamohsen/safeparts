@@ -140,7 +140,7 @@ const SceneChrome = ({
           <Img src={staticFile("logo.svg")} className="brand-logo" />
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.1</div>
+            <div className="brand-sub">threshold recovery explainer · v0.2</div>
           </div>
         </div>
         <div className="timecode">{formatTime(frame)}</div>
@@ -234,9 +234,10 @@ const ShareNode = ({
 
 const FailureRing = ({ x, y, label, delay, frame }: { x: number; y: number; label: string; delay: number; frame: number }) => {
   const p = fade(frame, delay, delay + 28);
+  const exit = interpolate(frame, [760, 900], [1, 0], clamp);
   const scale = interpolate(p, [0, 1], [0.5, 1]);
   return (
-    <div className="failure-site" style={{ left: x, top: y, opacity: p, transform: `translate(-50%, -50%) scale(${scale})` }}>
+    <div className="failure-site" style={{ left: x, top: y, opacity: p * exit, transform: `translate(-50%, -50%) scale(${scale})` }}>
       <div className="failure-ring" />
       <div className="failure-icon">{label}</div>
       <div className="failure-caption">single point</div>
@@ -258,13 +259,13 @@ const IntroScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="01 / the problem"
-      title="One secret is one dangerous point of failure"
+      title="One recovery key is a risky single point"
       frame={frame}
       duration={duration}
       beats={[
         { label: "A recovery key is powerful because it can save you." },
-        { label: "It is dangerous because one copy can become the whole attack surface." },
-        { label: "Safeparts changes the shape: recovery becomes cooperation." },
+        { label: "One copy can become the whole attack surface." },
+        { label: "Safeparts turns recovery into a threshold, not a hiding place." },
       ]}
     >
       <div className="intro-stage">
@@ -419,7 +420,7 @@ const AudienceScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="03 / use cases"
-      title="The hard part is people, places, and bad days"
+      title="Recovery is about people, places, and bad days"
       frame={frame}
       duration={duration}
       beats={[
@@ -430,18 +431,18 @@ const AudienceScene = ({ duration }: SceneProps) => {
     >
       <div className="audience-map">
         <svg viewBox="0 0 1920 1080" className="connection-svg">
-          <path d="M960 525 C740 360 610 250 450 230" stroke={emerald} opacity=".22" fill="none" />
-          <path d="M960 525 C1140 315 1290 255 1485 235" stroke={emerald} opacity=".22" fill="none" />
-          <path d="M960 525 C735 590 650 760 460 810" stroke={emerald} opacity=".22" fill="none" />
-          <path d="M960 525 C1165 600 1260 740 1480 805" stroke={emerald} opacity=".22" fill="none" />
-          <path d="M960 525 C960 380 960 250 960 175" stroke={emerald} opacity=".22" fill="none" />
+          <path d="M960 585 C760 430 620 410 450 420" stroke={emerald} opacity=".22" fill="none" />
+          <path d="M960 585 C1140 420 1290 405 1485 420" stroke={emerald} opacity=".22" fill="none" />
+          <path d="M960 585 C735 610 650 730 460 790" stroke={emerald} opacity=".22" fill="none" />
+          <path d="M960 585 C1165 615 1260 730 1480 790" stroke={emerald} opacity=".22" fill="none" />
+          <path d="M960 585 C960 490 960 430 960 390" stroke={emerald} opacity=".22" fill="none" />
         </svg>
-        <SecretCore x={960} y={525} scale={0.78 + Math.sin(frame / 30) * 0.02} label="one secret" pulse={frame} />
-        <AudienceCard x={450} y={230} icon="🔑" title="Password manager" caption="recovery key without one fragile backup" delay={50} frame={frame} />
-        <AudienceCard x={960} y={175} icon="🛡" title="2FA backup codes" caption="survive device loss without centralizing copies" delay={130} frame={frame} />
-        <AudienceCard x={1485} y={235} icon="⚙" title="Team infrastructure" caption="break-glass access with separation of duties" delay={210} frame={frame} />
-        <AudienceCard x={460} y={810} icon="👥" title="Family planning" caption="cooperation without one person holding full access" delay={290} frame={frame} />
-        <AudienceCard x={1480} y={805} icon="📦" title="Client handoff" caption="agency, client, and offline fallback shares" delay={370} frame={frame} />
+        <SecretCore x={960} y={585} scale={0.78 + Math.sin(frame / 30) * 0.02} label="one secret" pulse={frame} />
+        <AudienceCard x={450} y={420} icon="🔑" title="Password manager" caption="a recovery key without one fragile backup" delay={50} frame={frame} />
+        <AudienceCard x={960} y={390} icon="🛡" title="2FA backup codes" caption="survive a lost phone without centralizing copies" delay={130} frame={frame} />
+        <AudienceCard x={1485} y={420} icon="⚙" title="Team infrastructure" caption="break-glass access with separation of duties" delay={210} frame={frame} />
+        <AudienceCard x={460} y={790} icon="👥" title="Family planning" caption="cooperation without one person holding the whole secret" delay={290} frame={frame} />
+        <AudienceCard x={1480} y={790} icon="📦" title="Client handoff" caption="agency, client, and offline fallback shares" delay={370} frame={frame} />
       </div>
     </SceneChrome>
   );
@@ -499,12 +500,12 @@ const NotScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="05 / threat model"
-      title="Safeparts does not store, guard, or forgive your shares"
+      title="Safeparts will not rescue a bad storage plan"
       frame={frame}
       duration={duration}
       beats={[
         { label: "If someone gets k shares, they can recover the secret." },
-        { label: "If you lose too many shares, recovery is impossible." },
+        { label: "Lose too many shares and the secret is gone." },
         { label: "The security boundary is your distribution plan." },
       ]}
       tone="red"
@@ -513,16 +514,16 @@ const NotScene = ({ duration }: SceneProps) => {
         <div className="bad-vault">
           <div className="bad-title">bad plan</div>
           <div className="folder">shared cloud folder</div>
-          <ShareNode x={690} y={450} index={1} scale={1} hue={rose} />
-          <ShareNode x={805} y={450} index={2} scale={1} hue={rose} />
+          <ShareNode x={200} y={295} index={1} scale={1} hue={rose} />
+          <ShareNode x={360} y={295} index={2} scale={1} hue={rose} />
           <div className="collapse-ring" style={{ opacity: fade(frame, 160, 260) }} />
           <div className="bad-caption">two shares, one failure zone</div>
         </div>
         <div className="good-plan" style={{ opacity: good }}>
           <div className="good-title">better plan</div>
-          <ShareNode x={1140} y={345} index={1} label="person" />
-          <ShareNode x={1360} y={545} index={2} label="offline" />
-          <ShareNode x={1130} y={735} index={3} label="off-site" />
+          <ShareNode x={150} y={160} index={1} />
+          <ShareNode x={335} y={165} index={2} />
+          <ShareNode x={245} y={305} index={3} />
           <div className="good-caption">independent people, devices, and locations</div>
         </div>
       </div>
@@ -553,13 +554,13 @@ const SplitScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="06 / split flow"
-      title="The secret becomes packets, not fragments"
+      title="The secret turns into packets, not fragments"
       frame={frame}
       duration={duration}
       beats={[
         { label: "Safeparts sees arbitrary bytes." },
         { label: "If passphrase protection is enabled, encryption happens before splitting." },
-        { label: "A BLAKE3 tag catches corrupted or mixed shares during recovery." },
+        { label: "A BLAKE3 tag catches bad copy-paste and mixed share sets." },
         { label: "Each share is wrapped into a versioned, self-describing packet." },
       ]}
     >
@@ -619,7 +620,7 @@ const PolynomialSvg = ({ frame }: { frame: number }) => {
 };
 
 const ByteGrid = ({ frame }: { frame: number }) => {
-  const p = fade(frame, 420, 700);
+  const p = fade(frame, 420, 700) * interpolate(frame, [920, 1100], [1, 0], clamp);
   return (
     <div className="byte-grid" style={{ opacity: p }}>
       {Array.from({ length: 256 }).map((_, i) => {
@@ -636,20 +637,20 @@ const MathScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="07 / underlying maths"
-      title="Enough points reveal the curve; fewer points reveal nothing useful"
+      title="Enough points reveal the curve. Fewer points do not."
       frame={frame}
       duration={duration}
       beats={[
         { label: "A degree k-1 polynomial is determined by k points." },
         { label: "Safeparts puts each secret byte at x=0, then hides it with random coefficients." },
-        { label: "The arithmetic happens in GF(256), so every value fits in one byte." },
+        { label: "GF(256) keeps the math byte-sized." },
         { label: "Lagrange interpolation reads the hidden value back at x=0." },
       ]}
       tone="blue"
     >
       <ByteGrid frame={frame} />
       <div className="formula-card" style={{ opacity: fade(frame, 760, 920) }}>
-        <div className="formula-main">f(x) = secret_byte + a₁x + a₂x²</div>
+        <div className="formula-main">f(x) = byte + a₁x + a₂x²</div>
         <div className="formula-sub">for k=3, random coefficients hide the byte</div>
       </div>
       <PolynomialSvg frame={frame} />
@@ -715,7 +716,7 @@ const EncodingsScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="09 / share formats"
-      title="Encodings are different clothes for the same packet"
+      title="Encodings are packaging, not new secrets"
       frame={frame}
       duration={duration}
       beats={[
@@ -756,7 +757,7 @@ const StoriesScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="10 / concrete plans"
-      title="Choose a plan people can execute under stress"
+      title="Choose a plan people can run while stressed"
       frame={frame}
       duration={duration}
       beats={[
@@ -781,7 +782,7 @@ const ClosingScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="11 / close"
-      title="Not one person. Not one device. Not one location."
+      title="No single person, device, or location"
       frame={frame}
       duration={duration}
       beats={[
@@ -792,7 +793,7 @@ const ClosingScene = ({ duration }: SceneProps) => {
       <div className="closing-stage">
         <Img src={staticFile("logo.svg")} className="closing-logo" style={{ opacity: fade(frame, 40, 140), transform: `translate(-50%, -50%) scale(${0.85 + constellation * 0.12})` }} />
         <svg className="connection-svg" viewBox="0 0 1920 1080" opacity={constellation}>
-          {[[520,320],[735,760],[1180,300],[1415,735],[960,835]].map(([x,y],i)=>(
+          {[[520,300],[650,640],[1240,285],[1390,635],[960,230]].map(([x,y],i)=>(
             <g key={i}>
               <path d={`M 960 520 Q ${(960+x)/2} ${(520+y)/2-90} ${x} ${y}`} stroke={emerald} opacity=".35" fill="none" strokeDasharray="12 14" />
               <circle cx={x} cy={y} r="28" fill="#061412" stroke={emerald} strokeWidth="4" />
@@ -800,7 +801,7 @@ const ClosingScene = ({ duration }: SceneProps) => {
           ))}
         </svg>
         <div className="closing-question" style={{ opacity: fade(frame, 600, 780) }}>
-          Who should be able to recover this secret — and under what conditions?
+          Who should recover this secret, and under what conditions?
         </div>
       </div>
     </SceneChrome>
