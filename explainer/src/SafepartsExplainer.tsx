@@ -140,7 +140,7 @@ const SceneChrome = ({
           <Img src={staticFile("logo.svg")} className="brand-logo" />
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.4</div>
+            <div className="brand-sub">threshold recovery explainer · v0.5</div>
           </div>
         </div>
         <div className="timecode">{formatTime(frame)}</div>
@@ -330,7 +330,7 @@ const ThresholdGate = ({ frame }: { frame: number }) => {
 
 const ThresholdScene = ({ duration }: SceneProps) => {
   const frame = useCurrentFrame();
-  const ghost = fade(frame, 90, 210);
+  const ghost = fade(frame, 90, 210) * interpolate(frame, [430, 560], [1, 0], clamp);
   const snap = fade(frame, 530, 650);
 
   return (
@@ -355,9 +355,14 @@ const ThresholdScene = ({ duration }: SceneProps) => {
           <span>any 2 recover</span>
         </div>
 
-        <ShareNode x={520} y={360} index={1} label="share A" scale={fade(frame, 30, 90)} />
-        <ShareNode x={520} y={535} index={2} label="share B" scale={fade(frame, 70, 130)} />
-        <ShareNode x={520} y={710} index={3} label="share C" scale={fade(frame, 110, 170)} />
+        <ShareNode x={370} y={420} index={1} label="share A" scale={fade(frame, 30, 90)} />
+        <ShareNode x={370} y={585} index={2} label="share B" scale={fade(frame, 70, 130)} />
+        <ShareNode x={370} y={750} index={3} label="share C" scale={fade(frame, 110, 170)} />
+
+        <svg className="connection-svg" viewBox="0 0 1920 1080">
+          <path d="M 430 420 C 690 390 850 440 1135 540" stroke={emerald} strokeWidth="4" opacity={fade(frame, 430, 560) * 0.48} fill="none" strokeDasharray="18 16" />
+          <path d="M 430 585 C 705 585 860 600 1135 590" stroke={emerald} strokeWidth="4" opacity={fade(frame, 430, 560) * 0.48} fill="none" strokeDasharray="18 16" />
+        </svg>
 
         <div className="ghost-secrets" style={{ opacity: ghost }}>
           {Array.from({ length: 11 }).map((_, i) => (
@@ -365,8 +370,8 @@ const ThresholdScene = ({ duration }: SceneProps) => {
               key={i}
               className="ghost-secret"
               style={{
-                left: 760 + (i % 4) * 78,
-                top: 315 + Math.floor(i / 4) * 90,
+                left: 720 + (i % 4) * 86,
+                top: 410 + Math.floor(i / 4) * 92,
                 transform: `rotate(${(i - 5) * 7}deg)`,
               }}
             >
