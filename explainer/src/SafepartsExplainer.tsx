@@ -140,7 +140,7 @@ const SceneChrome = ({
           <Img src={staticFile("logo.svg")} className="brand-logo" />
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.2</div>
+            <div className="brand-sub">threshold recovery explainer · v0.3</div>
           </div>
         </div>
         <div className="timecode">{formatTime(frame)}</div>
@@ -259,13 +259,13 @@ const IntroScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="01 / the problem"
-      title="One recovery key is a risky single point"
+      title="One recovery key needs a careful home"
       frame={frame}
       duration={duration}
       beats={[
         { label: "A recovery key is powerful because it can save you." },
         { label: "One copy can become the whole attack surface." },
-        { label: "Safeparts turns recovery into a threshold, not a hiding place." },
+        { label: "Safeparts lets recovery depend on a threshold you choose." },
       ]}
     >
       <div className="intro-stage">
@@ -336,7 +336,7 @@ const ThresholdScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="02 / mental model"
-      title="A share is not a slice of the password"
+      title="A share is a point in a larger pattern"
       frame={frame}
       duration={duration}
       beats={[
@@ -438,10 +438,10 @@ const AudienceScene = ({ duration }: SceneProps) => {
           <path d="M960 585 C960 490 960 430 960 390" stroke={emerald} opacity=".22" fill="none" />
         </svg>
         <SecretCore x={960} y={585} scale={0.78 + Math.sin(frame / 30) * 0.02} label="one secret" pulse={frame} />
-        <AudienceCard x={450} y={420} icon="🔑" title="Password manager" caption="a recovery key without one fragile backup" delay={50} frame={frame} />
-        <AudienceCard x={960} y={390} icon="🛡" title="2FA backup codes" caption="survive a lost phone without centralizing copies" delay={130} frame={frame} />
+        <AudienceCard x={450} y={420} icon="🔑" title="Password manager" caption="a recovery key split across real fallback paths" delay={50} frame={frame} />
+        <AudienceCard x={960} y={390} icon="🛡" title="2FA backup codes" caption="survive a lost phone with separated shares" delay={130} frame={frame} />
         <AudienceCard x={1485} y={420} icon="⚙" title="Team infrastructure" caption="break-glass access with separation of duties" delay={210} frame={frame} />
-        <AudienceCard x={460} y={790} icon="👥" title="Family planning" caption="cooperation without one person holding the whole secret" delay={290} frame={frame} />
+        <AudienceCard x={460} y={790} icon="👥" title="Family planning" caption="coordinated recovery across trusted people" delay={290} frame={frame} />
         <AudienceCard x={1480} y={790} icon="📦" title="Client handoff" caption="agency, client, and offline fallback shares" delay={370} frame={frame} />
       </div>
     </SceneChrome>
@@ -500,7 +500,7 @@ const NotScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="05 / threat model"
-      title="Safeparts will not rescue a bad storage plan"
+      title="The storage plan carries the security"
       frame={frame}
       duration={duration}
       beats={[
@@ -554,7 +554,7 @@ const SplitScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="06 / split flow"
-      title="The secret turns into packets, not fragments"
+      title="The secret becomes self-describing packets"
       frame={frame}
       duration={duration}
       beats={[
@@ -637,7 +637,7 @@ const MathScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="07 / underlying maths"
-      title="Enough points reveal the curve. Fewer points do not."
+      title="Enough points reveal the curve"
       frame={frame}
       duration={duration}
       beats={[
@@ -716,14 +716,14 @@ const EncodingsScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="09 / share formats"
-      title="Encodings are packaging, not new secrets"
+      title="Encodings are storage formats"
       frame={frame}
       duration={duration}
       beats={[
         { label: "base64url is compact and machine-friendly." },
         { label: "base58check avoids ambiguous characters and adds a checksum." },
         { label: "mnemo-words is better for paper or metal backups." },
-        { label: "BIP-39 phrases are encodings, not wallet seeds." },
+        { label: "BIP-39 phrases carry Safeparts share packets." },
       ]}
     >
       <div className="packet-capsule">
@@ -763,7 +763,7 @@ const StoriesScene = ({ duration }: SceneProps) => {
       beats={[
         { label: "Personal: two reachable shares plus one off-site fallback." },
         { label: "Team: split by role so no one person can act alone." },
-        { label: "Family: controlled recovery without one holder having full access." },
+        { label: "Family: controlled recovery shared across trusted holders." },
       ]}
     >
       <StoryWorld title="personal recovery" pattern="2 of 3" x={500} y={550} delay={80} frame={frame} />
@@ -782,7 +782,7 @@ const ClosingScene = ({ duration }: SceneProps) => {
   return (
     <SceneChrome
       eyebrow="11 / close"
-      title="No single person, device, or location"
+      title="Recover through people, places, and procedure"
       frame={frame}
       duration={duration}
       beats={[
