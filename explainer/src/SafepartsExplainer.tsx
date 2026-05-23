@@ -618,8 +618,31 @@ const NotScene = ({ duration }: SceneProps) => {
   );
 };
 
-const PipelineStage = ({ label, detail, x, active, index }: { label: string; detail: string; x: number; active: number; index: number }) => (
-  <div className="pipeline-stage" style={{ left: x, opacity: active, transform: `translate(-50%, -50%) scale(${interpolate(active, [0, 1], [0.88, 1])})` }}>
+const PipelineStage = ({
+  label,
+  detail,
+  x,
+  active,
+  focus = 0,
+  index,
+}: {
+  label: string;
+  detail: string;
+  x: number;
+  active: number;
+  focus?: number;
+  index: number;
+}) => (
+  <div
+    className="pipeline-stage"
+    style={{
+      left: x,
+      opacity: active,
+      transform: `translate(-50%, -50%) scale(${interpolate(active, [0, 1], [0.88, 1]) + focus * 0.025})`,
+      borderColor: `rgba(47, 231, 184, ${0.18 + focus * 0.34})`,
+      boxShadow: `0 22px 70px rgba(0, 0, 0, 0.3), 0 0 ${focus * 38}px rgba(47, 231, 184, ${focus * 0.28})`,
+    }}
+  >
     <div className="stage-number">{String(index).padStart(2, "0")}</div>
     <div className="stage-label">{label}</div>
     <div className="stage-detail">{detail}</div>
@@ -636,8 +659,16 @@ const SplitScene = ({ duration }: SceneProps) => {
     ["SharePacket", "set_id · k · n · x · payload"],
     ["encoding", "base64url · words · bip39"],
   ] as const;
-  const tokenX = interpolate(frame, [80, 1550], [230, 1690], { ...clamp, easing: easeInOut });
-  const tokenScale = 0.58 + Math.sin(frame / 18) * 0.012;
+  const stageXs = stages.map((_, i) => 260 + i * 280);
+  const stageStarts = stages.map((_, i) => 90 + i * 230);
+  const tokenX = interpolate(
+    frame,
+    [0, ...stageStarts, 1540],
+    [stageXs[0], ...stageXs, stageXs[stageXs.length - 1]],
+    { ...clamp, easing: easeInOut }
+  );
+  const activeStage = stageStarts.reduce((current, start, i) => (frame >= start - 25 ? i : current), 0);
+  const tokenScale = 0.5 + Math.sin(frame / 18) * 0.012;
   return (
     <SceneChrome
       eyebrow="06 / split flow"
@@ -654,8 +685,20 @@ const SplitScene = ({ duration }: SceneProps) => {
       <div className="pipeline-line" />
       <SecretCore x={tokenX} y={360} scale={tokenScale} pulse={frame} />
       {stages.map(([label, detail], i) => {
-        const start = 90 + i * 230;
-        return <PipelineStage key={label} label={label} detail={detail} x={260 + i * 280} active={fade(frame, start, start + 55)} index={i + 1} />;
+        const start = stageStarts[i];
+        const arrive = fade(frame, start - 25, start + 20);
+        const hold = activeStage === i ? 1 : 0;
+        return (
+          <PipelineStage
+            key={label}
+            label={label}
+            detail={detail}
+            x={stageXs[i]}
+            active={fade(frame, start, start + 55)}
+            focus={Math.max(arrive * hold, 0)}
+            index={i + 1}
+          />
+        );
       })}
       <div className="packet-burst" style={{ opacity: fade(frame, 1320, 1480) }}>
         <ShareNode x={760} y={760} index={1} label="x=1" />
