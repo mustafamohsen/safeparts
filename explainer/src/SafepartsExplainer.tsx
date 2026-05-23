@@ -140,7 +140,7 @@ const SceneChrome = ({
           <Img src={staticFile("logo.svg")} className="brand-logo" />
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.5</div>
+            <div className="brand-sub">threshold recovery explainer · v0.6</div>
           </div>
         </div>
         <div className="timecode">{formatTime(frame)}</div>
@@ -189,7 +189,7 @@ const SecretCore = ({
   >
     <div className="core-orbit core-orbit-a" />
     <div className="core-orbit core-orbit-b" />
-    <div className="core-inner">✦</div>
+    <div className="core-inner" />
     {label ? <div className="core-label">{label}</div> : null}
   </div>
 );
@@ -323,7 +323,7 @@ const ThresholdGate = ({ frame }: { frame: number }) => {
         <div className="gate-door" style={{ transform: `translateX(${-open * 115}px)` }} />
         <div className="gate-door" style={{ transform: `translateX(${open * 115}px)` }} />
       </div>
-      <div className="gate-secret" style={{ opacity: open, transform: `translate(-50%, -50%) scale(${open})` }}>✦</div>
+      <div className="gate-secret" style={{ opacity: open, transform: `translate(-50%, -50%) scale(${open})` }} />
     </div>
   );
 };
@@ -691,13 +691,13 @@ const CombineScene = ({ duration }: SceneProps) => {
           <div className="tunnel-title">metadata → interpolation → BLAKE3</div>
           <div className="scanner" style={{ transform: `translateX(${interpolate(scan, [0, 1], [-220, 220])}px)`, opacity: scan }} />
         </div>
-        <div className="combine-result" style={{ opacity: fade(frame, 760, 940) }}>
+        <div className="combine-result" style={{ opacity: fade(frame, 760, 940) * interpolate(frame, [1120, 1220], [1, 0], clamp) }}>
           <div className="checkmark">✓</div>
           <div>integrity tag matches</div>
           <div className="result-sub">secret can be released</div>
         </div>
         <div className="bad-share" style={{ opacity: fail }}>
-          <ShareNode x={1370} y={455} index={9} label="wrong set" hue={rose} />
+          <ShareNode x={1495} y={470} index={9} label="wrong set" hue={rose} />
           <div className="bad-x">×</div>
           <div className="bad-share-caption">mixed or corrupted shares fail closed</div>
         </div>
