@@ -72,6 +72,8 @@ body {
 
 .safe-frame {
   position: absolute;
+  z-index: 1;
+  pointer-events: none;
   inset: 34px;
   border: 1px solid rgba(47, 231, 184, 0.18);
   border-radius: 34px;
@@ -80,6 +82,7 @@ body {
 
 .topbar {
   position: absolute;
+  z-index: 30;
   left: 72px;
   right: 72px;
   top: 56px;
@@ -129,6 +132,7 @@ body {
 
 .scene-title {
   position: absolute;
+  z-index: 25;
   left: 94px;
   top: 150px;
   max-width: 1150px;
@@ -155,6 +159,7 @@ body {
 
 .narration-ribbon {
   position: absolute;
+  z-index: 30;
   left: 94px;
   right: 94px;
   bottom: 62px;
@@ -198,10 +203,20 @@ body {
   width: 1920px;
   height: 1080px;
   overflow: visible;
+  pointer-events: none;
+}
+
+.connection-svg {
+  z-index: 1;
+}
+
+.math-svg {
+  z-index: 5;
 }
 
 .secret-core {
   position: absolute;
+  z-index: 8;
   width: 190px;
   height: 190px;
   border-radius: 999px;
@@ -258,13 +273,14 @@ body {
 .share-node {
   --node-color: #2fe7b8;
   position: absolute;
+  z-index: 8;
   width: 124px;
   height: 124px;
   border-radius: 30px;
   border: 1px solid color-mix(in srgb, var(--node-color) 55%, transparent);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 42%),
-    radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--node-color) 28%, transparent), rgba(0, 0, 0, 0.42));
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.18) 42%),
+    radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--node-color) 32%, #050908 68%), #010403 82%);
   box-shadow: 0 0 36px color-mix(in srgb, var(--node-color) 28%, transparent), inset 0 0 26px rgba(255, 255, 255, 0.04);
   overflow: hidden;
 }
@@ -306,6 +322,7 @@ body {
 
 .failure-site {
   position: absolute;
+  z-index: 7;
   width: 184px;
   height: 184px;
   display: grid;
@@ -336,6 +353,7 @@ body {
 
 .big-formula {
   position: absolute;
+  z-index: 12;
   left: 50%;
   top: 830px;
   transform: translateX(-50%);
@@ -348,6 +366,7 @@ body {
 
 .split-equation {
   position: absolute;
+  z-index: 9;
   left: 50%;
   top: 280px;
   transform: translateX(-50%);
@@ -357,7 +376,7 @@ body {
   padding: 18px 26px;
   border: 1px solid rgba(47, 231, 184, 0.18);
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.38);
+  background: rgba(0, 0, 0, 0.9);
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 26px;
   color: #dffff6;
@@ -369,6 +388,7 @@ body {
 
 .ghost-secrets {
   position: absolute;
+  z-index: 4;
   inset: 0;
 }
 
@@ -396,6 +416,7 @@ body {
 
 .threshold-gate {
   position: absolute;
+  z-index: 7;
   left: 1340px;
   top: 540px;
   width: 380px;
@@ -463,6 +484,7 @@ body {
 
 .recovered-panel {
   position: absolute;
+  z-index: 9;
   left: 1190px;
   top: 800px;
   width: 300px;
@@ -486,12 +508,13 @@ body {
 
 .audience-card {
   position: absolute;
+  z-index: 8;
   width: 330px;
   min-height: 200px;
   padding: 26px;
   border: 1px solid rgba(47, 231, 184, 0.18);
   border-radius: 32px;
-  background: linear-gradient(135deg, rgba(6, 24, 20, 0.86), rgba(0, 0, 0, 0.48));
+  background: linear-gradient(135deg, rgba(6, 24, 20, 0.97), rgba(0, 0, 0, 0.94));
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
 }
 
@@ -515,6 +538,7 @@ body {
 
 .rust-core {
   position: absolute;
+  z-index: 8;
   left: 960px;
   top: 525px;
   width: 440px;
@@ -524,7 +548,7 @@ body {
   padding: 32px;
   border: 1px solid rgba(132, 246, 255, 0.24);
   border-radius: 44px;
-  background: radial-gradient(circle at 50% 30%, rgba(132, 246, 255, 0.18), rgba(0, 0, 0, 0.7));
+  background: radial-gradient(circle at 50% 30%, rgba(17, 54, 58, 0.98), rgba(0, 0, 0, 0.94));
   box-shadow: 0 0 90px rgba(132, 246, 255, 0.12);
   text-align: center;
 }
@@ -543,11 +567,12 @@ body {
 
 .interface-window {
   position: absolute;
+  z-index: 8;
   width: 430px;
   border: 1px solid rgba(132, 246, 255, 0.2);
   border-radius: 26px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.66);
+  background: rgba(0, 0, 0, 0.94);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
 }
 
@@ -579,12 +604,13 @@ body {
 .bad-vault,
 .good-plan {
   position: absolute;
+  z-index: 7;
   width: 560px;
   height: 460px;
   top: 360px;
   border: 1px solid rgba(255, 92, 138, 0.2);
   border-radius: 42px;
-  background: rgba(0, 0, 0, 0.46);
+  background: rgba(0, 0, 0, 0.92);
 }
 
 .bad-vault {
@@ -619,13 +645,14 @@ body {
   text-align: center;
   border: 1px solid rgba(255, 92, 138, 0.28);
   border-radius: 28px;
-  background: linear-gradient(135deg, rgba(255, 92, 138, 0.14), rgba(0, 0, 0, 0.48));
+  background: linear-gradient(135deg, rgba(52, 14, 26, 0.96), rgba(0, 0, 0, 0.95));
   color: #ffd9e4;
   font-size: 28px;
 }
 
 .collapse-ring {
   position: absolute;
+  z-index: 1;
   left: 280px;
   top: 250px;
   width: 430px;
@@ -652,6 +679,7 @@ body {
 
 .pipeline-line {
   position: absolute;
+  z-index: 1;
   left: 210px;
   right: 210px;
   top: 520px;
@@ -661,13 +689,14 @@ body {
 
 .pipeline-stage {
   position: absolute;
+  z-index: 8;
   top: 520px;
   width: 236px;
   min-height: 178px;
   padding: 22px;
   border: 1px solid rgba(47, 231, 184, 0.18);
   border-radius: 28px;
-  background: linear-gradient(135deg, rgba(7, 27, 23, 0.88), rgba(0, 0, 0, 0.58));
+  background: linear-gradient(135deg, rgba(7, 27, 23, 0.97), rgba(0, 0, 0, 0.94));
   box-shadow: 0 22px 70px rgba(0, 0, 0, 0.3);
 }
 
@@ -694,11 +723,13 @@ body {
 
 .packet-burst {
   position: absolute;
+  z-index: 9;
   inset: 0;
 }
 
 .byte-grid {
   position: absolute;
+  z-index: 4;
   left: 104px;
   top: 310px;
   width: 470px;
@@ -708,7 +739,7 @@ body {
   padding: 18px;
   border: 1px solid rgba(132, 246, 255, 0.18);
   border-radius: 26px;
-  background: rgba(0, 0, 0, 0.36);
+  background: rgba(0, 0, 0, 0.92);
 }
 
 .byte-cell {
@@ -738,13 +769,14 @@ body {
 
 .formula-card {
   position: absolute;
+  z-index: 8;
   right: 128px;
   top: 310px;
   width: 610px;
   padding: 28px 32px;
   border: 1px solid rgba(132, 246, 255, 0.18);
   border-radius: 28px;
-  background: rgba(0, 0, 0, 0.44);
+  background: rgba(0, 0, 0, 0.94);
 }
 
 .formula-main {
@@ -761,6 +793,7 @@ body {
 
 .math-note {
   position: absolute;
+  z-index: 8;
   right: 150px;
   bottom: 210px;
   max-width: 550px;
@@ -771,13 +804,14 @@ body {
 
 .verification-tunnel {
   position: absolute;
+  z-index: 7;
   left: 720px;
   top: 385px;
   width: 500px;
   height: 310px;
   border: 1px solid rgba(47, 231, 184, 0.22);
   border-radius: 42px;
-  background: radial-gradient(circle at 50% 50%, rgba(47, 231, 184, 0.1), rgba(0, 0, 0, 0.6));
+  background: radial-gradient(circle at 50% 50%, rgba(12, 43, 36, 0.98), rgba(0, 0, 0, 0.94));
   overflow: hidden;
 }
 
@@ -805,13 +839,14 @@ body {
 
 .combine-result {
   position: absolute;
+  z-index: 8;
   left: 1320px;
   top: 360px;
   width: 330px;
   padding: 28px;
   border: 1px solid rgba(47, 231, 184, 0.22);
   border-radius: 32px;
-  background: rgba(0, 0, 0, 0.44);
+  background: rgba(0, 0, 0, 0.94);
   color: #effff9;
   font-size: 28px;
   text-align: center;
@@ -837,6 +872,7 @@ body {
 
 .bad-share {
   position: absolute;
+  z-index: 9;
   inset: 0;
 }
 
@@ -861,6 +897,7 @@ body {
 
 .packet-capsule {
   position: absolute;
+  z-index: 8;
   left: 50%;
   top: 535px;
   transform: translate(-50%, -50%);
@@ -868,7 +905,7 @@ body {
   padding: 30px;
   border: 1px solid rgba(47, 231, 184, 0.28);
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(47, 231, 184, 0.16), rgba(0, 0, 0, 0.64), rgba(47, 231, 184, 0.12));
+  background: linear-gradient(90deg, rgba(20, 69, 57, 0.96), rgba(0, 0, 0, 0.95), rgba(16, 55, 46, 0.96));
   box-shadow: 0 0 80px rgba(47, 231, 184, 0.14);
   text-align: center;
 }
@@ -898,12 +935,13 @@ body {
 
 .encoding-skin {
   position: absolute;
+  z-index: 8;
   width: 410px;
   min-height: 150px;
   padding: 26px;
   border: 1px solid rgba(47, 231, 184, 0.18);
   border-radius: 30px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.94);
 }
 
 .encoding-label {
@@ -921,11 +959,12 @@ body {
 
 .story-world {
   position: absolute;
+  z-index: 8;
   width: 360px;
   height: 360px;
   border: 1px solid rgba(47, 231, 184, 0.18);
   border-radius: 42px;
-  background: radial-gradient(circle at 50% 35%, rgba(47, 231, 184, 0.12), rgba(0, 0, 0, 0.48));
+  background: radial-gradient(circle at 50% 35%, rgba(14, 52, 43, 0.96), rgba(0, 0, 0, 0.94));
 }
 
 .story-orbit {
@@ -955,13 +994,14 @@ body {
 
 .runbook-strip {
   position: absolute;
+  z-index: 9;
   left: 260px;
   right: 260px;
   bottom: 220px;
   padding: 22px 28px;
   border: 1px solid rgba(47, 231, 184, 0.18);
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.94);
   color: rgba(239, 255, 249, 0.82);
   font-size: 24px;
   text-align: center;
@@ -969,6 +1009,7 @@ body {
 
 .closing-logo {
   position: absolute;
+  z-index: 8;
   left: 960px;
   top: 520px;
   width: 380px;
@@ -978,6 +1019,7 @@ body {
 
 .closing-question {
   position: absolute;
+  z-index: 9;
   left: 310px;
   right: 310px;
   bottom: 150px;

@@ -1,4 +1,4 @@
-# Safeparts Explainer Script v0.3
+# Safeparts Explainer Script v0.4
 
 Working narration and scene map for `src/SafepartsExplainer.tsx`.
 

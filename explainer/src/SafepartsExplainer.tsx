@@ -140,7 +140,7 @@ const SceneChrome = ({
           <Img src={staticFile("logo.svg")} className="brand-logo" />
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.3</div>
+            <div className="brand-sub">threshold recovery explainer · v0.4</div>
           </div>
         </div>
         <div className="timecode">{formatTime(frame)}</div>
@@ -600,7 +600,7 @@ const PolynomialSvg = ({ frame }: { frame: number }) => {
       ].map((d, i) => (
         <path key={d} d={d} stroke={cyan} strokeWidth="2" opacity={ambiguity * (0.15 + i * 0.05)} fill="none" strokeDasharray="12 16" />
       ))}
-      <path d="M 430 700 C 660 170 930 295 1165 570 C 1280 700 1390 660 1510 390" stroke={emerald} strokeWidth="5" opacity={0.15 + lock * 0.85} fill="none" filter="url(#glow)" />
+      <path d="M 430 790 C 470 760 500 725 520 700 C 570 635 610 615 665 615 C 760 615 805 410 915 410 C 1010 410 1080 570 1165 570 C 1280 570 1390 480 1510 390" stroke={emerald} strokeWidth="5" opacity={0.15 + lock * 0.85} fill="none" filter="url(#glow)" />
       <line x1="420" y1="820" x2="1520" y2="820" stroke="rgba(255,255,255,.12)" />
       <line x1="520" y1="820" x2="520" y2="160" stroke="rgba(255,255,255,.12)" />
       <text x="500" y="855" fill="#8fffe2" fontSize="28">x=0</text>
