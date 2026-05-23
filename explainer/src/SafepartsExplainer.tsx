@@ -140,7 +140,7 @@ const SceneChrome = ({
           <Img src={staticFile("logo.svg")} className="brand-logo" />
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.7</div>
+            <div className="brand-sub">threshold recovery explainer · v0.8</div>
           </div>
         </div>
         <div className="timecode">{formatTime(frame)}</div>
@@ -172,16 +172,16 @@ const LockGlyph = ({ className = "", style }: { className?: string; style?: Reac
         <stop offset="1" stopColor="#010b09" />
       </linearGradient>
       <linearGradient id="lockShackle" x1="18" y1="5" x2="46" y2="36" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stopColor="#eafff8" />
-        <stop offset="0.45" stopColor="#86ffe4" />
-        <stop offset="1" stopColor="#2fe7b8" />
+        <stop offset="0" stopColor="#05362c" />
+        <stop offset="0.55" stopColor="#06241f" />
+        <stop offset="1" stopColor="#010b09" />
       </linearGradient>
     </defs>
     <path
       d="M20 27v-7c0-7.2 5.1-12.5 12-12.5S44 12.8 44 20v7"
       fill="none"
       stroke="url(#lockShackle)"
-      strokeWidth="7"
+      strokeWidth="8"
       strokeLinecap="round"
     />
     <rect
@@ -191,14 +191,14 @@ const LockGlyph = ({ className = "", style }: { className?: string; style?: Reac
       height="31"
       rx="10"
       fill="url(#lockBody)"
-      stroke="#b9fff0"
-      strokeWidth="3"
+      stroke="#05251f"
+      strokeWidth="4"
     />
     <path
       d="M32 36.5a5.2 5.2 0 0 0-2.3 9.9v4.1h4.6v-4.1A5.2 5.2 0 0 0 32 36.5Z"
       fill="#2fe7b8"
     />
-    <path d="M18 31h28" stroke="rgba(234,255,248,.26)" strokeWidth="2" strokeLinecap="round" />
+    <path d="M18 31h28" stroke="rgba(47,231,184,.34)" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 
