@@ -140,7 +140,7 @@ const SceneChrome = ({
           <Img src={staticFile("logo.svg")} className="brand-logo" />
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.8</div>
+            <div className="brand-sub">threshold recovery explainer · v0.9</div>
           </div>
         </div>
         <div className="timecode">{formatTime(frame)}</div>
@@ -338,7 +338,7 @@ const IntroScene = ({ duration }: SceneProps) => {
         })}
 
         <div className="big-formula" style={{ opacity: fade(frame, 990, 1080) }}>
-          k-of-n recovery
+          threshold recovery
         </div>
       </div>
     </SceneChrome>
@@ -378,19 +378,19 @@ const ThresholdScene = ({ duration }: SceneProps) => {
       frame={frame}
       duration={duration}
       beats={[
-        { label: "n is the number of shares you create." },
-        { label: "k is the number required for recovery." },
-        { label: "Fewer than k shares leave too many possible secrets." },
-        { label: "Any k shares from the same set reconstruct the original." },
+        { label: "Choose a threshold: k shares out of n total shares." },
+        { label: "Example: 2 required shares out of 3 total shares." },
+        { label: "Below the threshold, reconstruction is impossible." },
+        { label: "At the threshold, the original secret comes back." },
       ]}
     >
       <div className="threshold-stage">
         <div className="split-equation">
           <span>secret</span>
           <span className="arrow">→</span>
-          <span>3 shares</span>
+          <span>3 recovery shares</span>
           <span className="arrow">→</span>
-          <span>any 2 recover</span>
+          <span>threshold: 2</span>
         </div>
 
         <ShareNode x={370} y={420} index={1} label="share A" scale={fade(frame, 30, 90)} />
@@ -547,7 +547,7 @@ const NotScene = ({ duration }: SceneProps) => {
       frame={frame}
       duration={duration}
       beats={[
-        { label: "If someone gets k shares, they can recover the secret." },
+        { label: "If someone reaches the threshold, they can recover the secret." },
         { label: "Lose too many shares and the secret is gone." },
         { label: "The security boundary is your distribution plan." },
       ]}

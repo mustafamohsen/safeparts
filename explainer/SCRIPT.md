@@ -1,4 +1,4 @@
-# Safeparts Explainer Script v0.8
+# Safeparts Explainer Script v0.9
 
 Working narration and scene map for `src/SafepartsExplainer.tsx`.
 
@@ -11,7 +11,7 @@ The piece should feel like a security diagram waking up. Black glass, emerald li
 ## Scene map
 
 1. **The problem** — A recovery key saves you in an emergency, and it creates a delicate storage decision.
-2. **Mental model** — `k-of-n`: create `n` shares, require `k` to recover. A single share is a coordinate in a larger pattern.
+2. **Mental model** — Choose a threshold: `k` required shares out of `n` total recovery shares. A single share is a coordinate in a larger pattern.
 3. **Use cases** — Password-manager recovery, 2FA backup codes, break-glass credentials, family planning, and client handoff.
 4. **Product shape** — Web/WASM, CLI, TUI, and the Rust core use the same split/combine engine.
 5. **Threat model** — The storage plan carries the security boundary.
@@ -40,11 +40,9 @@ You choose the threshold. Safeparts enforces it.
 
 ### 2. The mental model
 
-The model is called `k-of-n`.
+The website phrases this as threshold sharing: choose a threshold, `k` required shares out of `n` total recovery shares.
 
-`n` is the number of shares you create. `k` is the number required to recover.
-
-With `k=2, n=3`, any two shares can recover the secret. One share by itself has no practical value. If only one share survives, the recovery path is gone.
+With `k=2, n=3`, Safeparts creates three recovery shares and sets the recovery threshold to two. Any two shares from the same set can recover the secret. One share by itself has no practical value. If only one share survives, the recovery path is gone.
 
 Picture each share as a point on a hidden curve. One point leaves many possible curves. Enough points identify the curve, and the curve leads back to the secret.
 
