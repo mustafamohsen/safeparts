@@ -96,29 +96,56 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+  min-height: 72px;
+  padding: 10px 18px 10px 10px;
+  border: 1px solid rgba(47, 231, 184, 0.16);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(2, 11, 9, 0.72), rgba(6, 30, 25, 0.34));
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.brand-mark-shell {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(47, 231, 184, 0.24), transparent 64%),
+    rgba(0, 0, 0, 0.52);
+  border: 1px solid rgba(47, 231, 184, 0.24);
 }
 
 .brand-logo {
-  width: 52px;
-  height: 52px;
-  filter: drop-shadow(0 0 18px rgba(47, 231, 184, 0.35));
+  width: 38px;
+  height: 38px;
+  filter: drop-shadow(0 0 18px rgba(47, 231, 184, 0.45));
 }
 
 .brand-name {
   font-size: 21px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #dffff6;
 }
 
 .brand-sub {
   margin-top: 4px;
-  font-size: 14px;
-  letter-spacing: 0.09em;
+  font-family: "IBM Plex Mono", "SFMono-Regular", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(199, 255, 241, 0.48);
+  color: rgba(199, 255, 241, 0.5);
 }
 
+.hud-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud-chip,
 .timecode {
   min-width: 96px;
   padding: 10px 14px;
@@ -130,31 +157,124 @@ body {
   color: rgba(199, 255, 241, 0.72);
 }
 
+.hud-chip {
+  min-width: auto;
+  color: rgba(199, 255, 241, 0.52);
+  letter-spacing: 0.14em;
+  font-size: 12px;
+}
+
+.chapter-meter {
+  position: absolute;
+  z-index: 25;
+  left: 86px;
+  top: 164px;
+  width: 120px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+}
+
+.chapter-meter-svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.chapter-meter-track,
+.chapter-meter-progress {
+  fill: none;
+  stroke-width: 2;
+}
+
+.chapter-meter-track {
+  stroke: rgba(47, 231, 184, 0.14);
+}
+
+.chapter-meter-progress {
+  stroke: rgba(47, 231, 184, 0.86);
+  filter: drop-shadow(0 0 10px rgba(47, 231, 184, 0.45));
+}
+
+.chapter-number {
+  font-family: "IBM Plex Mono", "SFMono-Regular", ui-monospace, monospace;
+  font-size: 34px;
+  letter-spacing: -0.08em;
+  color: #effff9;
+  text-shadow: 0 0 24px rgba(47, 231, 184, 0.34);
+}
+
 .scene-title {
   position: absolute;
   z-index: 25;
-  left: 94px;
-  top: 150px;
-  max-width: 1150px;
+  left: 230px;
+  top: 165px;
+  width: 1040px;
+  min-height: 150px;
+  padding: 0 0 28px 32px;
+}
+
+.scene-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, rgba(47, 231, 184, 0.88), transparent);
+  box-shadow: 0 0 22px rgba(47, 231, 184, 0.45);
 }
 
 .eyebrow {
-  margin-bottom: 12px;
-  color: #2fe7b8;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  color: rgba(199, 255, 241, 0.66);
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 18px;
-  letter-spacing: 0.14em;
+  font-size: 14px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
+.eyebrow-kicker {
+  color: #2fe7b8;
+}
+
+.eyebrow-line {
+  width: 72px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(47, 231, 184, 0.9), transparent);
+}
+
 .scene-title h1 {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18px;
   margin: 0;
-  max-width: 1140px;
-  font-size: 54px;
-  line-height: 1.02;
-  letter-spacing: -0.052em;
+  max-width: 1040px;
+  font-size: 58px;
+  line-height: 0.98;
+  letter-spacing: -0.062em;
   color: #f1fff9;
   text-shadow: 0 0 40px rgba(47, 231, 184, 0.16);
+}
+
+.title-word {
+  display: inline-block;
+  transform-origin: 0 100%;
+}
+
+.title-underlay {
+  position: absolute;
+  left: 16px;
+  right: 70px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(47, 231, 184, 0.72), rgba(132, 246, 255, 0.1), transparent);
 }
 
 .narration-ribbon {

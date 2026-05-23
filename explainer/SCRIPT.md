@@ -1,4 +1,4 @@
-# Safeparts Explainer Script v0.10
+# Safeparts Explainer Script v0.11
 
 Working narration and scene map for `src/SafepartsExplainer.tsx`.
 
@@ -6,7 +6,7 @@ Target runtime: about 15 minutes at 30 fps.
 
 ## Direction
 
-The piece should feel like a security diagram waking up. Black glass, emerald light, quiet gridlines, and the Safeparts shield carry the look. Let motion do the teaching: one key becomes a constellation, shares unlock a threshold gate, curves snap into place, and packet formats wrap the same underlying data.
+The piece should feel like a security diagram waking up, not a slide deck. Black glass, emerald light, quiet gridlines, and the Safeparts shield carry the look. Chapter text should behave like field instrumentation: compact labels, progress meters, and kinetic type that support the diagrams without turning each scene into a title slide. Let motion do the teaching: one key becomes a constellation, shares unlock a threshold gate, curves snap into place, and packet formats wrap the same underlying data.
 
 ## Scene map
 

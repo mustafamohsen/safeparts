@@ -129,7 +129,12 @@ const SceneChrome = ({
 }) => {
   const beat = currentBeat(frame, duration, beats);
   const opacity = sceneOpacity(frame, duration);
-  const titleY = lerp(frame, [4, 42], [30, 0]);
+  const titleY = lerp(frame, [4, 42], [42, 0]);
+  const chapter = eyebrow.split("/")[0].trim();
+  const chapterName = eyebrow.split("/").slice(1).join("/").trim();
+  const titleWords = title.split(" ");
+  const progress = interpolate(frame, [0, duration], [0, 1], clamp);
+  const meterDash = 318 * progress;
 
   return (
     <AbsoluteFill style={{ opacity }}>
@@ -137,18 +142,57 @@ const SceneChrome = ({
       <div className="safe-frame" />
       <div className="topbar">
         <div className="brand-lockup">
-          <Img src={staticFile("logo.svg")} className="brand-logo" />
+          <div className="brand-mark-shell">
+            <Img src={staticFile("logo.svg")} className="brand-logo" />
+          </div>
           <div>
             <div className="brand-name">Safeparts</div>
-            <div className="brand-sub">threshold recovery explainer · v0.10</div>
+            <div className="brand-sub">LOCAL RECOVERY LAB · v0.11</div>
           </div>
         </div>
-        <div className="timecode">{formatTime(frame)}</div>
+        <div className="hud-cluster">
+          <div className="hud-chip">OFFLINE</div>
+          <div className="hud-chip">NO BACKEND</div>
+          <div className="timecode">{formatTime(frame)}</div>
+        </div>
+      </div>
+
+      <div className="chapter-meter" style={{ transform: `translateY(${titleY * 0.35}px)` }}>
+        <svg viewBox="0 0 120 120" className="chapter-meter-svg" aria-hidden="true">
+          <circle cx="60" cy="60" r="50" className="chapter-meter-track" />
+          <circle
+            cx="60"
+            cy="60"
+            r="50"
+            className="chapter-meter-progress"
+            strokeDasharray={`${meterDash} 318`}
+          />
+        </svg>
+        <div className="chapter-number">{chapter}</div>
       </div>
 
       <div className="scene-title" style={{ transform: `translateY(${titleY}px)` }}>
-        <div className="eyebrow">{eyebrow}</div>
-        <h1>{title}</h1>
+        <div className="eyebrow">
+          <span className="eyebrow-kicker">Field note</span>
+          <span className="eyebrow-line" />
+          <span>{chapterName}</span>
+        </div>
+        <h1>
+          {titleWords.map((word, index) => {
+            const wordOpacity = fade(frame, 12 + index * 3, 30 + index * 3);
+            const wordY = lerp(frame, [10 + index * 3, 32 + index * 3], [24, 0]);
+            return (
+              <span
+                key={`${word}-${index}`}
+                className="title-word"
+                style={{ opacity: wordOpacity, transform: `translateY(${wordY}px)` }}
+              >
+                {word}
+              </span>
+            );
+          })}
+        </h1>
+        <div className="title-underlay" />
       </div>
 
       {children}
