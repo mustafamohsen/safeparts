@@ -1,0 +1,73 @@
+---
+title: Developer guide
+description: Use safeparts_core from Rust applications and services.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Safeparts exposes its core implementation as the `safeparts_core` crate.
+Use it when your Rust application needs to create or recover threshold shares without shelling out to the CLI.
+
+This guide assumes you already know Rust error handling, byte-oriented APIs, and the operational risk of handling secrets in process memory.
+It focuses on the library boundary: what goes in, what comes out, and where your application must make policy decisions.
+
+:::caution
+Do not log secrets, recovered plaintext, or share text.
+Treat every share as sensitive, even when fewer than <var>k</var> shares are present.
+:::
+
+## When to use the Rust library
+
+Use `safeparts_core` when Safeparts is part of another product or internal tool:
+
+- a recovery workflow inside a Rust service
+- an admin tool that writes share packets to separate storage locations
+- a backup utility that needs deterministic tests around split and combine behavior
+- a desktop or terminal application with its own UI
+
+Use the CLI instead when the workflow is mostly shell, incident runbooks, or operator-driven automation.
+The library gives you control, but it also makes your application responsible for input handling, storage, audit boundaries, and secret lifetime.
+
+## Core model
+
+The main API works on bytes:
+
+```rust
+use safeparts_core::{combine_shares, split_secret, CoreResult};
+
+fn main() -> CoreResult<()> {
+    let packets = split_secret(b"database recovery token", 2, 3, None)?;
+    let recovered = combine_shares(&packets[..2], None)?;
+
+    assert_eq!(recovered, b"database recovery token");
+    Ok(())
+}
+```
+
+A split returns `SharePacket` values. A packet contains metadata (`k`, `n`, share index, set ID), the share payload, and optional encryption parameters.
+You usually encode packets before storing or displaying them.
+
+## Read next
+
+<CardGrid>
+	<Card title="Library API" icon="document">
+		Split, combine, passphrase handling, and API boundaries.
+		
+		[Use the library API](library-api/)
+	</Card>
+	<Card title="Encodings and packets" icon="open-book">
+		Choose a share encoding and understand what packet metadata means.
+		
+		[Encode share packets](encodings-and-packets/)
+	</Card>
+	<Card title="Testing and errors" icon="setting">
+		Write tests for threshold behavior, corrupted shares, and wrong passphrases.
+		
+		[Test integration behavior](testing-and-errors/)
+	</Card>
+	<Card title="Technical design" icon="star">
+		Review the cryptographic data flow behind the library.
+		
+		[Read technical design](../technical-design/)
+	</Card>
+</CardGrid>

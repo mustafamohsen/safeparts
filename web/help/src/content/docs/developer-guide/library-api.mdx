@@ -1,0 +1,98 @@
+---
+title: Library API
+description: Split, combine, and protect secrets with safeparts_core.
+---
+
+The `safeparts_core` crate is intentionally small.
+Most applications need three pieces:
+
+- `split_secret` to create share packets
+- `combine_shares` to recover the original bytes
+- `CoreError` or `CoreResult` for typed failures
+
+## Add the crate
+
+In this workspace the crate lives at `crates/safeparts_core`.
+For an external project, depend on the published crate once releases are available, or use a Git/path dependency while integrating.
+
+```toml
+[dependencies]
+safeparts_core = { path = "../safeparts/crates/safeparts_core" }
+```
+
+## Split and combine bytes
+
+`split_secret` accepts arbitrary bytes. The library does not assume UTF-8.
+That matters for binary keys, recovery files, and exported credentials.
+
+```rust
+use safeparts_core::{combine_shares, split_secret, CoreResult};
+
+fn split_then_recover() -> CoreResult<()> {
+    let secret = b"api-token-for-example-tests-only";
+
+    let shares = split_secret(secret, 3, 5, None)?;
+    let recovered = combine_shares(&[shares[0].clone(), shares[2].clone(), shares[4].clone()], None)?;
+
+    assert_eq!(recovered, secret);
+    Ok(())
+}
+```
+
+Parameter rules are enforced by the library: <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>.
+Recovery needs at least <var>k</var> packets from the same split set.
+
+## Add passphrase protection
+
+Passphrase protection encrypts the secret before splitting it.
+Recovery then requires both enough shares and the same passphrase.
+
+```rust
+use safeparts_core::{combine_shares, split_secret, CoreResult};
+
+fn encrypted_round_trip() -> CoreResult<()> {
+    let passphrase = b"correct horse battery staple, example only";
+
+    let shares = split_secret(b"break-glass-token", 2, 3, Some(passphrase))?;
+    let recovered = combine_shares(&shares[..2], Some(passphrase))?;
+
+    assert_eq!(recovered, b"break-glass-token");
+    Ok(())
+}
+```
+
+The packet stores the salt, nonce, and Argon2id parameters needed for recovery.
+It does not store the passphrase.
+Your application should avoid command-line passphrases, request bodies that get logged, and debug traces that include secret material.
+
+## Compatibility wrappers
+
+Two older convenience functions remain available:
+
+```rust
+use safeparts_core::{combine_and_verify, tag_and_split, CoreResult};
+
+fn compatibility_api() -> CoreResult<()> {
+    let shares = tag_and_split(b"legacy-call-site", 2, 3)?;
+    let recovered = combine_and_verify(&shares[..2])?;
+
+    assert_eq!(recovered, b"legacy-call-site");
+    Ok(())
+}
+```
+
+New code should usually call `split_secret` and `combine_shares` directly so passphrase behavior is explicit.
+
+## Application responsibilities
+
+`safeparts_core` does the cryptographic split, packet validation, integrity check, and optional decrypt.
+Your application still owns these decisions:
+
+- where shares are stored
+- how share holders are authenticated
+- whether passphrases are allowed, required, or forbidden
+- how recovered secrets are handled in memory and on disk
+- what audit events are safe to record
+
+A safe audit record says that recovery happened and which policy approved it.
+It should not include the recovered value or the share text.

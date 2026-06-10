@@ -1,0 +1,98 @@
+---
+title: واجهة API للمكتبة
+description: تقسيم الأسرار واستردادها وحمايتها باستخدام safeparts_core.
+---
+
+crate `safeparts_core` صغيرة عمداً.
+معظم التطبيقات تحتاج إلى ثلاث قطع:
+
+- `split_secret` لإنشاء حزم الحصص
+- `combine_shares` لاسترداد البايتات الأصلية
+- `CoreError` أو `CoreResult` للأخطاء الموصوفة بأنواع
+
+## أضف crate
+
+داخل هذا المستودع توجد crate في `crates/safeparts_core`.
+في مشروع خارجي، استخدم الإصدار المنشور عند توفره، أو استخدم اعتماد Git أو path أثناء التكامل.
+
+```toml
+[dependencies]
+safeparts_core = { path = "../safeparts/crates/safeparts_core" }
+```
+
+## قسّم واسترد البايتات
+
+تقبل `split_secret` بايتات عشوائية ولا تفترض UTF-8.
+هذا مهم للمفاتيح الثنائية وملفات الاسترداد والاعتمادات المصدّرة.
+
+```rust
+use safeparts_core::{combine_shares, split_secret, CoreResult};
+
+fn split_then_recover() -> CoreResult<()> {
+    let secret = b"api-token-for-example-tests-only";
+
+    let shares = split_secret(secret, 3, 5, None)?;
+    let recovered = combine_shares(&[shares[0].clone(), shares[2].clone(), shares[4].clone()], None)?;
+
+    assert_eq!(recovered, secret);
+    Ok(())
+}
+```
+
+تتحقق المكتبة من قاعدة المعاملات: <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>.
+يحتاج الاسترداد إلى <var>k</var> حزم على الأقل من مجموعة التقسيم نفسها.
+
+## أضف الحماية بعبارة مرور
+
+حماية عبارة المرور تشفّر السر قبل تقسيمه.
+عند الاسترداد، تحتاج إلى عدد كاف من الحصص وإلى عبارة المرور نفسها.
+
+```rust
+use safeparts_core::{combine_shares, split_secret, CoreResult};
+
+fn encrypted_round_trip() -> CoreResult<()> {
+    let passphrase = b"correct horse battery staple, example only";
+
+    let shares = split_secret(b"break-glass-token", 2, 3, Some(passphrase))?;
+    let recovered = combine_shares(&shares[..2], Some(passphrase))?;
+
+    assert_eq!(recovered, b"break-glass-token");
+    Ok(())
+}
+```
+
+تخزن الحزمة الملح والـ nonce ومعاملات Argon2id اللازمة للاسترداد.
+لا تخزن عبارة المرور.
+يجب أن يتجنب تطبيقك عبارات المرور في سطر الأوامر، وأجسام الطلبات التي قد تُسجّل، وآثار التصحيح التي تحتوي بيانات حساسة.
+
+## واجهات توافقية
+
+توجد دالتان مختصرتان أقدم:
+
+```rust
+use safeparts_core::{combine_and_verify, tag_and_split, CoreResult};
+
+fn compatibility_api() -> CoreResult<()> {
+    let shares = tag_and_split(b"legacy-call-site", 2, 3)?;
+    let recovered = combine_and_verify(&shares[..2])?;
+
+    assert_eq!(recovered, b"legacy-call-site");
+    Ok(())
+}
+```
+
+يفضل أن يستدعي الكود الجديد `split_secret` و`combine_shares` مباشرة حتى يكون سلوك عبارة المرور واضحاً.
+
+## مسؤوليات التطبيق
+
+تنفذ `safeparts_core` التقسيم التشفيري، والتحقق من الحزم، وفحص السلامة، وفك التشفير الاختياري.
+يبقى تطبيقك مسؤولاً عن هذه القرارات:
+
+- أين تخزن الحصص
+- كيف تتحقق من هوية حاملي الحصص
+- هل عبارات المرور مسموحة أو مطلوبة أو ممنوعة
+- كيف يتعامل التطبيق مع السر المسترد في الذاكرة وعلى القرص
+- ما أحداث التدقيق الآمنة للتسجيل
+
+سجل التدقيق الآمن يقول إن الاسترداد حدث ويذكر السياسة التي وافقت عليه.
+لا يجب أن يحتوي على القيمة المستردة أو نص الحصص.

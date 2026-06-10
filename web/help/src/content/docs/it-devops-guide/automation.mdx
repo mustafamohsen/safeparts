@@ -1,0 +1,96 @@
+---
+title: Automation patterns
+description: Integrate the CLI into scripts without leaking secrets into logs.
+---
+
+Safeparts can be part of automation, but it should not become an always-online secret distribution system.
+Use it for setup, escrow, recovery, and operator-controlled procedures.
+Use a secrets manager for normal runtime injection.
+
+## Shell hygiene
+
+Prefer files, pipes, and restricted workspaces over command-line literals.
+Do not use `echo "real-secret"` in examples, scripts, or tickets.
+It encourages shell history leaks.
+
+Safer pattern:
+
+```bash
+umask 077
+workdir="$(mktemp -d)"
+trap 'rm -rf "$workdir"' EXIT
+
+install -m 600 /dev/null "$workdir/secret.bin"
+# Write or copy the secret into $workdir/secret.bin using your approved method.
+
+safeparts split \
+  -k 3 \
+  -n 5 \
+  -e base64url \
+  --in "$workdir/secret.bin" \
+  --out "$workdir/shares.txt"
+```
+
+Then distribute the shares and delete the temporary directory.
+If your distribution step can fail, make sure it never prints share contents in an error path.
+
+## CI and release signing
+
+Safeparts is useful for offline custody of release signing keys or recovery material.
+It is usually not appropriate to reconstruct those secrets inside ordinary CI jobs.
+
+Recommended pattern:
+
+1. split the signing recovery secret during setup
+2. store shares with separate custodians
+3. keep normal CI signing credentials in your existing secure release system
+4. use Safeparts only when that system needs recovery or replacement
+5. rotate the key after recovery if the process gathered shares on shared infrastructure
+
+If a CI job must run `safeparts combine`, treat that job as a privileged recovery environment.
+Disable command echoing, restrict logs, and clean workspace files after use.
+
+## Vault integration boundary
+
+A common pattern is to store one share in a corporate vault, one share with a security lead, and one share offline.
+That can be reasonable for <span class="token">k=2, n=3</span> recovery.
+
+Avoid storing enough shares in the same vault or identity domain to meet the threshold.
+If one SSO compromise grants access to <var>k</var> shares, Safeparts no longer provides separation of duties.
+
+## Machine-readable output
+
+The CLI outputs one encoded share per line when splitting with compact encodings.
+Scripts can split the output into separate destinations:
+
+```bash
+safeparts split -k 3 -n 5 -e base64url --in secret.bin --out shares.txt
+
+sed -n '1p' shares.txt > share-ops.txt
+sed -n '2p' shares.txt > share-security.txt
+sed -n '3p' shares.txt > share-eng-lead.txt
+sed -n '4p' shares.txt > share-offline.txt
+sed -n '5p' shares.txt > share-exec.txt
+```
+
+Make the next step move each file to its final custody location.
+Do not leave the working directory as a combined share bundle.
+
+## Logging rules
+
+Safe to log:
+
+- command success or failure
+- selected threshold and encoding
+- custody destination names
+- approval ticket IDs
+
+Not safe to log:
+
+- input secret bytes
+- encoded shares
+- passphrases
+- recovered secret output
+- full temporary file contents
+
+When in doubt, log less and require a human recovery note that omits secret material.

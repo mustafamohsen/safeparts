@@ -15,6 +15,14 @@ const PAYLOAD_LEN_FIELD_LEN: usize = 4;
 
 const CRYPTO_PARAMS_LEN: usize = 16 + 12 + 4 + 4 + 4;
 
+/// A self-describing Safeparts share.
+///
+/// Applications normally receive `SharePacket` values from
+/// [`crate::split_secret`], encode them with [`crate::encoding::encode_packet`],
+/// and later parse them back before calling [`crate::combine_shares`].
+///
+/// The metadata fields are not secret. They let the combine path reject mixed
+/// share sets, duplicate coordinates, and incompatible encryption parameters.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SharePacket {
     pub set_id: SetId,
@@ -42,6 +50,7 @@ impl SharePacket {
         self
     }
 
+    /// Return true when the packet belongs to a passphrase-protected split.
     pub fn is_encrypted(&self) -> bool {
         self.crypto_params.is_some()
     }
@@ -56,6 +65,10 @@ impl SharePacket {
         })
     }
 
+    /// Encode the packet into Safeparts binary packet format.
+    ///
+    /// Most applications should prefer the text encoders in [`crate::encoding`]
+    /// unless they control a binary storage format.
     pub fn encode_binary(&self) -> CoreResult<Vec<u8>> {
         let flags = if let Some(params) = self.crypto_params {
             // Validate params are sane.
@@ -96,6 +109,7 @@ impl SharePacket {
         Ok(out)
     }
 
+    /// Decode a packet from Safeparts binary packet format.
     pub fn decode_binary(bytes: &[u8]) -> CoreResult<Self> {
         let total_len = binary_total_len(bytes)?;
         if bytes.len() != total_len {

@@ -1,8 +1,9 @@
-//! Experimental share encoding interface.
+//! Reversible text encodings for share packets.
 //!
-//! This module centralizes reversible text encodings for share packets and the
-//! rules for parsing pasted share text. The interface is public so Rust front
-//! ends can share one implementation, but it may change while the crate is young.
+//! Use this module when an application needs to store, display, paste, or parse
+//! [`SharePacket`] values as text. `base64url` is compact and machine-friendly,
+//! while the mnemonic formats are better for paper and manual transcription.
+//! `Encoding::Auto` is accepted only by parsing functions.
 
 use crate::error::{CoreError, CoreResult};
 use crate::packet::SharePacket;
@@ -66,6 +67,24 @@ pub struct ParsedSharePackets {
     pub encoding: Encoding,
 }
 
+/// Encode one share packet as text.
+///
+/// `Encoding::Auto` is not valid for output because callers must choose a
+/// concrete representation.
+///
+/// # Example
+///
+/// ```
+/// use safeparts_core::encoding::{self, Encoding};
+/// use safeparts_core::{split_secret, CoreResult};
+///
+/// fn main() -> CoreResult<()> {
+///     let shares = split_secret(b"example", 2, 3, None)?;
+///     let encoded = encoding::encode_packet(&shares[0], Encoding::Base64url)?;
+///     assert!(!encoded.is_empty());
+///     Ok(())
+/// }
+/// ```
 pub fn encode_packet(packet: &SharePacket, encoding: Encoding) -> CoreResult<String> {
     match encoding {
         Encoding::Auto => Err(CoreError::AutoEncodingForOutput),
@@ -76,6 +95,10 @@ pub fn encode_packet(packet: &SharePacket, encoding: Encoding) -> CoreResult<Str
     }
 }
 
+/// Decode one share packet from text.
+///
+/// Pass a concrete encoding when the UI or storage layer already knows the
+/// format. Use `Encoding::Auto` for pasted input where the format is unknown.
 pub fn decode_packet(s: &str, encoding: Encoding) -> CoreResult<SharePacket> {
     match encoding {
         Encoding::Auto => parse_share_packets(s, Encoding::Auto).and_then(|parsed| {
@@ -96,6 +119,11 @@ pub fn decode_packet(s: &str, encoding: Encoding) -> CoreResult<SharePacket> {
     }
 }
 
+/// Parse one or more share packets from pasted text.
+///
+/// Compact encodings may be separated by any whitespace. Mnemonic shares are
+/// normally separated by lines or blank lines. The returned value includes the
+/// packets and the concrete encoding that was used.
 pub fn parse_share_packets(input: &str, encoding: Encoding) -> CoreResult<ParsedSharePackets> {
     parse_share_packets_with_mnemonic_lines(input, encoding, MnemonicLineMode::Shares)
 }
@@ -133,6 +161,10 @@ fn parse_share_packets_with_mnemonic_lines(
     Ok(ParsedSharePackets { packets, encoding })
 }
 
+/// Try to detect the share encoding without decoding the caller's intent.
+///
+/// Returns `Ok(None)` when the input is non-empty but does not clearly match a
+/// supported encoding.
 pub fn detect_encoding(input: &str) -> CoreResult<Option<Encoding>> {
     let nonempty_lines: Vec<&str> = input
         .lines()

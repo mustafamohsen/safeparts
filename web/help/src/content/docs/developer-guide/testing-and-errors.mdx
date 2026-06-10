@@ -1,0 +1,87 @@
+---
+title: Testing and errors
+description: Test library integrations without using real secrets.
+---
+
+Library integrations should have tests for successful recovery and expected failures.
+Do not use production secrets as fixtures.
+Synthetic byte strings are enough to test your code paths.
+
+## Test threshold behavior
+
+Start with a basic round trip and one insufficient-share case.
+
+```rust
+use safeparts_core::{combine_shares, split_secret, CoreError};
+
+#[test]
+fn round_trip_with_any_k_shares() {
+    let shares = split_secret(b"synthetic-secret", 2, 3, None).unwrap();
+
+    let recovered = combine_shares(&[shares[0].clone(), shares[2].clone()], None).unwrap();
+
+    assert_eq!(recovered, b"synthetic-secret");
+}
+
+#[test]
+fn insufficient_shares_fail() {
+    let shares = split_secret(b"synthetic-secret", 3, 5, None).unwrap();
+
+    let err = combine_shares(&shares[..2], None).unwrap_err();
+
+    assert!(matches!(err, CoreError::NotEnoughShares { .. }));
+}
+```
+
+## Test encoding boundaries
+
+If your application stores text shares, test encode and parse together.
+That catches whitespace assumptions and accidental use of the wrong encoding.
+
+```rust
+use safeparts_core::encoding::{self, Encoding};
+use safeparts_core::{combine_shares, split_secret};
+
+#[test]
+fn parse_encoded_shares_from_text() {
+    let shares = split_secret(b"synthetic-secret", 2, 3, None).unwrap();
+    let encoded = shares
+        .iter()
+        .map(|share| encoding::encode_packet(share, Encoding::Base64url).unwrap())
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let parsed = encoding::parse_share_packets(&encoded, Encoding::Auto).unwrap();
+    let recovered = combine_shares(&parsed.packets[..2], None).unwrap();
+
+    assert_eq!(recovered, b"synthetic-secret");
+}
+```
+
+## Useful error cases
+
+Handle these errors explicitly when they affect user guidance:
+
+- `InvalidKAndN`: the threshold parameters are impossible
+- `NotEnoughShares`: fewer than <var>k</var> shares were supplied
+- `InconsistentMetadata`: shares came from different sets or have incompatible metadata
+- `DuplicateX`: the same share was submitted twice
+- `IntegrityCheckFailed`: the reconstructed payload did not match its tag
+- `PassphraseRequired`: encrypted shares were combined without a passphrase
+- `DecryptFailed`: the passphrase is wrong or encrypted data was tampered with
+- `CouldNotDetectEncoding`: the parser could not infer the share encoding
+
+For user-facing tools, do not print internal packet bytes or pasted share text while reporting errors.
+The safe message is about the failure class, not the sensitive input.
+
+## Corruption tests
+
+You can corrupt encoded share text and assert that recovery fails.
+Do not rely on one exact error for all corruptions because different encodings fail at different layers.
+For example, base58check corruption may fail during decoding, while a syntactically valid packet with changed payload bytes may fail the integrity check.
+
+## Memory and logging
+
+Rust cannot guarantee that every copy of a secret disappears immediately.
+Design as if recovered bytes can remain in process memory for some time.
+Keep the scope small, avoid formatting secrets into strings, and prefer writing to a controlled sink over logging or panicking with context that includes sensitive values.

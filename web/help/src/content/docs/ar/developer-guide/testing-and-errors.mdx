@@ -1,0 +1,87 @@
+---
+title: الاختبارات والأخطاء
+description: اختبار تكامل المكتبة دون استخدام أسرار حقيقية.
+---
+
+يجب أن تحتوي تكاملات المكتبة على اختبارات للاسترداد الناجح والإخفاقات المتوقعة.
+لا تستخدم أسرار الإنتاج كبيانات اختبار.
+سلاسل بايتات اصطناعية تكفي لاختبار مسارات الكود.
+
+## اختبر سلوك العتبة
+
+ابدأ باختبار استرداد أساسي وحالة عدد حصص غير كاف.
+
+```rust
+use safeparts_core::{combine_shares, split_secret, CoreError};
+
+#[test]
+fn round_trip_with_any_k_shares() {
+    let shares = split_secret(b"synthetic-secret", 2, 3, None).unwrap();
+
+    let recovered = combine_shares(&[shares[0].clone(), shares[2].clone()], None).unwrap();
+
+    assert_eq!(recovered, b"synthetic-secret");
+}
+
+#[test]
+fn insufficient_shares_fail() {
+    let shares = split_secret(b"synthetic-secret", 3, 5, None).unwrap();
+
+    let err = combine_shares(&shares[..2], None).unwrap_err();
+
+    assert!(matches!(err, CoreError::NotEnoughShares { .. }));
+}
+```
+
+## اختبر حدود الترميز
+
+إذا كان تطبيقك يخزن الحصص كنص، فاختبر الترميز والتحليل معاً.
+هذا يكشف افتراضات المسافات البيضاء والاستخدام الخاطئ للترميز.
+
+```rust
+use safeparts_core::encoding::{self, Encoding};
+use safeparts_core::{combine_shares, split_secret};
+
+#[test]
+fn parse_encoded_shares_from_text() {
+    let shares = split_secret(b"synthetic-secret", 2, 3, None).unwrap();
+    let encoded = shares
+        .iter()
+        .map(|share| encoding::encode_packet(share, Encoding::Base64url).unwrap())
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let parsed = encoding::parse_share_packets(&encoded, Encoding::Auto).unwrap();
+    let recovered = combine_shares(&parsed.packets[..2], None).unwrap();
+
+    assert_eq!(recovered, b"synthetic-secret");
+}
+```
+
+## حالات خطأ مفيدة
+
+تعامل مع هذه الأخطاء صراحة عندما تؤثر في إرشاد المستخدم:
+
+- `InvalidKAndN`: معاملات العتبة غير ممكنة
+- `NotEnoughShares`: عدد الحصص أقل من <var>k</var>
+- `InconsistentMetadata`: الحصص من مجموعات مختلفة أو بياناتها غير متوافقة
+- `DuplicateX`: أُرسلت الحصة نفسها مرتين
+- `IntegrityCheckFailed`: الحمولة المستردة لم تطابق وسم السلامة
+- `PassphraseRequired`: حُاول دمج حصص مشفرة دون عبارة مرور
+- `DecryptFailed`: عبارة المرور خاطئة أو البيانات المشفرة عُبث بها
+- `CouldNotDetectEncoding`: لم يستطع المحلل استنتاج ترميز الحصة
+
+في الأدوات الموجهة للمستخدم، لا تطبع بايتات الحزمة أو نص الحصة الملصق عند عرض الأخطاء.
+الرسالة الآمنة تصف فئة الفشل، لا الإدخال الحساس.
+
+## اختبارات التلف
+
+يمكنك إتلاف نص حصة مشفرة والتأكد من فشل الاسترداد.
+لا تعتمد على خطأ محدد لكل أنواع التلف، لأن الترميزات المختلفة تفشل في طبقات مختلفة.
+مثلاً، قد يفشل تلف `base58check` أثناء فك الترميز، بينما قد تفشل حزمة صحيحة الصيغة لكن حمولة معدلة عند فحص السلامة.
+
+## الذاكرة والسجلات
+
+لا تستطيع Rust ضمان اختفاء كل نسخة من السر فوراً.
+صمم وكأن البايتات المستردة قد تبقى في ذاكرة العملية لبعض الوقت.
+اجعل النطاق صغيراً، وتجنب تنسيق الأسرار داخل strings، وفضّل الكتابة إلى وجهة مضبوطة بدلاً من التسجيل أو panic يحتوي سياقاً حساساً.

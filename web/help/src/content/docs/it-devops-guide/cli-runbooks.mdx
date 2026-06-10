@@ -1,0 +1,97 @@
+---
+title: CLI runbooks
+description: Use the safeparts CLI safely in operator procedures.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+The CLI is non-interactive by default.
+It reads the secret or shares from stdin unless you pass `--in`, and it writes to stdout unless you pass `--out`.
+That makes it script-friendly, but it also means shell history, terminal scrollback, and logs need attention.
+
+## Split from a file
+
+For real credentials, prefer file input over typing or echoing a secret into the shell.
+Create the file in a controlled location and remove it after verification.
+
+```bash
+safeparts split \
+  --threshold 3 \
+  --shares 5 \
+  --encoding base64url \
+  --in secret.bin \
+  --out shares.txt
+```
+
+The output file contains one share per line for compact encodings.
+Distribute those lines into separate custody locations.
+Do not store the full `shares.txt` file as a long-term artifact.
+
+## Combine from a share file
+
+Recovery can read any <var>k</var> shares from a file:
+
+```bash
+safeparts combine \
+  --in recovery-shares.txt \
+  --out recovered-secret.bin
+```
+
+If encoding auto-detection fails, pass it explicitly:
+
+```bash
+safeparts combine \
+  --encoding base64url \
+  --in recovery-shares.txt \
+  --out recovered-secret.bin
+```
+
+## Passphrase files
+
+Prefer `--passphrase-file` over `--passphrase`.
+Command-line arguments can be captured by shell history, process inspection, terminal recorders, and audit tooling.
+
+```bash
+safeparts split \
+  -k 3 \
+  -n 5 \
+  -e mnemo-words \
+  --passphrase-file passphrase.txt \
+  --in secret.bin \
+  --out shares.txt
+```
+
+Recovery must use the same passphrase:
+
+```bash
+safeparts combine \
+  --passphrase-file passphrase.txt \
+  --in recovery-shares.txt \
+  --out recovered-secret.bin
+```
+
+Protect the passphrase separately from the shares.
+If the same vault, person, or device can provide both enough shares and the passphrase, the extra factor is mostly procedural.
+
+## Recommended runbook shape
+
+<Steps>
+1. Create a synthetic secret and test the whole procedure.
+2. Split the real secret from a controlled file or stdin source.
+3. Verify recovery with exactly <var>k</var> shares.
+4. Distribute shares across independent people, vaults, or locations.
+5. Remove temporary files that contained the plaintext secret or all shares together.
+6. Record custody, threshold, encoding, and recovery contacts.
+</Steps>
+
+## Files to avoid keeping
+
+Avoid retaining these files after setup unless your policy explicitly allows them:
+
+- the original plaintext secret file
+- a single file containing all shares
+- terminal transcripts that include share text
+- a recovered secret file after the credential has been imported or rotated
+
+If you need audit evidence, record hashes of non-secret procedure documents, approvals, timestamps, and who participated.
+Do not record the shares themselves.

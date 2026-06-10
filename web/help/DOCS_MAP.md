@@ -15,6 +15,14 @@ This file tracks the intended coverage and the EN/AR page mapping.
 - `/help/tui/` <-> `/help/ar/tui/`
 - `/help/web-ui/` <-> `/help/ar/web-ui/`
 - `/help/troubleshooting/` <-> `/help/ar/troubleshooting/`
+- `/help/developer-guide/` <-> `/help/ar/developer-guide/`
+- `/help/developer-guide/library-api/` <-> `/help/ar/developer-guide/library-api/`
+- `/help/developer-guide/encodings-and-packets/` <-> `/help/ar/developer-guide/encodings-and-packets/`
+- `/help/developer-guide/testing-and-errors/` <-> `/help/ar/developer-guide/testing-and-errors/`
+- `/help/it-devops-guide/` <-> `/help/ar/it-devops-guide/`
+- `/help/it-devops-guide/cli-runbooks/` <-> `/help/ar/it-devops-guide/cli-runbooks/`
+- `/help/it-devops-guide/break-glass/` <-> `/help/ar/it-devops-guide/break-glass/`
+- `/help/it-devops-guide/automation/` <-> `/help/ar/it-devops-guide/automation/`
 
 ## Topic coverage (high level)
 
@@ -28,3 +36,5 @@ This file tracks the intended coverage and the EN/AR page mapping.
 - TUI: offline workflow and shortcuts
 - Web UI: local-only WASM, privacy boundaries
 - Troubleshooting: common errors and fixes
+- Developer guide: Rust library API, share packet encodings, integration tests, and error handling
+- IT/devops guide: CLI runbooks, break-glass operations, and automation boundaries

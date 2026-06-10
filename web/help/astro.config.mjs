@@ -146,6 +146,32 @@ for (const a of document.querySelectorAll('a[href]')) {
 					items: [{ slug: 'build-and-run' }],
 				},
 				{
+					label: 'Guides',
+					translations: { ar: 'الأدلة' },
+					items: [
+						{
+							label: 'Developer guide',
+							translations: { ar: 'دليل المطورين' },
+							items: [
+								{ slug: 'developer-guide' },
+								{ slug: 'developer-guide/library-api' },
+								{ slug: 'developer-guide/encodings-and-packets' },
+								{ slug: 'developer-guide/testing-and-errors' },
+							],
+						},
+						{
+							label: 'IT and devops guide',
+							translations: { ar: 'دليل IT وDevOps' },
+							items: [
+								{ slug: 'it-devops-guide' },
+								{ slug: 'it-devops-guide/cli-runbooks' },
+								{ slug: 'it-devops-guide/break-glass' },
+								{ slug: 'it-devops-guide/automation' },
+							],
+						},
+					],
+				},
+				{
 					label: 'Reference',
 					translations: { ar: 'مراجع' },
 					items: [

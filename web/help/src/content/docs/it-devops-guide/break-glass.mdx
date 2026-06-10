@@ -1,0 +1,95 @@
+---
+title: Break-glass workflows
+description: Use Safeparts for emergency recovery without giving one person full control.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+A break-glass secret is used rarely, under pressure, and usually with elevated access.
+Safeparts can make that recovery require multiple people without depending on one online vault item.
+
+## Example: cloud administrator recovery
+
+A small platform team wants emergency access to a cloud account if normal identity infrastructure is unavailable.
+They choose <span class="token">k=3, n=5</span>.
+
+Suggested custody:
+
+- Share 1: security lead
+- Share 2: operations lead
+- Share 3: engineering manager
+- Share 4: offline company safe
+- Share 5: executive sponsor or compliance custodian
+
+Recovery requires three independent participants.
+One unavailable person does not block the process, and one compromised holder cannot recover alone.
+
+## Split procedure
+
+<Steps>
+1. Generate or export the break-glass credential in a controlled environment.
+2. Split it with the CLI using the chosen threshold and encoding.
+3. Give each custodian only their own share.
+4. Run a recovery drill with a synthetic credential first.
+5. Run one controlled verification with the real process if policy allows it.
+6. Destroy temporary files that contain the original credential or all shares.
+</Steps>
+
+Example command:
+
+```bash
+safeparts split \
+  -k 3 \
+  -n 5 \
+  -e mnemo-words \
+  --passphrase-file passphrase.txt \
+  --in cloud-admin-recovery.txt \
+  --out shares.txt
+```
+
+Mnemonic shares are longer, but they are easier to read from paper during an incident.
+For machine-only storage, `base64url` is usually simpler.
+
+## Recovery procedure
+
+<Steps>
+1. Open the incident or emergency change record.
+2. Confirm approval according to your policy.
+3. Collect at least <var>k</var> shares in the recovery environment.
+4. Combine the shares and recover the credential.
+5. Use the credential for the narrow recovery task.
+6. Rotate or disable the recovered credential.
+7. Create a new Safeparts split for the replacement credential.
+</Steps>
+
+Example command:
+
+```bash
+safeparts combine \
+  --passphrase-file passphrase.txt \
+  --in recovery-shares.txt \
+  --out recovered-cloud-admin.txt
+```
+
+:::danger
+After break-glass recovery, assume the gathered shares were exposed.
+Rotate the underlying credential and re-split.
+:::
+
+## Audit without leaking secrets
+
+A useful audit trail includes:
+
+- who approved recovery
+- which custodians participated
+- when recovery started and ended
+- which system or credential was recovered
+- confirmation that rotation happened afterward
+
+It should not include share text, passphrases, screenshots of shares, or recovered credentials.
+
+## Drill cadence
+
+Run drills with synthetic secrets on a regular schedule.
+A drill should verify that custodians can find their shares, understand the contact path, and operate the recovery commands.
+Do not make the first full procedure happen during an outage.

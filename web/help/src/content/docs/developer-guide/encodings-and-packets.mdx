@@ -1,0 +1,84 @@
+---
+title: Encodings and packets
+description: Encode SharePacket values for storage, transfer, and operator workflows.
+---
+
+A split returns binary `SharePacket` values.
+Most applications should encode those packets before storing them, sending them to users, or writing them into a runbook.
+
+## Encode packets
+
+Use `safeparts_core::encoding` for the public encoding API.
+
+```rust
+use safeparts_core::encoding::{self, Encoding};
+use safeparts_core::{split_secret, CoreResult};
+
+fn encode_for_storage() -> CoreResult<Vec<String>> {
+    let packets = split_secret(b"example-secret", 2, 3, None)?;
+
+    packets
+        .iter()
+        .map(|packet| encoding::encode_packet(packet, Encoding::Base64url))
+        .collect()
+}
+```
+
+`Encoding::Auto` is valid for parsing, not output.
+Trying to encode with `Auto` returns an error because output needs one concrete format.
+
+## Parse share text
+
+For operator input, `parse_share_packets` accepts pasted share text and returns both the packets and the detected encoding.
+
+```rust
+use safeparts_core::encoding::{self, Encoding};
+use safeparts_core::{combine_shares, CoreResult};
+
+fn recover_from_paste(input: &str) -> CoreResult<Vec<u8>> {
+    let parsed = encoding::parse_share_packets(input, Encoding::Auto)?;
+    combine_shares(&parsed.packets, None)
+}
+```
+
+If your UI already knows the format, pass the concrete encoding instead of `Auto`.
+That produces clearer errors and avoids guessing when input is malformed.
+
+## Choose an encoding
+
+`base64url` is compact and works well for files, APIs, QR-like payloads, and copy/paste between systems.
+
+`base58check` is still compact but avoids ambiguous characters and includes a checksum at the text encoding layer.
+It is useful when operators may read or type shares manually.
+
+`mnemo-words` uses words plus a CRC16 check.
+Choose it for paper workflows and human transcription, especially when the user may read a share over a call.
+
+`mnemo-bip39` emits BIP-39-valid phrases.
+Use it only when that compatibility is useful. A Safeparts mnemonic share is not a wallet seed.
+
+## What packet metadata means
+
+Each packet carries enough metadata for safe reconstruction:
+
+- `k` and `n`: the threshold and total share count
+- `x`: the share coordinate
+- `set_id`: a random identifier for the split set
+- `payload`: the share bytes
+- `crypto_params`: optional encryption parameters
+
+The metadata is not secret.
+It helps the combine path reject mixed sets, duplicate shares, and incompatible crypto parameters.
+
+## Storage pattern
+
+A common application pattern is:
+
+1. split bytes into `SharePacket` values
+2. encode each packet using one concrete encoding
+3. store each encoded string in a separate failure domain
+4. later parse at least <var>k</var> encoded shares
+5. combine packets and handle the recovered bytes as sensitive output
+
+Keep the encoding name with your storage record if operators will not paste all shares through auto-detection.
+That makes future recovery less fragile.
