@@ -116,7 +116,7 @@ export const STRINGS = {
     nLabel: "إجمالي الحصص (n)",
     encodingLabel: "صيغة الحصة",
     encodingBase64url: "أحرف",
-    encodingBase64urlDesc: "أحرف وأرقام مضغوطة (base64url)",
+    encodingBase64urlDesc: "أحرف وأرقام مضغوطة",
     encodingMnemoWords: "كلمات",
     encodingMnemoWordsDesc: "كلمات سهلة الكتابة",
     passphraseLabel: "عبارة مرور (اختياري)",
