@@ -33,7 +33,7 @@ export const STRINGS = {
     nLabel: "Total shares to create (n)",
     encodingLabel: "Share format",
     encodingBase64url: "Letters",
-    encodingBase64urlDesc: "Compact alphanumeric (base64url)",
+    encodingBase64urlDesc: "Compact alphanumeric",
     encodingMnemoWords: "Words",
     encodingMnemoWordsDesc: "Easy to write mnemonic words",
     passphraseLabel: "Passphrase (optional)",
