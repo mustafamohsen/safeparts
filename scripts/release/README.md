@@ -7,8 +7,12 @@ The release artifacts include:
 
 - `safeparts` (CLI)
 - `safeparts-tui` (TUI)
+- Safeparts Desktop bundles from the release workflow:
+  - Linux: AppImage, `.deb`, and `.rpm`
+  - Windows: NSIS `.exe` and MSI
+  - macOS: `.dmg` for Intel and Apple Silicon runners
 
-The web UI is intentionally not part of the release build.
+The web UI is intentionally not packaged as a separate release artifact.
 
 ## Build (host OS)
 
