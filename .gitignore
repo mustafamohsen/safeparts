@@ -9,3 +9,6 @@
 /web/dist
 /web/src/wasm_pkg
 web/test-results
+# Desktop
+/desktop/node_modules
+/desktop/dist

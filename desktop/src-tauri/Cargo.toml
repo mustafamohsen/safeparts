@@ -1,0 +1,22 @@
+[package]
+name = "safeparts_desktop"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+name = "safeparts_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+safeparts_core = { path = "../../crates/safeparts_core" }
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = [] }
+zeroize = "1"
+
+[lints]
+workspace = true

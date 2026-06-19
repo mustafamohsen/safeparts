@@ -5,6 +5,7 @@ members = [
   "crates/safeparts",
   "crates/safeparts_wasm",
   "crates/safeparts_tui",
+  "desktop/src-tauri",
 ]
 
 [workspace.package]

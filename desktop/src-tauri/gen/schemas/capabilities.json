@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"Default desktop permissions for Safeparts commands and local UI features.","local":true,"windows":["main"],"permissions":["core:default"]}}

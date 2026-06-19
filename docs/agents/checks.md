@@ -43,6 +43,27 @@ Source of truth:
 
 - `cargo bench`
 
+## Desktop app (Tauri + React)
+
+**Location**: `desktop/`
+
+**Package manager**
+
+- Install deps: `bun install`
+
+**Run / Build**
+
+- Dev app: `bun run tauri:dev`
+- Frontend type check: `bun run typecheck`
+- Frontend build: `bun run build`
+- Native release compile without bundling/signing: `bun run tauri:build -- --no-bundle`
+- Native bundle for the host platform: `bun run tauri:build`
+
+**Notes**
+
+- Runtime must stay local-first: no server, CLI sidecar, node process, or telemetry.
+- Full installer signing/notarization is platform-specific and belongs in release CI or local release packaging.
+
 ## React / TypeScript (Web UI)
 
 **Location**: `web/`

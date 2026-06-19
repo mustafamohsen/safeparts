@@ -90,6 +90,7 @@ When the user requests a durable behavior change, record it here or in the relev
 - `crates/`: Rust workspace crates for core algorithms, CLI, TUI, and WASM bindings.
 - `web/`: Vite + React web app, WASM build integration, browser tests, and docs child site.
   - `web/help/`: Astro + Starlight help docs served under `/help/`.
+- `desktop/`: standalone Tauri desktop app with React UI and Rust command layer.
 - `openspec/`: OpenSpec project context, active/archived changes, and accepted specs.
 - `scripts/`: repository automation scripts, including release packaging.
 - `explainer/`: explainer media sources and generated media outputs.
@@ -106,6 +107,7 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
   - `crates/safeparts_tui/` (interactive terminal UI; binary: `safeparts-tui`)
   - `crates/safeparts_wasm/` (wasm-bindgen exports for the web UI)
 - Web app: `web/` (Vite + React) which expects a WASM build step.
+- Desktop app: `desktop/` (Tauri + React) with Rust commands over `safeparts_core`.
 - Help/docs: `web/help/` (Astro + Starlight), deployed under `/help/`.
 
 ## Context

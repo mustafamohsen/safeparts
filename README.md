@@ -77,6 +77,7 @@ If you take one thing from this section: **shares are as sensitive as the secret
 Safeparts ships as a few different front-ends over the same core:
 
 - **Web UI** (WASM, runs entirely in your browser; no backend): easiest for one-off workflows.
+- **Desktop app** (Tauri, local webview): installed split/combine workbench for macOS, Linux, and Windows packaging.
 - **CLI** (`safeparts`): script-friendly; good for runbooks and automation.
 - **TUI** (`safeparts-tui` or `safeparts tui`): interactive terminal workflow; nice for offline machines.
 - **Rust crate** (`safeparts_core`): core algorithms and packet formats.
@@ -160,6 +161,24 @@ safeparts tui
 
 For shortcuts and an offline workflow, see: https://safeparts.netlify.app/help/tui/
 
+## Desktop app (local)
+
+The desktop app is a Tauri + React workbench. It calls `safeparts_core` from the Tauri command layer and does not require a Safeparts server, CLI sidecar, or node process at runtime.
+
+```bash
+cd desktop
+bun install
+bun run tauri:dev
+```
+
+Build the frontend or package the native app:
+
+```bash
+cd desktop
+bun run build
+bun run tauri:build
+```
+
 ## Web UI (local)
 
 The web UI runs split/combine locally in your browser via WASM.
@@ -225,6 +244,7 @@ bun run test:a11y
 - `crates/safeparts_wasm/`: wasm-bindgen exports used by the web UI
 - `web/`: Vite + React app
 - `web/help/`: Astro + Starlight docs
+- `desktop/`: Tauri + React desktop app
 
 ## Contributing
 
