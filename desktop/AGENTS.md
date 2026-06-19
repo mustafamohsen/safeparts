@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Owns the standalone Tauri desktop application for local Safeparts split and combine workflows.
+Owns the standalone Tauri desktop application that runs the existing Safeparts web UI locally through Tauri.
 
 ## Ownership
 
@@ -12,6 +12,7 @@ Owns the standalone Tauri desktop application for local Safeparts split and comb
 
 ## Local Contracts
 
+- Keep the React interface and exposed features aligned with `web/src`; desktop is a local Tauri version of the web UI, not a separate product surface.
 - Keep split/combine cryptography behind Tauri commands that call `safeparts_core` public APIs.
 - Do not add a backend, telemetry, CLI sidecar, node runtime sidecar, or external service requirement.
 - Do not persist secrets, recovery shares, reconstructed bytes, or passphrases in local storage.
@@ -19,8 +20,9 @@ Owns the standalone Tauri desktop application for local Safeparts split and comb
 
 ## Work Guidance
 
-- Preserve the local-first desktop workbench UX: clear split/combine modes, labeled controls, responsive layout, and high-contrast Safeparts styling.
-- Use browser/Tauri file and clipboard affordances only for explicit user actions.
+- Copy web UI structure/styles/components from `web/src` when desktop needs UI parity updates.
+- Do not expose desktop-only split/combine features unless the web UI exposes them first.
+- Use browser/Tauri clipboard affordances only for explicit user actions.
 - Keep generated and reconstructed data in memory until the user clears it or closes the app.
 
 ## Verification

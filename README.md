@@ -163,7 +163,7 @@ For shortcuts and an offline workflow, see: https://safeparts.netlify.app/help/t
 
 ## Desktop app (local)
 
-The desktop app is a Tauri + React workbench. It calls `safeparts_core` from the Tauri command layer and does not require a Safeparts server, CLI sidecar, or node process at runtime.
+The desktop app is a Tauri + React version of the web UI that runs locally. It calls `safeparts_core` from the Tauri command layer and does not require a Safeparts server, CLI sidecar, or node process at runtime.
 
 ```bash
 cd desktop

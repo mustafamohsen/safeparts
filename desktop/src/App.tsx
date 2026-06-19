@@ -1,656 +1,381 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import {
-  combineShares,
-  inspectShares,
-  splitSecret,
-  supportedEncodings,
-  type CombineResponse,
-  type EncodingInfo,
-  type ShareInspection,
-  type SplitResponse,
-} from "./commands";
+import logoUrl from "./assets/logo.svg";
 
-type Mode = "split" | "combine";
-type SplitInputMode = "text" | "file";
+import { CombineForm } from "./components/CombineForm";
+import { KeytipsOverlay } from "./components/KeytipsOverlay";
+import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
+import { LiveRegion } from "./components/LiveRegion";
+import { SplitForm } from "./components/SplitForm";
+import { EncryptedText } from "./components/ui/encrypted-text";
+import { LiveRegionProvider } from "./context/LiveRegionContext";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useLiveRegion } from "./hooks/useLiveRegion";
+import { STRINGS, type Lang } from "./i18n";
 
-const textEncoder = new TextEncoder();
+type Tab = "split" | "combine";
 
-function passphraseOrUndefined(value: string): string | undefined {
-  return value.length > 0 ? value : undefined;
+const LANG_KEY = "sp_lang";
+
+function safeRead(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
 }
 
-function toBytes(response: CombineResponse): Uint8Array {
-  return new Uint8Array(response.secret);
+function safeWrite(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore
+  }
 }
 
-function shareInputText(shares: string[], encoding: string): string {
-  return encoding.startsWith("mnemo-") ? shares.join("\n\n") : shares.join("\n");
+function applyDocumentPrefs(lang: Lang) {
+  const html = document.documentElement;
+  html.classList.add("dark");
+  html.lang = lang;
+  html.dir = lang === "ar" ? "rtl" : "ltr";
 }
 
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+function getInitialLang(): Lang {
+  const stored = safeRead(LANG_KEY);
+  return stored === "ar" ? "ar" : "en";
 }
 
-async function copyText(text: string) {
-  await navigator.clipboard.writeText(text);
+function Background() {
+  return (
+    <>
+      <div className="pointer-events-none absolute inset-0 bg-black" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_55%),radial-gradient(circle_at_bottom,rgba(34,197,94,0.10),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:linear-gradient(to_right,rgba(16,185,129,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.18)_1px,transparent_1px)] [background-size:36px_36px]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:repeating-linear-gradient(to_bottom,rgba(16,185,129,0.28)_0px,rgba(0,0,0,0)_2px,rgba(0,0,0,0)_6px)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
+    </>
+  );
 }
 
-export default function App() {
-  const [mode, setMode] = useState<Mode>("split");
-  const [encodings, setEncodings] = useState<EncodingInfo[]>([]);
-  const [status, setStatus] = useState("Ready. All work stays on this device.");
-  const [error, setError] = useState<string | null>(null);
+function GitHubIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M12 2C6.477 2 2 6.565 2 12.196c0 4.508 2.865 8.333 6.839 9.681.5.095.682-.22.682-.49 0-.24-.009-.876-.014-1.72-2.782.62-3.369-1.368-3.369-1.368-.454-1.176-1.11-1.49-1.11-1.49-.908-.64.069-.627.069-.627 1.004.073 1.532 1.052 1.532 1.052.892 1.558 2.341 1.108 2.913.847.091-.664.35-1.108.636-1.363-2.22-.263-4.555-1.137-4.555-5.06 0-1.118.39-2.031 1.029-2.747-.103-.262-.446-1.318.098-2.749 0 0 .84-.276 2.75 1.05A9.29 9.29 0 0 1 12 7.07c.851.004 1.708.117 2.507.344 1.909-1.326 2.748-1.05 2.748-1.05.546 1.431.203 2.487.1 2.749.64.716 1.028 1.629 1.028 2.747 0 3.932-2.339 4.794-4.566 5.053.359.314.678.93.678 1.874 0 1.353-.012 2.444-.012 2.777 0 .272.18.59.688.489C19.138 20.525 22 16.7 22 12.196 22 6.565 17.523 2 12 2Z" />
+    </svg>
+  );
+}
 
-  useEffect(() => {
-    supportedEncodings()
-      .then(setEncodings)
-      .catch((err: unknown) => {
-        setError(errorMessage(err));
-      });
+function DiscordIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M20.317 4.369A19.791 19.791 0 0 0 15.467 3c-.21.375-.445.88-.609 1.275a18.27 18.27 0 0 0-5.716 0A12.945 12.945 0 0 0 8.533 3a19.736 19.736 0 0 0-4.85 1.369C.61 9.007-.22 13.53.195 17.989a19.896 19.896 0 0 0 5.948 2.989c.48-.675.908-1.388 1.275-2.134a12.74 12.74 0 0 1-2.008-.969c.164-.117.324-.241.477-.371 3.873 1.822 8.084 1.822 11.912 0 .156.13.316.254.477.371a12.78 12.78 0 0 1-2.011.971c.366.744.794 1.457 1.275 2.132a19.832 19.832 0 0 0 5.949-2.989c.487-5.165-.83-9.646-3.172-13.62ZM8.02 15.271c-1.155 0-2.102-1.054-2.102-2.349 0-1.294.927-2.348 2.102-2.348 1.185 0 2.113 1.064 2.102 2.348 0 1.295-.927 2.349-2.102 2.349Zm7.959 0c-1.155 0-2.102-1.054-2.102-2.349 0-1.294.927-2.348 2.102-2.348 1.185 0 2.113 1.064 2.102 2.348 0 1.295-.917 2.349-2.102 2.349Z" />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className="h-4 w-4 text-emerald-300"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 2 4.5 5.5v6.1c0 5.2 3.3 9.9 7.5 10.9 4.2-1 7.5-5.7 7.5-10.9V5.5L12 2Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.5 12.4 11 14l3.5-4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function App() {
+  const [tab, setTab] = useState<Tab>("split");
+  const [lang, setLang] = useState<Lang>(() => getInitialLang());
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [keytipsActive, setKeytipsActive] = useState(false);
+  const { announcements, announce } = useLiveRegion();
+
+  const splitTabRef = useRef<HTMLButtonElement>(null);
+  const combineTabRef = useRef<HTMLButtonElement>(null);
+
+  const helpUrl =
+    import.meta.env.VITE_HELP_URL ?? (lang === "ar" ? "/help/ar/" : "/help/");
+
+  const strings = STRINGS[lang];
+
+  const focusTab = useCallback((next: Tab) => {
+    const el = next === "split" ? splitTabRef.current : combineTabRef.current;
+    el?.focus();
   }, []);
 
-  const splitEncodings = useMemo(
-    () => encodings.filter((encoding) => encoding.supportsSplit),
-    [encodings],
-  );
-  const combineEncodings = useMemo(
-    () => encodings.filter((encoding) => encoding.supportsCombine),
-    [encodings],
-  );
-
-  return (
-    <main className="app-shell">
-      <section className="hero" aria-labelledby="app-title">
-        <div>
-          <p className="eyebrow">Local-first desktop workbench</p>
-          <h1 id="app-title">Safeparts</h1>
-          <p className="hero-copy">
-            Split one secret into threshold recovery shares, or combine recovery
-            shares back into bytes. No backend, telemetry, or sidecar process is
-            used at runtime.
-          </p>
-        </div>
-        <div className="privacy-card" role="note">
-          <strong>Local only</strong>
-          <span>Secrets, recovery shares, and passphrases stay in memory.</span>
-        </div>
-      </section>
-
-      <section className="workbench">
-        <nav className="mode-rail" aria-label="Safeparts operation">
-          <button
-            className={mode === "split" ? "rail-button active" : "rail-button"}
-            type="button"
-            onClick={() => setMode("split")}
-          >
-            <span>Split</span>
-            <small>Create recovery shares</small>
-          </button>
-          <button
-            className={mode === "combine" ? "rail-button active" : "rail-button"}
-            type="button"
-            onClick={() => setMode("combine")}
-          >
-            <span>Combine</span>
-            <small>Recover a secret</small>
-          </button>
-          <div className="rail-note">
-            Pick a threshold people can execute under stress. Keep recovery
-            shares stored separately.
-          </div>
-        </nav>
-
-        <div className="task-panel">
-          {mode === "split" ? (
-            <SplitPanel
-              encodings={splitEncodings}
-              onError={setError}
-              onStatus={setStatus}
-            />
-          ) : (
-            <CombinePanel
-              encodings={combineEncodings}
-              onError={setError}
-              onStatus={setStatus}
-            />
-          )}
-        </div>
-      </section>
-
-      <section className="status-bar" aria-live="polite" aria-atomic="true">
-        <span className={error ? "status-error" : undefined}>{error ? `Error: ${error}` : status}</span>
-        {error ? (
-          <button type="button" onClick={() => setError(null)}>
-            Dismiss
-          </button>
-        ) : null}
-      </section>
-    </main>
-  );
-}
-
-interface PanelProps {
-  encodings: EncodingInfo[];
-  onError: (message: string | null) => void;
-  onStatus: (message: string) => void;
-}
-
-function SplitPanel({ encodings, onError, onStatus }: PanelProps) {
-  const [inputMode, setInputMode] = useState<SplitInputMode>("text");
-  const [secretText, setSecretText] = useState("");
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [fileBytes, setFileBytes] = useState<Uint8Array | null>(null);
-  const [threshold, setThreshold] = useState(2);
-  const [shareCount, setShareCount] = useState(3);
-  const [encoding, setEncoding] = useState("base64url");
-  const [passphrase, setPassphrase] = useState("");
-  const [result, setResult] = useState<SplitResponse | null>(null);
-  const [busy, setBusy] = useState(false);
+  useKeyboardShortcuts({
+    tab,
+    setTab,
+    focusTab,
+    helpOpen: shortcutsOpen,
+    openHelp: () => setShortcutsOpen(true),
+    closeHelp: () => setShortcutsOpen(false),
+    keytipsActive,
+    showKeytips: () => setKeytipsActive(true),
+    hideKeytips: () => setKeytipsActive(false),
+    strings,
+    announce,
+  });
 
   useEffect(() => {
-    if (encodings.length > 0 && !encodings.some((item) => item.id === encoding)) {
-      setEncoding(encodings[0].id);
-    }
-  }, [encoding, encodings]);
-
-  async function handleFile(file: File | null) {
-    if (!file) {
-      setFileBytes(null);
-      setFileName(null);
-      return;
-    }
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    setFileBytes(bytes);
-    setFileName(file.name);
-    setResult(null);
-    onStatus(`Loaded ${file.name} into memory for splitting.`);
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    onError(null);
-    setBusy(true);
-    try {
-      const secret = inputMode === "text" ? textEncoder.encode(secretText) : fileBytes;
-      if (!secret || secret.byteLength === 0) {
-        throw new Error("provide text or choose a file before splitting");
-      }
-      const response = await splitSecret({
-        secret,
-        threshold,
-        shareCount,
-        encoding,
-        passphrase: passphraseOrUndefined(passphrase),
-      });
-      setResult(response);
-      onStatus(`Created ${response.shareCount} ${response.encoding} recovery shares.`);
-    } catch (err) {
-      onError(errorMessage(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function clearSensitiveState() {
-    setSecretText("");
-    setFileBytes(null);
-    setFileName(null);
-    setPassphrase("");
-    setResult(null);
-    onStatus("Cleared split inputs and generated recovery shares from memory.");
-  }
+    applyDocumentPrefs(lang);
+    safeWrite(LANG_KEY, lang);
+  }, [lang]);
 
   return (
-    <form className="panel-grid" onSubmit={handleSubmit}>
-      <header className="panel-heading">
-        <p className="eyebrow">Split</p>
-        <h2>Create threshold recovery shares</h2>
-        <p>
-          Choose text or a file, then set the threshold and share count. Any
-          threshold number of recovery shares can reconstruct the secret.
-        </p>
-      </header>
+    <div className="relative isolate min-h-screen overflow-hidden">
+      <Background />
 
-      <fieldset className="segmented" aria-label="Secret input type">
-        <label>
-          <input
-            checked={inputMode === "text"}
-            name="split-input-mode"
-            type="radio"
-            onChange={() => setInputMode("text")}
-          />
-          Text
-        </label>
-        <label>
-          <input
-            checked={inputMode === "file"}
-            name="split-input-mode"
-            type="radio"
-            onChange={() => setInputMode("file")}
-          />
-          File
-        </label>
-      </fieldset>
+      <LiveRegionProvider announce={announce}>
+        <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:py-10">
+          <header className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <img
+                  src={logoUrl}
+                  alt="Safeparts"
+                  className="h-10 w-10 shrink-0"
+                  width={40}
+                  height={40}
+                  decoding="async"
+                />
+                <div className="text-start">
+                  <h1 className="text-xl font-semibold tracking-tight text-emerald-100">
+                    {strings.appName}
+                  </h1>
+                  {lang === "en" ? (
+                    <EncryptedText
+                      className="mt-0.5 block text-xs"
+                      text={strings.tagline}
+                      revealDelayMs={20}
+                      flipDelayMs={20}
+                      encryptedClassName="text-emerald-300/40"
+                      revealedClassName="text-slate-300"
+                    />
+                  ) : (
+                    <p className="mt-0.5 text-xs text-slate-300">
+                      {strings.tagline}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-      {inputMode === "text" ? (
-        <label className="field field-large">
-          <span>Secret text</span>
-          <textarea
-            value={secretText}
-            placeholder="Paste or type a synthetic secret for your practice run."
-            onChange={(event) => {
-              setSecretText(event.target.value);
-              setResult(null);
-            }}
-          />
-        </label>
-      ) : (
-        <label className="drop-zone">
-          <span>Secret file</span>
-          <strong>{fileName ?? "Choose a local file"}</strong>
-          <small>File bytes are read into memory and never uploaded.</small>
-          <input type="file" onChange={(event) => void handleFile(event.target.files?.[0] ?? null)} />
-        </label>
-      )}
-
-      <div className="config-grid">
-        <label className="field">
-          <span>Threshold</span>
-          <input
-            min={1}
-            max={shareCount}
-            type="number"
-            value={threshold}
-            onChange={(event) => setThreshold(Number(event.target.value))}
-          />
-        </label>
-        <label className="field">
-          <span>Share count</span>
-          <input
-            min={threshold}
-            max={255}
-            type="number"
-            value={shareCount}
-            onChange={(event) => setShareCount(Number(event.target.value))}
-          />
-        </label>
-        <label className="field">
-          <span>Share encoding</span>
-          <select value={encoding} onChange={(event) => setEncoding(event.target.value)}>
-            {encodings.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <EncodingHint encodings={encodings} selected={encoding} />
-
-      <label className="field">
-        <span>Passphrase protection (optional)</span>
-        <input
-          autoComplete="off"
-          type="password"
-          value={passphrase}
-          placeholder="Leave blank for no passphrase protection"
-          onChange={(event) => setPassphrase(event.target.value)}
-        />
-      </label>
-
-      <div className="actions">
-        <button className="primary" disabled={busy} type="submit">
-          {busy ? "Splitting…" : "Split secret"}
-        </button>
-        <button type="button" onClick={clearSensitiveState}>
-          Clear
-        </button>
-      </div>
-
-      {result ? <ShareResults result={result} onError={onError} onStatus={onStatus} /> : null}
-    </form>
-  );
-}
-
-function CombinePanel({ encodings, onError, onStatus }: PanelProps) {
-  const [input, setInput] = useState("");
-  const [encoding, setEncoding] = useState("auto");
-  const [passphrase, setPassphrase] = useState("");
-  const [inspection, setInspection] = useState<ShareInspection | null>(null);
-  const [result, setResult] = useState<CombineResponse | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function handleFile(file: File | null) {
-    if (!file) return;
-    const text = await file.text();
-    setInput((current) => (current.trim().length > 0 ? `${current.trim()}\n${text}` : text));
-    setInspection(null);
-    setResult(null);
-    onStatus(`Loaded recovery shares from ${file.name}.`);
-  }
-
-  async function handleInspect() {
-    onError(null);
-    try {
-      const metadata = await inspectShares({ input, encoding });
-      setInspection(metadata);
-      onStatus(
-        `Detected ${metadata.providedShares} ${metadata.encoding} recovery share${
-          metadata.providedShares === 1 ? "" : "s"
-        }.`,
-      );
-    } catch (err) {
-      setInspection(null);
-      onError(errorMessage(err));
-    }
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    onError(null);
-    setBusy(true);
-    try {
-      const response = await combineShares({
-        input,
-        encoding,
-        passphrase: passphraseOrUndefined(passphrase),
-      });
-      setResult(response);
-      onStatus(`Reconstructed ${response.byteCount} bytes from ${response.shareCount} recovery shares.`);
-    } catch (err) {
-      onError(errorMessage(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function clearSensitiveState() {
-    setInput("");
-    setPassphrase("");
-    setInspection(null);
-    setResult(null);
-    onStatus("Cleared combine inputs and reconstructed secret from memory.");
-  }
-
-  return (
-    <form className="panel-grid" onSubmit={handleSubmit}>
-      <header className="panel-heading">
-        <p className="eyebrow">Combine</p>
-        <h2>Reconstruct a secret</h2>
-        <p>
-          Paste recovery shares or load them from a text file. Auto encoding uses
-          Safeparts core detection before reconstruction.
-        </p>
-      </header>
-
-      <label className="field field-large">
-        <span>Recovery shares</span>
-        <textarea
-          value={input}
-          placeholder="Paste recovery shares here. Separate mnemonic recovery shares with a blank line if a share wraps across lines."
-          onBlur={() => {
-            if (input.trim().length > 0) void handleInspect();
-          }}
-          onChange={(event) => {
-            setInput(event.target.value);
-            setInspection(null);
-            setResult(null);
-          }}
-        />
-      </label>
-
-      <div className="config-grid combine-config">
-        <label className="field">
-          <span>Share encoding</span>
-          <select
-            value={encoding}
-            onChange={(event) => {
-              setEncoding(event.target.value);
-              setInspection(null);
-              setResult(null);
-            }}
-          >
-            {encodings.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="drop-zone compact">
-          <span>Load shares file</span>
-          <strong>Choose text file</strong>
-          <input accept="text/*,.txt" type="file" onChange={(event) => void handleFile(event.target.files?.[0] ?? null)} />
-        </label>
-      </div>
-
-      <EncodingHint encodings={encodings} selected={encoding} />
-
-      <label className="field">
-        <span>Passphrase, if required</span>
-        <input
-          autoComplete="off"
-          type="password"
-          value={passphrase}
-          placeholder="Required only for passphrase-protected recovery shares"
-          onChange={(event) => setPassphrase(event.target.value)}
-        />
-      </label>
-
-      <ShareInspectionCard inspection={inspection} />
-
-      <div className="actions">
-        <button className="primary" disabled={busy} type="submit">
-          {busy ? "Combining…" : "Combine recovery shares"}
-        </button>
-        <button type="button" onClick={() => void handleInspect()}>
-          Inspect shares
-        </button>
-        <button type="button" onClick={clearSensitiveState}>
-          Clear
-        </button>
-      </div>
-
-      {result ? <CombineResult result={result} onError={onError} onStatus={onStatus} /> : null}
-    </form>
-  );
-}
-
-function EncodingHint({ encodings, selected }: { encodings: EncodingInfo[]; selected: string }) {
-  const encoding = encodings.find((item) => item.id === selected);
-  if (!encoding) return null;
-  return <p className="hint">{encoding.description}</p>;
-}
-
-function ShareResults({
-  result,
-  onError,
-  onStatus,
-}: {
-  result: SplitResponse;
-  onError: (message: string | null) => void;
-  onStatus: (message: string) => void;
-}) {
-  const allShares = shareInputText(result.shares, result.encoding);
-
-  async function copyShare(share: string, index: number) {
-    try {
-      await copyText(share);
-      onStatus(`Copied recovery share ${index + 1}.`);
-    } catch (err) {
-      onError(errorMessage(err));
-    }
-  }
-
-  return (
-    <section className="results" aria-labelledby="split-results-title">
-      <div className="results-header">
-        <div>
-          <p className="eyebrow">Generated</p>
-          <h3 id="split-results-title">{result.shares.length} recovery shares</h3>
-          <p>
-            Threshold {result.threshold} of {result.shareCount}. Encoding {result.encoding}.
-            {result.passphraseProtected ? " Passphrase protection enabled." : ""}
-          </p>
-        </div>
-        <div className="mini-actions">
-          <button type="button" onClick={() => void copyText(allShares).then(() => onStatus("Copied all recovery shares."), (err: unknown) => onError(errorMessage(err)))}>
-            Copy all
-          </button>
-          <button
-            type="button"
-            onClick={() => downloadBlob(new Blob([allShares], { type: "text/plain" }), "safeparts-recovery-shares.txt")}
-          >
-            Save all
-          </button>
-        </div>
-      </div>
-      <div className="share-list">
-        {result.shares.map((share, index) => (
-          <article className="share-card" key={share.slice(0, 24) + index}>
-            <div className="share-card-header">
-              <strong>Recovery share {index + 1}</strong>
-              <div>
+              <div className="dir-row flex-wrap items-center gap-2">
+                <a
+                  href={helpUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="grid h-11 min-w-[44px] px-3 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-xs font-semibold tracking-wide uppercase text-slate-200 transition hover:bg-white/5"
+                  aria-label={strings.help}
+                  title={strings.help}
+                >
+                  {strings.help}
+                </a>
+                <a
+                  href="https://github.com/mustafamohsen/safeparts"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                  aria-label={strings.github}
+                  title={strings.github}
+                >
+                  <GitHubIcon />
+                </a>
+                <a
+                  href="https://discord.gg/ZaSfpcy8At"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                  aria-label={strings.discord}
+                  title={strings.discord}
+                >
+                  <DiscordIcon />
+                </a>
                 <button
                   type="button"
-                  aria-label={`Copy recovery share ${index + 1}`}
-                  onClick={() => void copyShare(share, index)}
+                  onMouseDown={() => setKeytipsActive(true)}
+                  onMouseUp={() => setKeytipsActive(false)}
+                  onMouseLeave={() => setKeytipsActive(false)}
+                  onTouchStart={() => setKeytipsActive(true)}
+                  onTouchEnd={() => setKeytipsActive(false)}
+                  className="hidden sm:grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
+                  aria-label={strings.keyboardShortcuts}
+                  title={strings.keyboardShortcuts}
                 >
-                  Copy
+                  ?
                 </button>
-                <button
-                  type="button"
-                  aria-label={`Save recovery share ${index + 1}`}
-                  onClick={() => downloadBlob(new Blob([share], { type: "text/plain" }), `safeparts-share-${index + 1}.txt`)}
-                >
-                  Save
-                </button>
+                <div className="dir-row items-center gap-1 rounded-xl border border-emerald-500/15 bg-black/35 p-1">
+                  <button
+                    type="button"
+                    className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
+                      lang === "en" ? "bg-white/10" : "hover:bg-white/5"
+                    }`}
+                    onClick={() => setLang("en")}
+                    aria-label={strings.english}
+                    aria-pressed={lang === "en"}
+                    title={strings.english}
+                  >
+                    EN
+                  </button>
+                  <button
+                    type="button"
+                    className={`grid h-11 w-11 place-items-center rounded-lg text-sm transition ${
+                      lang === "ar" ? "bg-white/10" : "hover:bg-white/5"
+                    }`}
+                    onClick={() => setLang("ar")}
+                    aria-label={strings.arabic}
+                    aria-pressed={lang === "ar"}
+                    title={strings.arabic}
+                  >
+                    AR
+                  </button>
+                </div>
               </div>
             </div>
-            <textarea readOnly aria-label={`Recovery share ${index + 1}`} value={share} />
-          </article>
-        ))}
-      </div>
-    </section>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div
+                className="pill w-fit"
+                role="tablist"
+                aria-label={lang === "en" ? "Operation mode" : "وضع التشغيل"}
+                onKeyDown={(e) => {
+                  const isRtl = lang === "ar";
+                  const current: Tab = tab;
+                  const next = (dir: "prev" | "next"): Tab => {
+                    if (current === "split") return dir === "next" ? "combine" : "split";
+                    return dir === "next" ? "combine" : "split";
+                  };
+
+                  if (e.key === "Home") {
+                    e.preventDefault();
+                    setTab("split");
+                    focusTab("split");
+                    return;
+                  }
+
+                  if (e.key === "End") {
+                    e.preventDefault();
+                    setTab("combine");
+                    focusTab("combine");
+                    return;
+                  }
+
+                  if (e.key === "ArrowRight") {
+                    e.preventDefault();
+                    const target = next(isRtl ? "prev" : "next");
+                    setTab(target);
+                    focusTab(target);
+                    return;
+                  }
+
+                  if (e.key === "ArrowLeft") {
+                    e.preventDefault();
+                    const target = next(isRtl ? "next" : "prev");
+                    setTab(target);
+                    focusTab(target);
+                  }
+                }}
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === "split"}
+                  aria-controls="split-panel"
+                  id="split-tab"
+                  tabIndex={tab === "split" ? 0 : -1}
+                  data-keytip="1"
+                  className={`pill-btn ${tab === "split" ? "pill-btn-active" : "pill-btn-inactive"}`}
+                  onClick={() => setTab("split")}
+                  ref={splitTabRef}
+                >
+                  {strings.splitTab}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === "combine"}
+                  aria-controls="combine-panel"
+                  id="combine-tab"
+                  tabIndex={tab === "combine" ? 0 : -1}
+                  data-keytip="2"
+                  className={`pill-btn ${tab === "combine" ? "pill-btn-active" : "pill-btn-inactive"}`}
+                  onClick={() => setTab("combine")}
+                  ref={combineTabRef}
+                >
+                  {strings.combineTab}
+                </button>
+              </div>
+
+              <div className="dir-row items-center gap-2 rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2 text-xs text-slate-200">
+                <ShieldIcon />
+                <span>{strings.privacyNote}</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex flex-col gap-6">
+            {tab === "split" ? (
+              <div role="tabpanel" id="split-panel" aria-labelledby="split-tab">
+                <SplitForm strings={strings} />
+              </div>
+            ) : (
+              <div role="tabpanel" id="combine-panel" aria-labelledby="combine-tab">
+                <CombineForm lang={lang} strings={strings} />
+              </div>
+            )}
+          </main>
+
+          <footer className="dir-row flex-wrap items-center justify-between gap-2 text-start text-xs text-slate-400">
+            <div>
+              © Mustafa Mohsen ·{' '}
+              <a
+                className="underline decoration-slate-400/30 underline-offset-4 hover:decoration-slate-400/60"
+                href="https://github.com/mustafamohsen/safeparts/blob/main/LICENSE"
+                target="_blank"
+                rel="noreferrer"
+              >
+                MIT
+              </a>
+            </div>
+          </footer>
+
+          <LiveRegion announcements={announcements} />
+
+          <KeytipsOverlay active={keytipsActive} lang={lang} strings={strings} />
+
+          <KeyboardShortcutsHelp
+            open={shortcutsOpen}
+            lang={lang}
+            strings={strings}
+            onClose={() => setShortcutsOpen(false)}
+          />
+        </div>
+      </LiveRegionProvider>
+    </div>
   );
-}
-
-function ShareInspectionCard({ inspection }: { inspection: ShareInspection | null }) {
-  if (!inspection) {
-    return (
-      <section className="inspection muted" aria-live="polite">
-        <strong>Share inspection</strong>
-        <span>Paste or load recovery shares, then inspect before combining.</span>
-      </section>
-    );
-  }
-
-  return (
-    <section className="inspection" aria-live="polite">
-      <strong>Share inspection</strong>
-      <dl>
-        <div>
-          <dt>Encoding</dt>
-          <dd>{inspection.encoding}</dd>
-        </div>
-        <div>
-          <dt>Threshold</dt>
-          <dd>{inspection.threshold}</dd>
-        </div>
-        <div>
-          <dt>Share count</dt>
-          <dd>{inspection.shareCount}</dd>
-        </div>
-        <div>
-          <dt>Provided</dt>
-          <dd>{inspection.providedShares}</dd>
-        </div>
-        <div>
-          <dt>Passphrase</dt>
-          <dd>{inspection.passphraseProtected ? "Required" : "Not required"}</dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd>{inspection.readyToCombine ? "Ready" : "Need more recovery shares"}</dd>
-        </div>
-      </dl>
-      <p>
-        Set {inspection.setId.slice(0, 12)}… · indexes {inspection.shareIndexes.join(", ")}
-        {!inspection.consistent ? " · metadata mismatch detected" : ""}
-      </p>
-    </section>
-  );
-}
-
-function CombineResult({
-  result,
-  onError,
-  onStatus,
-}: {
-  result: CombineResponse;
-  onError: (message: string | null) => void;
-  onStatus: (message: string) => void;
-}) {
-  async function copyRecoveredText() {
-    if (!result.text) return;
-    try {
-      await copyText(result.text);
-      onStatus("Copied reconstructed text.");
-    } catch (err) {
-      onError(errorMessage(err));
-    }
-  }
-
-  return (
-    <section className="results" aria-labelledby="combine-results-title">
-      <div className="results-header">
-        <div>
-          <p className="eyebrow">Reconstructed</p>
-          <h3 id="combine-results-title">Secret bytes are ready</h3>
-          <p>
-            {result.byteCount} bytes from {result.shareCount} recovery shares using {result.encoding}.
-          </p>
-        </div>
-        <div className="mini-actions">
-          {result.isUtf8 ? (
-            <button type="button" onClick={() => void copyRecoveredText()}>
-              Copy text
-            </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => {
-              const bytes = toBytes(result);
-              downloadBlob(new Blob([bytes.buffer as ArrayBuffer]), "safeparts-reconstructed-secret.bin");
-            }}
-          >
-            Save bytes
-          </button>
-        </div>
-      </div>
-      {result.isUtf8 && result.text !== null ? (
-        <label className="field field-large">
-          <span>Reconstructed text</span>
-          <textarea readOnly value={result.text} />
-        </label>
-      ) : (
-        <div className="binary-note">The reconstructed secret is not valid UTF-8. Save the bytes to recover the original file.</div>
-      )}
-    </section>
-  );
-}
-
-function errorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === "string") return err;
-  return "the operation failed";
 }
