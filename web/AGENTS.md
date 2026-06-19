@@ -10,7 +10,7 @@ Owns the Vite + React browser UI, web packaging, WASM build integration, and loc
 - `scripts/build-wasm.sh`: builds `crates/safeparts_wasm` for browser consumption.
 - `tests/`: Playwright/axe browser tests.
 - `help/`: Astro + Starlight documentation site; see its child AGENTS.md.
-- `Dockerfile`, `nginx.conf`, `public/`, and package config for static deployment.
+- `Dockerfile`, `nginx.conf`, `public/`, `cloudflare-worker.ts`, and package config for static deployment.
 
 ## Local Contracts
 
@@ -29,6 +29,7 @@ Owns the Vite + React browser UI, web packaging, WASM build integration, and loc
 - Install: `bun install`
 - Build WASM: `bun run build:wasm`
 - Build app: `bun run build`
+- Cloudflare Worker dry run from repo root: `bunx wrangler deploy --dry-run --config wrangler.jsonc`
 - Dev server: `bun run dev`
 - Existing test scripts: `bun run test:e2e:smoke`, `bun run test:e2e:full`
 

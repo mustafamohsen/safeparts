@@ -174,6 +174,13 @@ bun run dev
 
 Open http://localhost:5173.
 
+## Web UI deployment
+
+Netlify remains the primary hosted deployment. Cloudflare Workers deployment files are also available, but they are additive and do not replace Netlify.
+
+- Netlify config: `netlify.toml`
+- Cloudflare Workers setup: `docs/deployment/cloudflare-workers.md`
+
 ## Web UI + docs (Docker)
 
 This builds the static web UI and the docs site and serves them from a tiny Nginx container.

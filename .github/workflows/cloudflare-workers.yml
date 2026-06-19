@@ -1,0 +1,95 @@
+name: cloudflare workers deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'web/**'
+      - 'crates/safeparts_core/**'
+      - 'crates/safeparts_wasm/**'
+      - 'wrangler.jsonc'
+      - '.github/workflows/cloudflare-workers.yml'
+  pull_request:
+    paths:
+      - 'web/**'
+      - 'crates/safeparts_core/**'
+      - 'crates/safeparts_wasm/**'
+      - 'wrangler.jsonc'
+      - '.github/workflows/cloudflare-workers.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-workers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cloudflare_workers:
+    name: cloudflare workers
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 'latest'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
+
+      - name: Install web deps
+        run: bun install
+        working-directory: web
+
+      - name: Build WASM
+        run: bun run build:wasm
+        working-directory: web
+
+      - name: Build web app
+        run: bun run build
+        working-directory: web
+
+      - name: Install docs deps
+        run: bun install
+        working-directory: web/help
+
+      - name: Build docs
+        run: bun run build
+        working-directory: web/help
+
+      - name: Validate Worker bundle
+        if: github.event_name == 'pull_request'
+        run: bunx wrangler deploy --dry-run --config wrangler.jsonc
+
+      - name: Check Cloudflare secrets
+        if: github.event_name != 'pull_request'
+        id: cloudflare_secrets
+        run: |
+          if [ -n "$CLOUDFLARE_ACCOUNT_ID" ] && [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN is not set; skipping Cloudflare Workers deploy."
+          fi
+
+      - name: Deploy to Cloudflare Workers
+        if: github.event_name != 'pull_request' && steps.cloudflare_secrets.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: deploy --config wrangler.jsonc

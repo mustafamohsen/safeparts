@@ -4,6 +4,7 @@ Source of truth:
 
 - `.github/workflows/rust-ci.yml`
 - `.github/workflows/web-ci.yml`
+- `.github/workflows/cloudflare-workers.yml`
 
 ## Rust (Cargo)
 
@@ -72,6 +73,12 @@ Source of truth:
 - Location: `web/help/` (served under `/help/`)
 - Dev server: `bun run dev`
 - Production build: `bun run build`
+
+## Cloudflare Workers deployment
+
+- Config: `wrangler.jsonc`
+- Worker entrypoint: `web/cloudflare-worker.ts`
+- Build the web app and docs first, then validate with `bunx wrangler deploy --dry-run --config wrangler.jsonc` from the repository root.
 
 ## Web tests (Playwright + axe a11y)
 

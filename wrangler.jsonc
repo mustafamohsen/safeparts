@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "safeparts-web",
+  "main": "web/cloudflare-worker.ts",
+  "compatibility_date": "2025-06-01",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "web/dist"
+  }
+}

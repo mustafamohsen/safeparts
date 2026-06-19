@@ -82,7 +82,8 @@ Default section order:
 
 ## User Preferences
 
-When the user requests a durable behavior change, record it here or in the relevant child AGENTS.md
+- Record durable behavior changes here or in the relevant child AGENTS.md.
+- Cloudflare Workers deployment must stay additive. Do not remove, cancel, or replace the Netlify deployment unless the user explicitly asks for that change.
 
 ## Child DOX Index
 
@@ -116,7 +117,7 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
 ## Checks (mirrors CI)
 
 - Build / lint / test commands: `docs/agents/checks.md`
-- CI workflows (source of truth): `.github/workflows/rust-ci.yml`, `.github/workflows/web-ci.yml`, `.github/workflows/release.yml`
+- CI workflows (source of truth): `.github/workflows/rust-ci.yml`, `.github/workflows/web-ci.yml`, `.github/workflows/cloudflare-workers.yml`, `.github/workflows/release.yml`
 - For browser-based Web UI checks, use the `browser` skill / `browse` CLI in local mode (`browse env local`) instead of Playwright. Do not use Playwright for local smoke testing unless the user explicitly asks for it.
 
 ## Standards (do not change)
