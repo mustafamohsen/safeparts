@@ -10,7 +10,7 @@ The release artifacts include:
 - Safeparts Desktop bundles from the release workflow:
   - Linux: AppImage, `.deb`, and `.rpm`
   - Windows: NSIS `.exe` and MSI
-  - macOS: `.dmg` for Intel and Apple Silicon runners
+  - macOS: universal `.dmg` for Intel and Apple Silicon Macs
 
 The web UI is intentionally not packaged as a separate release artifact.
 
