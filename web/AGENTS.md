@@ -7,7 +7,7 @@ Owns the Vite + React browser UI, web packaging, WASM build integration, and loc
 ## Ownership
 
 - `src/`: React application, components, hooks, i18n, styles, and generated WASM package boundary.
-- `scripts/build-wasm.sh`: builds `crates/safeparts_wasm` for browser consumption.
+- `scripts/`: web helper scripts, including WASM package generation.
 - `tests/`: Playwright/axe browser tests.
 - `help/`: Astro + Starlight documentation site; see its child AGENTS.md.
 - `Dockerfile`, `nginx.conf`, `public/`, and package config for static deployment.
@@ -28,10 +28,14 @@ Owns the Vite + React browser UI, web packaging, WASM build integration, and loc
 
 - Install: `bun install`
 - Build WASM: `bun run build:wasm`
+- Type check: `bun run typecheck`
 - Build app: `bun run build`
 - Dev server: `bun run dev`
 - Existing test scripts: `bun run test:e2e:smoke`, `bun run test:e2e:full`
 
 ## Child DOX Index
 
+- `src/`: React browser app source and generated WASM package boundary.
+- `scripts/`: web helper scripts, including WASM build integration.
+- `tests/`: Playwright/axe browser and docs tests.
 - `help/`: Astro/Starlight help documentation site deployed under `/help/`.

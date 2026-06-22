@@ -6,6 +6,7 @@ Owns repository automation scripts.
 
 ## Ownership
 
+- `dev/`: local developer diagnostics and DX verification helpers.
 - `release/`: local release-style archive packaging.
 
 ## Local Contracts
@@ -21,7 +22,9 @@ Owns repository automation scripts.
 ## Verification
 
 - Run the script-specific documented command when practical.
+- Run `mise run dx:verify` after changing developer automation checks.
 
 ## Child DOX Index
 
+- `dev/`: developer diagnostics and DX verification scripts.
 - `release/`: release archive packaging script and README.

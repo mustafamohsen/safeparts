@@ -25,6 +25,14 @@ run = [
   "bun install --cwd desktop",
 ]
 
+[tasks.doctor]
+description = "Check local developer toolchain and common setup issues."
+run = "python3 scripts/dev/doctor.py"
+
+[tasks."dx:verify"]
+description = "Check AGENTS/docs structure, lockfiles, generated artifacts, and desktop parity."
+run = "python3 scripts/dev/verify_dx.py"
+
 [tasks.fmt]
 description = "Format Rust code."
 run = "cargo fmt --all"
@@ -39,6 +47,14 @@ run = "cargo test --all-features"
 
 [tasks.check]
 description = "Run Rust format, lint, and tests."
+depends = ["verify:rust"]
+
+[tasks.verify]
+description = "Run the full local verification gate."
+depends = ["verify:rust", "web:build", "docs:build", "desktop:check", "dx:verify"]
+
+[tasks."verify:rust"]
+description = "Run Rust format, lint, and tests."
 depends = ["fmt-check", "lint", "test"]
 
 [tasks."fmt-check"]
@@ -50,10 +66,20 @@ description = "Start the web app."
 dir = "web"
 run = "bun run dev"
 
+[tasks."web:typecheck"]
+description = "Type-check the web app."
+dir = "web"
+run = "bun run typecheck"
+
 [tasks."web:build"]
 description = "Build WASM and the web app."
 dir = "web"
-run = ["bun run build:wasm", "bun run build"]
+run = ["bun run build:wasm", "bun run typecheck", "bun run build"]
+
+[tasks."web:test:smoke"]
+description = "Run web smoke tests."
+dir = "web"
+run = "bun run test:e2e:smoke"
 
 [tasks."docs:dev"]
 description = "Start the help docs."
@@ -70,7 +96,20 @@ description = "Start the desktop app."
 dir = "desktop"
 run = "bun run tauri:dev"
 
+[tasks."desktop:typecheck"]
+description = "Type-check the desktop frontend."
+dir = "desktop"
+run = "bun run typecheck"
+
+[tasks."desktop:parity"]
+description = "Check copied desktop UI files against the web UI source."
+run = "python3 scripts/dev/check_desktop_parity.py"
+
 [tasks."desktop:build"]
 description = "Build the desktop frontend."
 dir = "desktop"
 run = "bun run build"
+
+[tasks."desktop:check"]
+description = "Run desktop frontend typecheck, build, and web parity check."
+depends = ["desktop:parity", "desktop:typecheck", "desktop:build"]

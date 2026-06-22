@@ -5,6 +5,13 @@ Source of truth:
 - `.github/workflows/rust-ci.yml`
 - `.github/workflows/web-ci.yml`
 
+## Shortcut tasks
+
+- Environment doctor: `mise run doctor`
+- DX structure checks: `mise run dx:verify`
+- Rust gate: `mise run verify:rust`
+- Full local gate: `mise run verify`
+
 ## Rust (Cargo)
 
 **Prereqs**
@@ -56,6 +63,7 @@ Source of truth:
 - Dev app: `bun run tauri:dev`
 - Frontend type check: `bun run typecheck`
 - Frontend build: `bun run build`
+- Desktop/web UI parity: `mise run desktop:parity`
 - Native release compile without bundling/signing: `bun run tauri:build -- --no-bundle`
 - Native bundle for the host platform: `bun run tauri:build`
 
@@ -72,6 +80,7 @@ Source of truth:
 
 - CI uses `bun`.
 - Lockfiles are committed: `web/bun.lock` and `web/help/bun.lock`.
+- Do not add npm, pnpm, or yarn lockfiles for web packages unless the package-manager policy changes.
 - Install deps: `bun install`
 
 **WASM build (required before UI works)**
@@ -81,6 +90,7 @@ Source of truth:
 **Run / Build**
 
 - Dev server (from `web/`): `bun run dev`
+- Type check (from `web/`): `bun run typecheck`
 - Production build (from `web/`): `bun run build`
 
 **Notes**

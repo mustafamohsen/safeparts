@@ -30,7 +30,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 'latest'
+          bun-version: '1.3.11'
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -43,11 +43,15 @@ jobs:
           cache-targets: false
 
       - name: Install web deps
-        run: bun install
+        run: bun install --frozen-lockfile
         working-directory: web
 
       - name: Build WASM
         run: bun run build:wasm
+        working-directory: web
+
+      - name: Type-check web app
+        run: bun run typecheck
         working-directory: web
 
       - name: Build web app
@@ -55,7 +59,7 @@ jobs:
         working-directory: web
 
       - name: Install docs deps
-        run: bun install
+        run: bun install --frozen-lockfile
         working-directory: web/help
 
       - name: Build docs
@@ -116,7 +120,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 'latest'
+          bun-version: '1.3.11'
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -129,11 +133,15 @@ jobs:
           cache-targets: false
 
       - name: Install web deps
-        run: bun install
+        run: bun install --frozen-lockfile
         working-directory: web
 
       - name: Build WASM
         run: bun run build:wasm
+        working-directory: web
+
+      - name: Type-check web app
+        run: bun run typecheck
         working-directory: web
 
       - name: Build web app
@@ -141,7 +149,7 @@ jobs:
         working-directory: web
 
       - name: Install docs deps
-        run: bun install
+        run: bun install --frozen-lockfile
         working-directory: web/help
 
       - name: Build docs

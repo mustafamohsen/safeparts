@@ -16,6 +16,7 @@ The sections below are the established repo standards and conventions for agenti
 
 - When editing or creating user-facing docs (for example `README.md`, `web/help/**/*.mdx`, and other end-user/contributor docs), load and apply the `humanizer` skill before finalizing the text.
 - Do not apply this to internal instruction/tooling files (for example `AGENTS.md`, `openspec/**`, `.opencode/**`, or similar).
+- Keep developer-only guidance in `docs/dev/`; update `docs/dev/feature-matrix.md` when feature behavior changes across surfaces.
 
 ### Rust Style
 

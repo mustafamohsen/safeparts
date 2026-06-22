@@ -91,12 +91,13 @@ Default section order:
 - `web/`: Vite + React web app, WASM build integration, browser tests, and docs child site.
   - `web/help/`: Astro + Starlight help docs served under `/help/`.
 - `desktop/`: standalone Tauri desktop app with React UI and Rust command layer.
+- `docs/`: internal repository docs for agents and developers.
 - `openspec/`: OpenSpec project context, active/archived changes, and accepted specs.
 - `scripts/`: repository automation scripts, including release packaging.
 - `explainer/`: explainer media sources and generated media outputs.
 - `mobile/`: mobile prototype/native artifacts.
 
-Top-level files not covered by a child AGENTS.md remain owned here, including `README.md`, `PRD.md`, `CONTEXT.md`, `Cargo.toml`, lockfiles, CI config under `.github/`, and repo-wide docs under `docs/`.
+Top-level files not covered by a child AGENTS.md remain owned here, including `README.md`, `PRD.md`, `CONTEXT.md`, `Cargo.toml`, lockfiles, and CI config under `.github/`.
 <-- end DOX -->
 
 ## Repo snapshot
@@ -114,11 +115,12 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
 
 - Product intent + security model: `PRD.md`
 - Local dev commands + repo layout: `README.md`
+- Contributor onboarding and DX workflow: `CONTRIBUTING.md`, `docs/dev/README.md`
 - Local dev toolchain/env/task shortcuts: `mise.toml`
 
 ## Checks (mirrors CI)
 
-- Build / lint / test commands: `docs/agents/checks.md`
+- Build / lint / test commands: `docs/agents/checks.md`, `docs/dev/verification.md`
 - CI workflows (source of truth): `.github/workflows/rust-ci.yml`, `.github/workflows/web-ci.yml`, `.github/workflows/release.yml`
 - For browser-based Web UI checks, use the `browser` skill / `browse` CLI in local mode (`browse env local`) instead of Playwright. Do not use Playwright for local smoke testing unless the user explicitly asks for it.
 
@@ -136,6 +138,12 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
 
 - When editing or creating user-facing docs (for example `README.md`, `web/help/**/*.mdx`, and other end-user/contributor docs), load and apply the `humanizer` skill before finalizing the text.
 - Do not apply this to internal instruction/tooling files (for example `AGENTS.md`, `openspec/**`, `.opencode/**`, or similar).
+
+## Developer experience
+
+- Keep developer-only guidance in `docs/dev/` and agent instructions in `AGENTS.md` / `docs/agents/`.
+- Update `docs/dev/feature-matrix.md` when feature behavior changes across core, CLI, TUI, WASM, web, desktop, help docs, or release packaging.
+- Local DX diagnostics: `mise run doctor`, `mise run dx:verify`.
 
 ## Release packaging
 

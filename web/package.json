@@ -5,6 +5,7 @@
   "scripts": {
     "build:wasm": "bash scripts/build-wasm.sh",
     "dev": "vite",
+    "typecheck": "tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview",
     "help:dev": "bash -lc 'cd help && bun run dev'",

@@ -6,7 +6,7 @@ Owns repository-local agent skills used by coding assistants.
 
 ## Ownership
 
-- `skills/`: skill definitions and supporting materials.
+- Repository-local skill definitions and supporting materials when present.
 
 ## Local Contracts
 
@@ -17,6 +17,7 @@ Owns repository-local agent skills used by coding assistants.
 
 - Update a skill's `SKILL.md` and adjacent support files together when behavior changes.
 - Keep examples synthetic and project-safe.
+- If a `skills/` subtree is added, update this Child DOX Index with the real paths.
 
 ## Verification
 
@@ -24,11 +25,4 @@ Owns repository-local agent skills used by coding assistants.
 
 ## Child DOX Index
 
-- `skills/diagnose/`: disciplined bug/performance diagnosis loop.
-- `skills/frontend-design/`: production-grade frontend design guidance.
-- `skills/grill-me/`: interview workflow for stress-testing plans.
-- `skills/grill-with-docs/`: interview workflow tied to project context and ADR-style docs.
-- `skills/handoff/`: conversation handoff document generation.
-- `skills/improve-codebase-architecture/`: architecture deepening and reporting workflow.
-- `skills/remotion-best-practices/`: Remotion video guidance.
-- `skills/web-design-guidelines/`: UI/accessibility review guidance.
+- No repository-local skill child folders are present yet.
