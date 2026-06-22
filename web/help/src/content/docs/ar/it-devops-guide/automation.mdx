@@ -1,96 +1,270 @@
 ---
 title: أنماط الأتمتة
-description: دمج CLI في scripts دون تسريب الأسرار إلى السجلات.
+description: استخدام Safeparts CLI في scripts وCI دون تسريب الأسرار إلى السجلات.
 ---
 
-يمكن أن يكون Safeparts جزءاً من الأتمتة، لكنه لا يجب أن يتحول إلى نظام توزيع أسرار متصل دائماً.
-استخدمه للإعداد، والحيازة الاحتياطية، والاسترداد، والإجراءات التي يتحكم بها المشغلون.
-استخدم مدير الأسرار للحقن العادي وقت التشغيل.
+يمكن أن يكون Safeparts جزءاً من الأتمتة، لكنه لا يجب أن يتحول إلى نظام توزيع أسرار متصل دائماً. استخدمه للإعداد، والحيازة الاحتياطية، وتدريبات الاسترداد، والإجراءات التي يتحكم بها المشغلون. استخدم مدير أسرار للحقن العادي وقت التشغيل.
 
-## نظافة shell
+:::caution
+لا تلصق حصصاً حقيقية، أو عبارات مرور، أو أسراراً مستردة في سجلات CI أو التذاكر أو المحادثات أو لقطات الشاشة أو artifacts. شغّل فحوص CI الدورية بأسرار اصطناعية.
+:::
 
-فضّل الملفات والأنابيب ومساحات العمل المقيدة على القيم الحرفية في سطر الأوامر.
-لا تستخدم `echo "real-secret"` في الأمثلة أو scripts أو التذاكر.
-هذا يشجع تسريب تاريخ shell.
+## قواعد الأتمتة
 
-نمط أكثر أماناً:
+- استخدم أسراراً اصطناعية في الاختبارات وتدريبات CI.
+- لا تفعّل تتبع shell باستخدام `set -x` حول أوامر تلمس الأسرار أو الحصص أو عبارات المرور.
+- فضّل الملفات أو stdin/stdout على القيم الحرفية في سطر الأوامر للمواد السرية.
+- فضّل `--passphrase-file` على `--passphrase`.
+- أنشئ الملفات المؤقتة داخل مجلد خاص باستخدام `umask 077`.
+- لا تخزّن عدداً كافياً من الحصص في مخزن أسرار CI واحد، أو bucket واحد، أو مسار vault واحد، أو نطاق هوية واحد.
+- لا تطبع الأسرار المستردة. قارن الملفات أو مرّر البايتات مباشرة إلى الخطوة المحددة التالية.
+
+## نموذج الأوامر
+
+قسّم ملفاً إلى حصص استرداد:
 
 ```bash
+safeparts split \
+  -k 2 \
+  -n 3 \
+  -e base64url \
+  -i secret.bin \
+  -o shares.txt
+```
+
+اجمع الحصص المختارة في ملف مسترد:
+
+```bash
+safeparts combine \
+  -i selected-shares.txt \
+  -o recovered.bin
+```
+
+أعلام مفيدة:
+
+| العلم | ينطبق على | المعنى |
+| --- | --- | --- |
+| `-k`, `--threshold` | split | عدد الحصص المطلوبة للاسترداد. |
+| `-n`, `--shares` | split | عدد الحصص التي ستنشأ. |
+| `-e`, `--encoding` | split, combine | ترميز الإخراج أو الإدخال. يمكن أن يحذفه combine ويستخدم الاكتشاف التلقائي. |
+| `-i`, `--in` | split, combine | القراءة من ملف. استخدم `-` للقراءة من stdin. |
+| `-o`, `--out` | split, combine | الكتابة إلى ملف. استخدم `-` للكتابة إلى stdout. |
+| `-P`, `--passphrase-file` | split, combine | قراءة عبارة المرور من ملف. تزال نهاية السطر الأخيرة. |
+| `-p`, `--passphrase` | split, combine | عبارة المرور كوسيط. تجنب ذلك في الأتمتة لأن shells وأدوات العمليات قد تسجلها. |
+
+ترميزات split المدعومة هي `base64url` و`base58check` و`mnemo-words` و`mnemo-bip39`. يقبل CLI aliases مثل `base64` و`base58`.
+
+## تدريب round-trip محلي
+
+يستخدم هذا script سراً اصطناعياً ويقارن الملفات دون طباعة القيمة المستردة.
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
 umask 077
+
 workdir="$(mktemp -d)"
 trap 'rm -rf "$workdir"' EXIT
 
-install -m 600 /dev/null "$workdir/secret.bin"
-# اكتب أو انسخ السر إلى $workdir/secret.bin بالطريقة المعتمدة لديك.
+printf 'synthetic secret for automation test' > "$workdir/secret.bin"
 
 safeparts split \
-  -k 3 \
-  -n 5 \
+  -k 2 \
+  -n 3 \
   -e base64url \
-  --in "$workdir/secret.bin" \
-  --out "$workdir/shares.txt"
+  -i "$workdir/secret.bin" \
+  -o "$workdir/shares.txt"
+
+sed -n '1,2p' "$workdir/shares.txt" > "$workdir/selected-shares.txt"
+
+safeparts combine \
+  -i "$workdir/selected-shares.txt" \
+  -o "$workdir/recovered.bin"
+
+cmp "$workdir/secret.bin" "$workdir/recovered.bin"
 ```
 
-بعد ذلك وزع الحصص واحذف المجلد المؤقت.
-إذا كانت خطوة التوزيع قد تفشل، فتأكد أنها لا تطبع محتوى الحصص في مسار الخطأ.
+استخدم هذا النمط لاختبارات smoke والتدريبات. لا تستبدل الإدخال الاصطناعي إلا داخل إجراء استرداد تمت مراجعته.
 
-## CI وتوقيع الإصدارات
+## أتمتة محمية بعبارة مرور
 
-يفيد Safeparts في الحيازة غير المتصلة لمفاتيح توقيع الإصدارات أو مواد الاسترداد.
-غالباً لا يكون مناسباً لاسترداد هذه الأسرار داخل وظائف CI عادية.
-
-نمط موصى به:
-
-1. قسّم سر استرداد التوقيع أثناء الإعداد
-2. خزّن الحصص مع أمناء منفصلين
-3. أبق اعتمادات التوقيع العادية في نظام الإصدارات الآمن الموجود لديك
-4. استخدم Safeparts فقط عند الحاجة لاسترداد ذلك النظام أو استبداله
-5. دوّر المفتاح بعد الاسترداد إذا جُمعت الحصص على بنية مشتركة
-
-إذا كان لا بد لوظيفة CI أن تشغّل `safeparts combine`، فعامل تلك الوظيفة كبيئة استرداد ذات صلاحيات عالية.
-أوقف echo للأوامر، وقيّد السجلات، ونظف ملفات مساحة العمل بعد الاستخدام.
-
-## حد التكامل مع vault
-
-نمط شائع هو تخزين حصة في vault الشركة، وحصة مع قائد الأمن، وحصة غير متصلة.
-قد يكون هذا معقولاً لاسترداد <span class="token">k=2, n=3</span>.
-
-تجنب تخزين عدد كاف من الحصص في vault أو نطاق هوية واحد يحقق العتبة.
-إذا كان اختراق SSO واحد يمنح الوصول إلى <var>k</var> حصص، فلن يحقق Safeparts فصل الواجبات.
-
-## إخراج مناسب للمعالجة الآلية
-
-يخرج CLI حصة مشفرة واحدة في كل سطر عند التقسيم بترميزات مدمجة.
-يمكن للـ scripts تقسيم الإخراج إلى وجهات منفصلة:
+استخدم ملف عبارة مرور خاصاً. لا تضع عبارة المرور في سطر الأوامر.
 
 ```bash
-safeparts split -k 3 -n 5 -e base64url --in secret.bin --out shares.txt
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
 
-sed -n '1p' shares.txt > share-ops.txt
-sed -n '2p' shares.txt > share-security.txt
-sed -n '3p' shares.txt > share-eng-lead.txt
-sed -n '4p' shares.txt > share-offline.txt
-sed -n '5p' shares.txt > share-exec.txt
+workdir="$(mktemp -d)"
+trap 'rm -rf "$workdir"' EXIT
+
+printf 'synthetic protected secret' > "$workdir/secret.bin"
+printf '%s' 'synthetic passphrase for tests' > "$workdir/passphrase.txt"
+
+safeparts split \
+  -k 2 \
+  -n 3 \
+  -e mnemo-words \
+  -P "$workdir/passphrase.txt" \
+  -i "$workdir/secret.bin" \
+  -o "$workdir/shares.txt"
+
+awk 'NR <= 2 { print }' "$workdir/shares.txt" > "$workdir/selected-shares.txt"
+
+safeparts combine \
+  -P "$workdir/passphrase.txt" \
+  -i "$workdir/selected-shares.txt" \
+  -o "$workdir/recovered.bin"
+
+cmp "$workdir/secret.bin" "$workdir/recovered.bin"
 ```
 
-اجعل الخطوة التالية تنقل كل ملف إلى موقع الحيازة النهائي.
-لا تترك مجلد العمل كحزمة تحتوي كل الحصص.
+في عبارات المرور الحقيقية، اجعل الملف يأتي من مدير الأسرار أو من إدخال مشغل على مضيف مضبوط. احذفه عند انتهاء المهمة.
 
-## قواعد التسجيل
+## سيناريو CI: تدريب استرداد اصطناعي
 
-آمن للتسجيل:
+هذا النمط آمن لـ CI دوري لأنه لا يستخدم أسرار إنتاج. يثبت أن binary يعمل وأن split/combine لا يزالان ينجزان round-trip.
 
-- نجاح الأمر أو فشله
-- العتبة والترميز المختاران
-- أسماء وجهات الحيازة
-- معرّفات تذاكر الموافقة
+```yaml
+name: safeparts synthetic recovery drill
 
-غير آمن للتسجيل:
+on:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
 
-- بايتات السر المدخل
-- الحصص المشفرة
-- عبارات المرور
-- مخرجات السر المسترد
-- محتويات الملفات المؤقتة كاملة
+jobs:
+  recovery-drill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-عند الشك، سجّل أقل واطلب ملاحظة استرداد بشرية لا تحتوي مادة سرية.
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build CLI
+        run: cargo build --release -p safeparts
+
+      - name: Run synthetic drill
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+
+          printf 'synthetic CI drill secret' > "$workdir/secret.bin"
+
+          target/release/safeparts split \
+            -k 2 \
+            -n 3 \
+            -e base64url \
+            -i "$workdir/secret.bin" \
+            -o "$workdir/shares.txt"
+
+          sed -n '1,2p' "$workdir/shares.txt" > "$workdir/selected-shares.txt"
+
+          target/release/safeparts combine \
+            -i "$workdir/selected-shares.txt" \
+            -o "$workdir/recovered.bin"
+
+          cmp "$workdir/secret.bin" "$workdir/recovered.bin"
+```
+
+## سيناريو CI: مهمة combine محروسة
+
+استخدم هذا فقط بعد مراجعة أمنية. غالباً يكون CI المكان الخطأ لإعادة تركيب سر إنتاج لأن السجلات، وartifacts، وcaches، ووصول runner توسع حدود التعرض.
+
+إذا كان لا بد لوظيفة CI أن تشغّل `safeparts combine`، فاستخدم هذه القيود:
+
+- شغّلها يدوياً
+- استخدم runner مقسى أو self-hosted
+- أبق كل حصة مطلوبة خارج المستودع وخارج السجلات العادية
+- تجنب تخزين <var>k</var> حصص في backend أسرار CI نفسه إلا إذا كان ذلك الخطر مقبولاً
+- اخف المتغيرات، لكن لا تعتمد على الإخفاء وحده
+- اكتب الإخراج المسترد إلى ملف خاص ومرره إلى خطوة ضيقة واحدة
+- احذف الملفات المؤقتة قبل خروج الوظيفة
+
+هيكل مثال:
+
+```yaml
+name: guarded safeparts combine
+
+on:
+  workflow_dispatch:
+
+jobs:
+  combine:
+    runs-on: self-hosted
+    environment: break-glass
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build CLI
+        run: cargo build --release -p safeparts
+
+      - name: Combine operator-provided shares
+        shell: bash
+        env:
+          SAFEPARTS_SHARE_1: ${{ secrets.SAFEPARTS_SHARE_1 }}
+          SAFEPARTS_SHARE_2: ${{ secrets.SAFEPARTS_SHARE_2 }}
+          SAFEPARTS_PASSPHRASE: ${{ secrets.SAFEPARTS_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          umask 077
+
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+
+          printf '%s\n%s\n' \
+            "$SAFEPARTS_SHARE_1" \
+            "$SAFEPARTS_SHARE_2" > "$workdir/shares.txt"
+
+          printf '%s' "$SAFEPARTS_PASSPHRASE" > "$workdir/passphrase.txt"
+
+          target/release/safeparts combine \
+            -P "$workdir/passphrase.txt" \
+            -i "$workdir/shares.txt" \
+            -o "$workdir/recovered.bin"
+
+          # استخدم "$workdir/recovered.bin" في خطوة واحدة تمت مراجعتها هنا.
+          # لا تطبعه. لا ترفعه كـ artifact.
+```
+
+هذا الهيكل يركز مادة كافية لاسترداد سر أثناء الوظيفة. عامله كاستثناء break-glass، وليس كنمط نشر عادي.
+
+## فحوص metadata
+
+لا يوفّر CLI الحالي أمراً لفحص metadata فقط. يفك ترميز الحصص كجزء من `combine`، لكن combine فاشل بسبب قلة الحصص ليس فحصاً كاملاً لصحة خطة استرداد مخزنة.
+
+لـ CI الدوري، فضّل تدريبات round-trip اصطناعية. لفحوص metadata الإنتاجية، اكتب أداة مضبوطة باستخدام `safeparts_core` حتى تحلل الحزم، وتفحص set IDs وفهارس الحصص، وتنظف الأخطاء، وتتجنب تسجيل نص الحصص.
+
+## قائمة نظافة pipeline
+
+قبل تشغيل Safeparts في الأتمتة، تحقق من الآتي:
+
+- `set -x` متوقف
+- runner لا يرفع مجلد العمل عند الفشل
+- الملفات المؤقتة داخل مجلد خاص وتحذف باستخدام `trap`
+- الأوامر تكتب الأسرار المستردة إلى ملفات، لا إلى stdout
+- سجلات CI لا تحتوي command substitutions توسع الحصص أو عبارات المرور
+- artifacts وcaches تستثني ملفات الأسرار والحصص وعبارات المرور والملفات المستردة
+- التنبيهات وأحداث التدقيق تسجل حالة workflow فقط، وليس مادة سرية
+
+## التعامل مع الأعطال الشائعة
+
+| العطل | السبب المرجح | استجابة الأتمتة |
+| --- | --- | --- |
+| `need at least k shares` | قدمت الوظيفة حصصاً أقل من المطلوب أو حصصاً مكررة. | افشل مغلقاً. اطلب من مشغل توفير العدد المطلوب. |
+| `could not detect share encoding` | الإدخال تالف أو مختلط بنص ليس حصة. | افشل مغلقاً. لا تطبع الإدخال. |
+| `share set metadata mismatch` | الحصص من مجموعات تقسيم مختلفة. | افشل مغلقاً وأعد الجمع من البداية. |
+| `duplicate x coordinate` | قُدمت الحصة نفسها مرتين. | افشل مغلقاً واطلب حصة أخرى من حامل مختلف. |
+| `passphrase required` | الحصص محمية بعبارة مرور ولم يقدم ملف عبارة مرور. | افشل مغلقاً واطلب عبارة المرور عبر القناة المعتمدة. |
+| `decryption failed` | عبارة المرور خاطئة أو البيانات المشفرة عُبث بها. | افشل مغلقاً. لا تكرر المحاولة في حلقة سريعة. |
+
+## متى تستخدم مكتبة Rust بدلاً من ذلك
+
+استخدم `safeparts_core` بدلاً من أتمتة shell عندما تحتاج إلى فحص metadata، أو تخزين مخصص، أو أخطاء نوعية، أو طلب عبارة مرور داخل العملية، أو تحكم أدق بالسجلات.
+
+راجع [واجهة API للمكتبة](../developer-guide/library-api/).

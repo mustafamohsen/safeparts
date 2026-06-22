@@ -1,96 +1,270 @@
 ---
 title: Automation patterns
-description: Integrate the CLI into scripts without leaking secrets into logs.
+description: Use the Safeparts CLI in scripts and CI without leaking secrets into logs.
 ---
 
-Safeparts can be part of automation, but it should not become an always-online secret distribution system.
-Use it for setup, escrow, recovery, and operator-controlled procedures.
-Use a secrets manager for normal runtime injection.
+Safeparts can fit automation, but it should not become an always-online secret distribution system. Use it for setup, escrow, recovery drills, and operator-controlled procedures. Use a secrets manager for routine runtime injection.
 
-## Shell hygiene
+:::caution
+Do not paste real shares, passphrases, or recovered secrets into CI logs, tickets, chat, screenshots, or artifacts. Run routine CI checks with synthetic secrets.
+:::
 
-Prefer files, pipes, and restricted workspaces over command-line literals.
-Do not use `echo "real-secret"` in examples, scripts, or tickets.
-It encourages shell history leaks.
+## Automation rules
 
-Safer pattern:
+- Use synthetic secrets in tests and CI drills.
+- Do not enable shell tracing with `set -x` around commands that touch secrets, shares, or passphrases.
+- Prefer files or stdin/stdout over command-line literals for secret material.
+- Prefer `--passphrase-file` over `--passphrase`.
+- Create temporary files under a private directory with `umask 077`.
+- Do not store enough shares together in one CI secret store, artifact bucket, vault path, or identity domain.
+- Do not print recovered secrets. Compare files or pass bytes directly to the next controlled step.
+
+## Command model
+
+Split a file into recovery shares:
 
 ```bash
+safeparts split \
+  -k 2 \
+  -n 3 \
+  -e base64url \
+  -i secret.bin \
+  -o shares.txt
+```
+
+Combine selected shares into a recovered file:
+
+```bash
+safeparts combine \
+  -i selected-shares.txt \
+  -o recovered.bin
+```
+
+Useful flags:
+
+| Flag | Applies to | Meaning |
+| --- | --- | --- |
+| `-k`, `--threshold` | split | Number of shares required to recover. |
+| `-n`, `--shares` | split | Number of shares to create. |
+| `-e`, `--encoding` | split, combine | Encoding for output or input. Combine can omit it and use auto detection. |
+| `-i`, `--in` | split, combine | Read from a file. Use `-` for stdin. |
+| `-o`, `--out` | split, combine | Write to a file. Use `-` for stdout. |
+| `-P`, `--passphrase-file` | split, combine | Read passphrase from a file. Trailing newline is trimmed. |
+| `-p`, `--passphrase` | split, combine | Passphrase as an argument. Avoid this in automation because shells and process tools may record it. |
+
+Supported split encodings are `base64url`, `base58check`, `mnemo-words`, and `mnemo-bip39`. CLI aliases `base64` and `base58` are accepted.
+
+## Local round-trip drill
+
+This script uses a synthetic secret and compares files without printing the recovered value.
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
 umask 077
+
 workdir="$(mktemp -d)"
 trap 'rm -rf "$workdir"' EXIT
 
-install -m 600 /dev/null "$workdir/secret.bin"
-# Write or copy the secret into $workdir/secret.bin using your approved method.
+printf 'synthetic secret for automation test' > "$workdir/secret.bin"
 
 safeparts split \
-  -k 3 \
-  -n 5 \
+  -k 2 \
+  -n 3 \
   -e base64url \
-  --in "$workdir/secret.bin" \
-  --out "$workdir/shares.txt"
+  -i "$workdir/secret.bin" \
+  -o "$workdir/shares.txt"
+
+sed -n '1,2p' "$workdir/shares.txt" > "$workdir/selected-shares.txt"
+
+safeparts combine \
+  -i "$workdir/selected-shares.txt" \
+  -o "$workdir/recovered.bin"
+
+cmp "$workdir/secret.bin" "$workdir/recovered.bin"
 ```
 
-Then distribute the shares and delete the temporary directory.
-If your distribution step can fail, make sure it never prints share contents in an error path.
+Use this pattern for smoke tests and practice runs. Replace the synthetic input only inside a reviewed recovery procedure.
 
-## CI and release signing
+## Passphrase-protected automation
 
-Safeparts is useful for offline custody of release signing keys or recovery material.
-It is usually not appropriate to reconstruct those secrets inside ordinary CI jobs.
-
-Recommended pattern:
-
-1. split the signing recovery secret during setup
-2. store shares with separate custodians
-3. keep normal CI signing credentials in your existing secure release system
-4. use Safeparts only when that system needs recovery or replacement
-5. rotate the key after recovery if the process gathered shares on shared infrastructure
-
-If a CI job must run `safeparts combine`, treat that job as a privileged recovery environment.
-Disable command echoing, restrict logs, and clean workspace files after use.
-
-## Vault integration boundary
-
-A common pattern is to store one share in a corporate vault, one share with a security lead, and one share offline.
-That can be reasonable for <span class="token">k=2, n=3</span> recovery.
-
-Avoid storing enough shares in the same vault or identity domain to meet the threshold.
-If one SSO compromise grants access to <var>k</var> shares, Safeparts no longer provides separation of duties.
-
-## Machine-readable output
-
-The CLI outputs one encoded share per line when splitting with compact encodings.
-Scripts can split the output into separate destinations:
+Use a private passphrase file. Do not put the passphrase on the command line.
 
 ```bash
-safeparts split -k 3 -n 5 -e base64url --in secret.bin --out shares.txt
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
 
-sed -n '1p' shares.txt > share-ops.txt
-sed -n '2p' shares.txt > share-security.txt
-sed -n '3p' shares.txt > share-eng-lead.txt
-sed -n '4p' shares.txt > share-offline.txt
-sed -n '5p' shares.txt > share-exec.txt
+workdir="$(mktemp -d)"
+trap 'rm -rf "$workdir"' EXIT
+
+printf 'synthetic protected secret' > "$workdir/secret.bin"
+printf '%s' 'synthetic passphrase for tests' > "$workdir/passphrase.txt"
+
+safeparts split \
+  -k 2 \
+  -n 3 \
+  -e mnemo-words \
+  -P "$workdir/passphrase.txt" \
+  -i "$workdir/secret.bin" \
+  -o "$workdir/shares.txt"
+
+awk 'NR <= 2 { print }' "$workdir/shares.txt" > "$workdir/selected-shares.txt"
+
+safeparts combine \
+  -P "$workdir/passphrase.txt" \
+  -i "$workdir/selected-shares.txt" \
+  -o "$workdir/recovered.bin"
+
+cmp "$workdir/secret.bin" "$workdir/recovered.bin"
 ```
 
-Make the next step move each file to its final custody location.
-Do not leave the working directory as a combined share bundle.
+For real passphrases, make the file come from your secret manager or from operator input on a controlled host. Remove it when the job ends.
 
-## Logging rules
+## CI scenario: synthetic recovery drill
 
-Safe to log:
+This pattern is safe for regular CI because it does not use production secrets. It proves that the binary works and that split/combine still round-trips.
 
-- command success or failure
-- selected threshold and encoding
-- custody destination names
-- approval ticket IDs
+```yaml
+name: safeparts synthetic recovery drill
 
-Not safe to log:
+on:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
 
-- input secret bytes
-- encoded shares
-- passphrases
-- recovered secret output
-- full temporary file contents
+jobs:
+  recovery-drill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-When in doubt, log less and require a human recovery note that omits secret material.
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build CLI
+        run: cargo build --release -p safeparts
+
+      - name: Run synthetic drill
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+
+          printf 'synthetic CI drill secret' > "$workdir/secret.bin"
+
+          target/release/safeparts split \
+            -k 2 \
+            -n 3 \
+            -e base64url \
+            -i "$workdir/secret.bin" \
+            -o "$workdir/shares.txt"
+
+          sed -n '1,2p' "$workdir/shares.txt" > "$workdir/selected-shares.txt"
+
+          target/release/safeparts combine \
+            -i "$workdir/selected-shares.txt" \
+            -o "$workdir/recovered.bin"
+
+          cmp "$workdir/secret.bin" "$workdir/recovered.bin"
+```
+
+## CI scenario: guarded combine job
+
+Use this only after a security review. CI is often the wrong place to reconstruct a production secret because logs, artifacts, caches, and runner access expand the exposure boundary.
+
+If a CI job must run `safeparts combine`, use these constraints:
+
+- trigger it manually
+- use a hardened or self-hosted runner
+- keep each required share outside the repository and outside normal logs
+- avoid storing <var>k</var> shares in the same CI secret backend unless that risk is accepted
+- mask variables, but do not rely on masking as the only protection
+- write recovered output to a private file and pass it to one narrow step
+- delete temporary files before the job exits
+
+Example skeleton:
+
+```yaml
+name: guarded safeparts combine
+
+on:
+  workflow_dispatch:
+
+jobs:
+  combine:
+    runs-on: self-hosted
+    environment: break-glass
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build CLI
+        run: cargo build --release -p safeparts
+
+      - name: Combine operator-provided shares
+        shell: bash
+        env:
+          SAFEPARTS_SHARE_1: ${{ secrets.SAFEPARTS_SHARE_1 }}
+          SAFEPARTS_SHARE_2: ${{ secrets.SAFEPARTS_SHARE_2 }}
+          SAFEPARTS_PASSPHRASE: ${{ secrets.SAFEPARTS_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          umask 077
+
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+
+          printf '%s\n%s\n' \
+            "$SAFEPARTS_SHARE_1" \
+            "$SAFEPARTS_SHARE_2" > "$workdir/shares.txt"
+
+          printf '%s' "$SAFEPARTS_PASSPHRASE" > "$workdir/passphrase.txt"
+
+          target/release/safeparts combine \
+            -P "$workdir/passphrase.txt" \
+            -i "$workdir/shares.txt" \
+            -o "$workdir/recovered.bin"
+
+          # Use "$workdir/recovered.bin" in one reviewed step here.
+          # Do not print it. Do not upload it as an artifact.
+```
+
+This skeleton centralizes enough material to recover a secret during the job. Treat it as a break-glass exception, not a normal deployment pattern.
+
+## Metadata checks
+
+The current CLI does not expose a metadata-only inspection command. It decodes shares as part of `combine`, but a failed combine with too few shares is not a complete health check for a stored recovery plan.
+
+For routine CI, prefer synthetic round-trip drills. For production metadata checks, write a controlled tool with `safeparts_core` so it can parse packets, inspect set IDs and share indexes, sanitize errors, and avoid logging share text.
+
+## Pipeline hygiene checklist
+
+Before running Safeparts in automation, confirm:
+
+- `set -x` is off
+- the runner does not upload the working directory on failure
+- temporary files live under a private directory and are removed with `trap`
+- commands write recovered secrets to files, not stdout
+- CI logs do not include command substitutions that expand shares or passphrases
+- artifacts and caches exclude secret, share, passphrase, and recovered files
+- alerts and audit events record only workflow status, not secret material
+
+## Common failure handling
+
+| Failure | Likely cause | Automation response |
+| --- | --- | --- |
+| `need at least k shares` | Job supplied too few shares or duplicate shares. | Fail closed. Ask an operator for the required count. |
+| `could not detect share encoding` | Input is malformed or mixed with non-share text. | Fail closed. Do not print the input. |
+| `share set metadata mismatch` | Shares come from different split sets. | Fail closed and restart collection. |
+| `duplicate x coordinate` | Same share was supplied twice. | Fail closed and request a different share holder. |
+| `passphrase required` | Shares were passphrase-protected but no passphrase file was supplied. | Fail closed and request the passphrase through the approved channel. |
+| `decryption failed` | Wrong passphrase or tampered encrypted data. | Fail closed. Do not retry in a tight loop. |
+
+## When to use the Rust library instead
+
+Use `safeparts_core` instead of shell automation when you need metadata inspection, custom storage, typed errors, in-process passphrase prompts, or tighter control over logging.
+
+See [Library API](../developer-guide/library-api/).

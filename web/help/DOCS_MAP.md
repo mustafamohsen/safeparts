@@ -36,5 +36,5 @@ This file tracks the intended coverage and the EN/AR page mapping.
 - TUI: offline workflow and shortcuts
 - Web UI: local-only WASM, privacy boundaries
 - Troubleshooting: common errors and fixes
-- Developer guide: Rust library API, share packet encodings, integration tests, and error handling
-- IT/devops guide: CLI runbooks, break-glass operations, and automation boundaries
+- Developer guide: Rust library integration, exposed `safeparts_core` functions, share packet encodings, integration tests, and error handling
+- IT/devops guide: CLI runbooks, break-glass operations, automation boundaries, and CI pipeline patterns
