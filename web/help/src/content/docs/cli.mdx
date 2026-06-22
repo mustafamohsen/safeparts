@@ -11,11 +11,13 @@ Use the CLI when you need repeatable commands, binary input, all supported encod
 
 ## Split
 
-Split stdin into three shares, requiring any two to recover:
+This command creates three shares and requires any two of them to recover:
 
 ```bash
 printf '%s' 'synthetic secret' | safeparts split -k 2 -n 3 -e base64url
 ```
+
+In CLI flags, `-k` is the required share count and `-n` is the total shares to create.
 
 Split a file and write shares to a file:
 
@@ -75,7 +77,7 @@ safeparts combine -P passphrase.txt -i selected-shares.txt -o recovered-secret.b
 <Steps>
 1. Test the command sequence with a synthetic secret.
 2. Split the real secret from stdin or a controlled file.
-3. Verify recovery with exactly <var>k</var> shares if policy allows it.
+3. Verify recovery with the required number of shares if policy allows it.
 4. Distribute shares to separate holders or locations.
 5. Remove temporary files that contain plaintext, recovered output, or all shares together.
 6. Record custody, threshold, encoding, and approval steps without recording share text.

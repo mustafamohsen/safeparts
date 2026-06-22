@@ -7,9 +7,7 @@ Use `safeparts_core` when a Rust application needs Safeparts behavior without sh
 
 The crate works on bytes. It handles split, combine, packet validation, integrity checks, text encodings, and optional passphrase protection. Your application still owns storage, authorization, audit policy, and secret lifetime.
 
-:::caution
-Do not log secrets, recovered bytes, passphrases, encoded shares, or packet payloads.
-:::
+Keep secrets, recovered bytes, passphrases, encoded shares, and packet payloads out of logs.
 
 ## Add the crate
 
@@ -45,7 +43,9 @@ fn split_then_recover() -> CoreResult<()> {
 }
 ```
 
-The core threshold range is <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. Recovery needs at least <var>k</var> packets from the same split set.
+This creates a 2-of-3 split: two required shares, three total shares. The public API names those values <var>k</var> and <var>n</var>. The core range is <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>.
+
+Recovery needs enough packets from the same split set to meet the threshold.
 
 ## Encode shares for storage
 

@@ -11,7 +11,7 @@ Use synthetic data when asking for help. Do not post real secrets, shares, passp
 
 Most combine failures come from one of these causes:
 
-- fewer than <var>k</var> usable shares were provided;
+- fewer than the required number of usable shares were provided;
 - the same share was provided twice;
 - shares came from different split sets;
 - share text was corrupted or entered with the wrong encoding;
@@ -62,6 +62,4 @@ Ask in Discord or open a GitHub issue with a synthetic reproduction:
 - https://discord.gg/ZaSfpcy8At
 - https://github.com/mustafamohsen/safeparts/issues
 
-:::caution
 Sanitize logs before sharing them. Error text should not include share content, but shell commands, screenshots, terminal scrollback, and CI output can still expose secrets.
-:::

@@ -9,7 +9,7 @@ A break-glass secret is used rarely and usually grants elevated access. The proc
 
 ## Example custody model
 
-A platform team needs emergency access to a cloud account if normal identity systems fail. They choose <span class="token">k=3, n=5</span>.
+A platform team needs emergency access to a cloud account if normal identity systems fail. They choose a 3-of-5 plan: five shares exist, and any three can recover.
 
 Suggested custody:
 
@@ -49,7 +49,7 @@ safeparts split \
 <Steps>
 1. Open the incident or emergency change record.
 2. Confirm approval according to policy.
-3. Collect at least <var>k</var> shares in the recovery environment.
+3. Collect enough shares to meet the threshold in the recovery environment.
 4. Combine the shares and recover the credential.
 5. Use the credential only for the approved task.
 6. Rotate or disable the recovered credential.

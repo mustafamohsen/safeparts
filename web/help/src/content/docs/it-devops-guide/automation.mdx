@@ -5,9 +5,7 @@ description: Use Safeparts in scripts and CI drills without leaking secrets into
 
 Safeparts can be part of automation, but it should not become your routine online secret distribution system. Use it for setup, escrow, recovery drills, and operator-approved recovery. Use a secrets manager for normal runtime injection.
 
-:::caution
 Run recurring CI checks with synthetic secrets. Do not put production shares, passphrases, or recovered credentials in CI logs, artifacts, caches, screenshots, or tickets.
-:::
 
 ## Rules for scripts
 
@@ -20,7 +18,7 @@ Run recurring CI checks with synthetic secrets. Do not put production shares, pa
 
 ## Local synthetic drill
 
-This script verifies split and combine without printing the recovered value.
+This script verifies a 2-of-3 split and combine without printing the recovered value.
 
 ```bash
 #!/usr/bin/env bash
@@ -125,7 +123,7 @@ If a job must combine real shares:
 
 - trigger it manually;
 - use a hardened or self-hosted runner;
-- avoid storing <var>k</var> shares in one secret backend unless accepted by policy;
+- avoid storing enough shares to recover in one secret backend unless accepted by policy;
 - mask variables, but do not rely on masking as the primary control;
 - write recovered output to a private file;
 - pass the file to one reviewed step;

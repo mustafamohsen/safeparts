@@ -11,7 +11,7 @@ import { Steps } from '@astrojs/starlight/components';
 
 معظم حالات فشل الاسترداد تأتي من أحد هذه الأسباب:
 
-- تم توفير أقل من <var>k</var> حصص قابلة للاستخدام؛
+- تم توفير أقل من العدد المطلوب من الحصص القابلة للاستخدام؛
 - تم توفير الحصة نفسها مرتين؛
 - الحصص جاءت من مجموعات تقسيم مختلفة؛
 - نص الحصة تالف أو أُدخل بترميز خاطئ؛
@@ -62,6 +62,4 @@ import { Steps } from '@astrojs/starlight/components';
 - https://discord.gg/ZaSfpcy8At
 - https://github.com/mustafamohsen/safeparts/issues
 
-:::caution
 نظّف السجلات قبل مشاركتها. لا ينبغي لنص الخطأ أن يحتوي على محتوى الحصص، لكن أوامر shell ولقطات الشاشة وscrollback الطرفية ومخرجات CI قد تكشف الأسرار.
-:::

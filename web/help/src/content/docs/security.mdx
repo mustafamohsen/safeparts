@@ -9,20 +9,20 @@ Safeparts reduces single points of failure. It does not choose safe holders, pro
 
 ## What to assume
 
-- Anyone with at least <var>k</var> valid shares from the same split can recover the secret.
-- Fewer than <var>k</var> shares should not reveal useful information about the secret.
-- If fewer than <var>k</var> shares remain available, recovery is impossible.
+- Anyone with enough valid shares from the same split can recover the secret.
+- A smaller group should not learn useful information about the secret.
+- If too many shares are lost, recovery is impossible.
 - A passphrase adds another requirement, but it does not fix a weak storage plan.
 
-:::caution
-Treat each share as sensitive. Do not paste real shares into chat, tickets, issues, CI logs, screenshots, or analytics tools.
-:::
+In a 3-of-5 plan, for example, any three valid shares can recover. Two shares are not enough, and the plan can still survive two unavailable holders.
+
+For support requests and audit records, use synthetic examples rather than live shares, passphrases, or recovered output.
 
 ## Storage rules
 
 <Steps>
 1. Separate shares across independent people, accounts, devices, or physical locations.
-2. Avoid keeping enough shares in one vault, safe, drive, ticket, repository, or CI secret store.
+2. Avoid keeping enough shares to recover in one vault, safe, drive, ticket, repository, or CI secret store.
 3. Keep a custody record that names the holder or role for each share without storing the share text.
 4. Practice recovery with synthetic data before relying on the plan.
 5. Rotate the underlying secret after any real recovery or suspected exposure.
@@ -44,9 +44,9 @@ Safeparts does not upload secrets by default. Secrets can still leak if you past
 
 ## If something goes wrong
 
-- If one share is lost, check whether at least <var>k</var> shares still remain. If yes, recover, rotate the underlying secret, and create a new split.
+- If one share is lost, check whether enough shares still remain. If yes, recover, rotate the underlying secret, and create a new split.
 - If one share may have been copied, treat that share as compromised.
-- If enough shares may have been copied to reach <var>k</var>, treat the original secret as compromised.
+- If enough shares may have been copied to meet the threshold, treat the original secret as compromised.
 - If recovery happens on an untrusted machine, rotate the recovered credential as soon as possible.
 
 For implementation details, see [how Safeparts works](../project/) and [technical design](../technical-design/).

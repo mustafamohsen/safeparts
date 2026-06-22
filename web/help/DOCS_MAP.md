@@ -64,8 +64,8 @@ Keep English and Arabic routes aligned.
 
 ## Non-redundancy rules
 
-- Explain k-of-n once in quickstart and expand it in how it works.
-- Keep storage and threat-model rules in security. Other pages link there and add only local warnings.
+- Explain threshold plans with examples first, such as 2 of 3 and 3 of 5. Use k/n notation mainly after that context exists.
+- Keep storage and threat-model rules in security. Other pages link there and add only local handling notes.
 - Keep encoding trade-offs in encodings. Interface pages list only their exposed formats.
 - Keep passphrase behavior in security and technical design. Interface pages explain only how to provide a passphrase.
 - Keep CLI command reference in CLI. Operations pages show commands only as part of a procedure.

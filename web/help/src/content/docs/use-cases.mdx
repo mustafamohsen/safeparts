@@ -5,30 +5,28 @@ description: Select a threshold, share distribution, and drill schedule that peo
 
 import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
 
-A good Safeparts plan is mostly logistics. The math decides how many shares are needed. Your plan decides who can find them, who can approve recovery, and what happens when someone is unavailable.
+A good Safeparts plan is mostly logistics. The numbers decide how many shares are needed. Your plan decides who can find them, who approves recovery, and what happens when someone is unavailable.
 
-:::tip
-Useful starting points: <span class="token">k=2, n=3</span> for personal recovery and <span class="token">k=3, n=5</span> for small teams.
-:::
+If you are unsure, start with 2 of 3 for personal recovery or 3 of 5 for a small team.
 
 ## Common plans
 
 <CardGrid>
-	<Card title="Personal recovery" icon="star">
-		Use <span class="token">k=2, n=3</span> for password manager recovery keys, backup codes, and personal emergency access.
+	<Card title="Personal recovery: 2 of 3" icon="star">
+		Good for password manager recovery keys, backup codes, and personal emergency access. One share can be lost, but one holder cannot recover alone.
 	</Card>
-	<Card title="Family or executor access" icon="open-book">
-		Use <span class="token">k=2, n=4</span> when no single person should hold full access, but recovery must remain practical.
+	<Card title="Family or executor access: 2 of 4" icon="open-book">
+		No single person holds full access, and recovery stays practical even if two holders are hard to reach.
 	</Card>
-	<Card title="Team secret" icon="document">
-		Use <span class="token">k=3, n=5</span> for shared operational recovery where one person cannot act alone.
+	<Card title="Team secret: 3 of 5" icon="document">
+		Good for shared operational recovery. Two people can be unavailable, but three participants must cooperate.
 	</Card>
 	<Card title="Break-glass credential" icon="warning">
-		Use <span class="token">k=3, n=5</span> or <span class="token">k=2, n=4</span> for rare emergency access with approval and rotation.
+		Use 3 of 5 for stronger separation or 2 of 4 when emergency coordination needs to be faster.
 	</Card>
 </CardGrid>
 
-## Personal recovery: <span class="token">k=2, n=3</span>
+## Personal recovery: 2 of 3
 
 Use this when the main risk is losing access, not managing a large approval process.
 
@@ -39,14 +37,14 @@ Suggested distribution:
 - Share 3: off-site fallback with a trusted person or secure location.
 
 <Steps>
-1. Run a synthetic drill with the same threshold.
+1. Run a synthetic drill with the same plan.
 2. Split the real recovery secret.
 3. Store each share in its assigned place.
 4. Recover once with two shares if your policy allows it.
 5. Record where each share lives without recording the share text.
 </Steps>
 
-## Team recovery: <span class="token">k=3, n=5</span>
+## Team recovery: 3 of 5
 
 Use this when recovery should require cooperation and still survive one or two unavailable people.
 
@@ -72,9 +70,7 @@ Required choices:
 - How the recovered credential is used.
 - What gets rotated afterward.
 
-:::danger
 After a break-glass recovery, assume the gathered shares and recovered credential were exposed. Rotate the underlying credential and create a new split.
-:::
 
 ## Holder selection
 

@@ -45,13 +45,20 @@ Use components when they improve scanning:
 
 - `<CardGrid>` for page entry points or choice sets.
 - `<Steps>` for ordered procedures.
-- Callouts for safety constraints and sharp boundaries.
+- Callouts only for sharp hazards that deserve interruption, such as break-glass rotation. Prefer normal prose for routine handling guidance.
 
 Avoid decorative components and long procedural bullet lists.
 
+## Threshold language
+
+- Lead with operational wording: "2 of 3", "3 of 5", "required shares", and "total shares".
+- Introduce <var>k</var> and <var>n</var> only after the reader has a concrete example.
+- Use variables freely in technical design, API, and command references where they match code or flags.
+- On client-facing pages, explain what the number choice means for people: who can recover, who can be unavailable, and what gets lost if shares disappear.
+
 ## Inline tokens
 
-- Variables: `<var>` for <var>k</var> and <var>n</var>.
+- Variables: `<var>` for <var>k</var> and <var>n</var> after notation is introduced.
 - Keys: `<kbd>`.
 - UI and status strings: `<samp>`.
 - Small labels: `<span class="token">...</span>`.

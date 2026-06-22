@@ -7,11 +7,11 @@ Safeparts has one job: split a secret so recovery requires enough matching share
 
 ## Threshold sharing
 
-You choose <var>k</var> and <var>n</var>. Safeparts creates <var>n</var> shares, and any <var>k</var> of them can reconstruct the original secret.
+A plan like 2 of 3 creates three shares and requires any two to recover. In the implementation, the required number is the threshold, written as <var>k</var>, and the total number of shares is <var>n</var>.
 
-Under the hood, Safeparts uses Shamir-style secret sharing over <span class="token token--mono">GF(256)</span>. The scheme works on bytes, so the input can be text, a binary key, or another byte sequence.
+Safeparts uses Shamir-style secret sharing over <span class="token token--mono">GF(256)</span>. The scheme works on bytes, so the input can be text, a binary key, or another byte sequence.
 
-A share is not a slice of the secret. Conceptually, each share is a point needed to reconstruct a polynomial. Fewer than <var>k</var> points do not reveal useful information about the secret.
+A share is not a slice of the secret. Conceptually, each share is a point used to reconstruct a polynomial. Fewer than the threshold number of points do not reveal useful information about the secret.
 
 ## Share packets
 
@@ -44,7 +44,7 @@ Recovery then needs both enough shares and the passphrase.
 
 ## Limits
 
-The core threshold range is <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. Real recovery plans should normally use <span class="token">k >= 2</span> so one holder cannot recover alone.
+The core threshold range is <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. Real recovery plans should normally use a threshold of at least two so one holder cannot recover alone.
 
 Safeparts does not store, sync, refresh, or rotate shares for you. If you need to change holders or recover after exposure, reconstruct the secret, rotate the underlying credential if possible, and create a new split.
 

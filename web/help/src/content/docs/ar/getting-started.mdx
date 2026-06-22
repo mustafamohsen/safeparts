@@ -7,20 +7,15 @@ import { Card, CardGrid, LinkButton, Steps } from '@astrojs/starlight/components
 
 ابدأ بتجربة تدريبية. تجربة قصيرة تعلّمك سير العمل دون تعريض سر حقيقي للخطر.
 
-:::caution
-تدرّب باستخدام سر اصطناعي مثل <span class="token" dir="ltr">synthetic-secret</span>. لا تستخدم مفتاحاً إنتاجياً قبل اختبار الاسترداد.
-:::
+استخدم سراً اصطناعياً مثل <span class="token" dir="ltr">synthetic-secret</span>. احتفظ بالمفاتيح الإنتاجية إلى ما بعد اختبار الاسترداد.
 
 ## نموذج الاسترداد
 
-تختار رقمين:
+توصف الخطط عادة بصيغة "2 من 3" أو "3 من 5".
 
-- <var>n</var>: عدد الحصص التي ينشئها Safeparts.
-- <var>k</var>: عدد الحصص المطلوب لاسترداد السر.
+خطة 2 من 3 تنشئ ثلاث حصص. أي حصتين تستطيعان استرداد السر. ضياع حصة واحدة لا يوقف الاسترداد، وحامل واحد لا يستطيع الاسترداد وحده.
 
-مع أقل من <var>k</var> حصص، يجب ألا يكشف الاسترداد معلومات مفيدة. ومع أي <var>k</var> حصص من نفس عملية التقسيم، ينجح الاسترداد.
-
-تدعم النواة المجال <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. في خطط الاسترداد الحقيقية، استخدم <span class="token" dir="ltr">k >= 2</span> حتى لا يستطيع حامل واحد الاسترداد وحده.
+في الأوامر والصفحات التقنية، يسمى العدد المطلوب العتبة ويُكتب <var>k</var>. أما إجمالي عدد الحصص فيُكتب <var>n</var>. تدعم النواة المجال <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>، لكن خطط الاسترداد الحقيقية تستخدم عادة عتبة لا تقل عن اثنين.
 
 ## نفّذ التجربة
 
@@ -33,7 +28,7 @@ import { Card, CardGrid, LinkButton, Steps } from '@astrojs/starlight/components
 <Steps>
 1. افتح تبويب <span class="token">تقسيم</span>.
 2. أدخل <span class="token" dir="ltr">synthetic-secret</span> كسر.
-3. عيّن <span class="token" dir="ltr">k=2</span> و<span class="token" dir="ltr">n=3</span>.
+3. عيّن عدد الحصص المطلوبة إلى <span class="token" dir="ltr">2</span> وإجمالي الحصص إلى <span class="token" dir="ltr">3</span>.
 4. اختر <span class="token">Words</span> إذا كنت تريد قراءة الحصص أو طباعتها، أو <span class="token">Letters</span> إذا كنت تريد نصاً مضغوطاً.
 5. اضغط <span class="token">تقسيم</span> وانسخ الحصص الثلاث إلى ملاحظات مؤقتة.
 6. افتح تبويب <span class="token">استعادة</span> واستعد السر باستخدام أي حصتين.

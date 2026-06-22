@@ -14,7 +14,7 @@ import { LinkButton, Steps } from '@astrojs/starlight/components';
 ## ما الذي تعرضه واجهة الويب
 
 - التقسيم والاسترداد للأسرار النصية المدخلة في الواجهة.
-- إعدادات عتبة من <span class="token" dir="ltr">k=2</span> حتى <span class="token" dir="ltr">n=255</span>.
+- خطط استرداد مثل 2 من 3 أو 3 من 5، مع ما يصل إلى 255 حصة إجمالاً.
 - صيغتان للحصص: <span class="token">Words</span> وهي <span class="token" dir="ltr">mnemo-words</span>، و<span class="token">Letters</span> وهي <span class="token" dir="ltr">base64url</span>.
 - حماية اختيارية بعبارة مرور.
 - كشف best-effort للصيغة عند لصق الحصص في نموذج الاسترداد.
@@ -26,7 +26,7 @@ import { LinkButton, Steps } from '@astrojs/starlight/components';
 <Steps>
 1. افتح تبويب <span class="token">تقسيم</span>.
 2. أدخل السر.
-3. اختر <var>k</var> و<var>n</var>.
+3. اختر عدد الحصص المطلوبة وعدد الحصص الإجمالي الذي تريد إنشاءه.
 4. اختر <span class="token">Words</span> أو <span class="token">Letters</span>.
 5. أضف عبارة مرور فقط إذا كانت الخطة تتضمن مسار حيازة منفصل لعبارة المرور.
 6. اضغط <span class="token">تقسيم</span>.

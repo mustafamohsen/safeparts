@@ -17,7 +17,7 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-Safeparts helps you avoid one fragile backup. It turns one secret into <var>n</var> recovery shares and requires any <var>k</var> of them to recover the original value.
+Safeparts helps you avoid one fragile backup. In a 2-of-3 plan, for example, you create three recovery shares and need any two of them to restore the secret.
 
 Use these docs to choose a recovery plan, pick an interface, and avoid common handling mistakes.
 
@@ -30,7 +30,7 @@ Use these docs to choose a recovery plan, pick an interface, and avoid common ha
 		[Open the quickstart](getting-started/)
 	</Card>
 	<Card title="Choose a recovery plan" icon="document">
-		Pick <var>k</var>, <var>n</var>, share holders, locations, and a drill schedule.
+		Pick a 2-of-3, 3-of-5, or similar plan, then assign share holders, locations, and drills.
 		
 		[Plan recovery](use-cases/)
 	</Card>
@@ -56,9 +56,7 @@ Use these docs to choose a recovery plan, pick an interface, and avoid common ha
 	</Card>
 </CardGrid>
 
-:::caution
-Use synthetic examples in chat, tickets, tests, and screenshots. Do not paste real secrets, passphrases, recovery shares, or recovered output into places you do not control.
-:::
+For support requests, tests, and screenshots, use synthetic examples instead of live secrets, passphrases, recovery shares, or recovered output.
 
 ## What Safeparts does
 

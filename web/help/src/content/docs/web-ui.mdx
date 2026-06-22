@@ -14,7 +14,7 @@ The web app runs at the site root and performs split and combine in the browser 
 ## What the web app exposes
 
 - Split and combine for text secrets entered in the browser UI.
-- Threshold settings from <span class="token">k=2</span> up to <span class="token">n=255</span>.
+- Recovery plans such as 2 of 3 or 3 of 5, with up to 255 total shares.
 - Two share formats: <span class="token">Words</span> (<span class="token">mnemo-words</span>) and <span class="token">Letters</span> (<span class="token">base64url</span>).
 - Optional passphrase protection.
 - Best-effort format detection when you paste shares into the combine form.
@@ -26,7 +26,7 @@ For binary files or all encoding formats, use the [CLI](../cli/) or [TUI](../tui
 <Steps>
 1. Open the <span class="token">Split</span> tab.
 2. Enter a secret.
-3. Choose <var>k</var> and <var>n</var>.
+3. Choose how many shares are required and how many total shares to create.
 4. Choose <span class="token">Words</span> or <span class="token">Letters</span>.
 5. Add a passphrase only if your plan includes a separate passphrase custody path.
 6. Click <span class="token">Split</span>.

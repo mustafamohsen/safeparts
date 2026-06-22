@@ -7,9 +7,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 Use Safeparts in operations when recovery should require cooperation. It is best for escrow, emergency access, recovery drills, and controlled handoff. It is not a replacement for a secrets manager that injects routine service credentials.
 
-:::caution
 Operational records should show custody, approvals, timestamps, and rotation. They should not include real share text, passphrases, or recovered secrets.
-:::
 
 ## Where it fits
 
@@ -32,7 +30,7 @@ Poor fits:
 A safe runbook answers these before a real split happens:
 
 1. What exact secret is being split?
-2. What threshold is required?
+2. How many shares are required, and how many will exist?
 3. Who or what holds each share?
 4. Who approves recovery?
 5. Where does recovery happen?

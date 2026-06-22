@@ -7,20 +7,15 @@ import { Card, CardGrid, LinkButton, Steps } from '@astrojs/starlight/components
 
 Start with a practice run. A short drill teaches the workflow without exposing a real secret.
 
-:::caution
-Practice with a synthetic secret such as <span class="token">synthetic-secret</span>. Do not use a production key until you have tested recovery.
-:::
+Use a synthetic secret such as <span class="token">synthetic-secret</span>. Save production keys for after you have tested recovery.
 
 ## The recovery model
 
-You choose two numbers:
+Plans are usually described as "2 of 3" or "3 of 5".
 
-- <var>n</var>: how many shares Safeparts creates.
-- <var>k</var>: how many shares are required to recover the secret.
+A 2-of-3 plan creates three shares. Any two can recover the secret. One lost share is fine, and one holder alone cannot recover.
 
-With fewer than <var>k</var> shares, recovery should not reveal useful information. With any <var>k</var> shares from the same split, recovery succeeds.
-
-The core supports <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. For real recovery plans, use <span class="token">k >= 2</span> so no one holder can recover alone.
+In commands and technical pages, the required count is called the threshold and is written as <var>k</var>. The total share count is written as <var>n</var>. The core supports <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>, but real recovery plans usually use a threshold of at least two.
 
 ## Run the drill
 
@@ -33,7 +28,7 @@ The web app is the fastest way to learn the flow.
 <Steps>
 1. Open the <span class="token">Split</span> tab.
 2. Enter <span class="token">synthetic-secret</span> as the secret.
-3. Set <span class="token">k=2</span> and <span class="token">n=3</span>.
+3. Set the required shares to <span class="token">2</span> and total shares to <span class="token">3</span>.
 4. Choose <span class="token">Words</span> if you want to read or print the shares, or <span class="token">Letters</span> if you want compact text.
 5. Click <span class="token">Split</span> and copy the three shares into temporary notes.
 6. Open the <span class="token">Combine</span> tab and recover the secret with any two shares.

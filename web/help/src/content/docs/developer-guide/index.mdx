@@ -9,9 +9,7 @@ Use `safeparts_core` when a Rust application needs to create, encode, parse, ins
 
 The library handles the cryptographic split and combine flow. Your application still owns storage, authentication, audit boundaries, passphrase prompts, and the lifetime of sensitive bytes.
 
-:::caution
-Do not log secrets, passphrases, share text, packet payloads, or recovered bytes. A share is sensitive even when fewer than <var>k</var> shares are present.
-:::
+Keep secrets, passphrases, share text, packet payloads, and recovered bytes out of logs.
 
 ## When the library is the right boundary
 
@@ -38,6 +36,8 @@ fn main() -> CoreResult<()> {
     Ok(())
 }
 ```
+
+This example creates a 2-of-3 split. The call uses `k = 2` for the required share count and `n = 3` for the total share count.
 
 A split returns `SharePacket` values. Most applications encode those packets before storage or display.
 
