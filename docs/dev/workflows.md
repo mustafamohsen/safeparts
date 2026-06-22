@@ -23,6 +23,22 @@ Use these checklists to keep future changes predictable.
 4. Check that errors do not echo share text, passphrases, or recovered secrets.
 5. Run targeted checks, then the broader gate if practical.
 
+## Integrate Safeparts from another Rust project
+
+1. Start with [Rust library integration](manuals/rust-library.md).
+2. Use `safeparts_core` instead of shelling out when you need typed errors, custom storage, or metadata inspection.
+3. Keep storage and audit policy in the host application.
+4. Add tests for successful recovery, insufficient shares, malformed input, and wrong passphrases if passphrase protection is enabled.
+5. Do not log share text, passphrases, or recovered bytes.
+
+## Automate the CLI
+
+1. Start with [CLI automation](manuals/cli-automation.md).
+2. Use synthetic secrets for CI drills.
+3. Use `--passphrase-file` instead of `--passphrase` in automation.
+4. Write recovered bytes to private files, not stdout.
+5. Treat CI-based production recovery as a break-glass exception that needs a security review.
+
 ## Add a share encoding
 
 1. Add the core encode/decode implementation and strict validation.

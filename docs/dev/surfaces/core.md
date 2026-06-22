@@ -11,7 +11,7 @@ Nearest contract: [`crates/safeparts_core/AGENTS.md`](../../../crates/safeparts_
 - Optional passphrase protection.
 - Typed errors for core behavior.
 
-Front-ends should call core APIs instead of reimplementing rules.
+Front-ends should call core APIs instead of reimplementing rules. For external Rust integrations, use the [Rust library integration manual](../manuals/rust-library.md).
 
 ## Change rules
 
@@ -19,6 +19,7 @@ Front-ends should call core APIs instead of reimplementing rules.
 - Add deterministic round-trip tests and negative tests for threshold, packet, encoding, crypto, and integrity behavior.
 - Avoid logging or formatting share text, passphrases, or recovered secrets.
 - Keep public API changes explicit in docs and downstream surfaces.
+- Update the library manual when public functions, packet fields, errors, or integration guidance changes.
 
 ## Useful checks
 
@@ -34,5 +35,6 @@ cargo clippy --all-targets --all-features -- -D warnings
 Update:
 
 - [`docs/dev/feature-matrix.md`](../feature-matrix.md)
+- [`docs/dev/manuals/rust-library.md`](../manuals/rust-library.md) for public API or integration changes
 - CLI/TUI/WASM/web/desktop callers if behavior is exposed
 - Help docs only when user-visible behavior changes and the task includes that scope

@@ -90,6 +90,7 @@ Release CI owns signed or bundled platform artifacts.
 
 - AGENTS child indexes point to real paths.
 - `docs/dev/feature-matrix.md` has required surface columns.
+- Required surface guides and developer manuals are present.
 - Bun package lock policy is not mixed with npm lockfiles.
 - Generated artifact policy catches common drift.
 - Desktop/web copied UI files have visible parity status.

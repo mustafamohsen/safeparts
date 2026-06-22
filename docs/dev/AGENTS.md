@@ -16,6 +16,7 @@ Owns contributor onboarding, local workflow docs, feature coverage maps, and sur
 - `generated-artifacts.md`: generated/tracked artifact policy.
 - `troubleshooting.md`: common local setup and verification fixes.
 - `surfaces/`: focused guides for each product or tooling surface.
+- `manuals/`: longer guides for library integration and CLI automation.
 
 ## Local Contracts
 
@@ -37,4 +38,5 @@ Owns contributor onboarding, local workflow docs, feature coverage maps, and sur
 
 ## Child DOX Index
 
+- `manuals/`: long-form developer manuals for Rust library integration and CLI automation.
 - `surfaces/`: per-surface development guides for core, CLI, TUI, WASM, web, desktop, help docs, release, and mobile.

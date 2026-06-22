@@ -5,7 +5,7 @@ Nearest contract: [`crates/safeparts/AGENTS.md`](../../../crates/safeparts/AGENT
 
 ## What belongs here
 
-The CLI is the script-friendly interface over `safeparts_core`.
+The CLI is the script-friendly interface over `safeparts_core`. For scripts and CI pipelines, use the [CLI automation manual](../manuals/cli-automation.md).
 
 Keep it:
 
@@ -20,6 +20,7 @@ Keep it:
 - Map core errors to actionable CLI messages without echoing sensitive input.
 - Prefer `--passphrase-file` examples over command-line passphrases in docs.
 - Add or update black-box tests in `crates/safeparts/tests/e2e.rs` for user-visible behavior.
+- Update the CLI automation manual when flags, stdin/stdout behavior, exit behavior, or automation guidance changes.
 
 ## Useful checks
 
@@ -34,5 +35,6 @@ cargo clippy --all-targets --all-features -- -D warnings
 Update:
 
 - [`docs/dev/feature-matrix.md`](../feature-matrix.md)
+- [`docs/dev/manuals/cli-automation.md`](../manuals/cli-automation.md) for script or CI automation changes
 - [`docs/dev/verification.md`](../verification.md) if commands change
 - user docs only for released user-facing flag or behavior changes

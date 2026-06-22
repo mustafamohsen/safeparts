@@ -172,6 +172,21 @@ def check_surface_guides(result: CheckResult) -> None:
             result.error(f"missing surface guide: docs/dev/surfaces/{name}")
 
 
+def check_developer_manuals(result: CheckResult) -> None:
+    required = [
+        "README.md",
+        "rust-library.md",
+        "cli-automation.md",
+    ]
+    base = REPO_ROOT / "docs" / "dev" / "manuals"
+    for name in required:
+        path = base / name
+        if path.exists():
+            result.ok(f"developer manual present: docs/dev/manuals/{name}")
+        else:
+            result.error(f"missing developer manual: docs/dev/manuals/{name}")
+
+
 def check_lockfiles(result: CheckResult) -> None:
     for rel in ["web/bun.lock", "web/help/bun.lock", "desktop/bun.lock"]:
         if (REPO_ROOT / rel).exists():
@@ -221,6 +236,7 @@ def main() -> int:
     check_agents_indexes(result)
     check_feature_matrix(result)
     check_surface_guides(result)
+    check_developer_manuals(result)
     check_lockfiles(result)
     check_generated_status(result)
     check_desktop_parity(result)
