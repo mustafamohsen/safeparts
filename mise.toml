@@ -1,0 +1,76 @@
+# Dev toolchain for the Rust, WASM, web, docs, and desktop apps.
+[tools]
+# Rust 2024 workspace; include the browser WASM target.
+rust = { version = "1.93.0", targets = "wasm32-unknown-unknown", components = "rustfmt,clippy" }
+# JS runtime/package manager used by web, docs, and desktop.
+bun = "1.3.11"
+# WASM build tools used by web/scripts/build-wasm.sh.
+"cargo:wasm-pack" = "0.15.0"
+"cargo:wasm-bindgen-cli" = "0.2.108"
+
+[env]
+# Keep tool output readable in local terminals and CI logs.
+CARGO_TERM_COLOR = "always"
+# Prefer local Stagehand/browser automation over Playwright defaults.
+STAGEHAND_ENV = "LOCAL"
+# Default docs path consumed by the Vite web app.
+VITE_HELP_URL = "/help/"
+
+# Project shortcuts; run with `mise run <name>` or `mise <name>`.
+[tasks.setup]
+description = "Install local dependencies."
+run = [
+  "bun install --cwd web",
+  "bun install --cwd web/help",
+  "bun install --cwd desktop",
+]
+
+[tasks.fmt]
+description = "Format Rust code."
+run = "cargo fmt --all"
+
+[tasks.lint]
+description = "Run CI-style Rust linting."
+run = "cargo clippy --all-targets --all-features -- -D warnings"
+
+[tasks.test]
+description = "Run Rust tests."
+run = "cargo test --all-features"
+
+[tasks.check]
+description = "Run Rust format, lint, and tests."
+depends = ["fmt-check", "lint", "test"]
+
+[tasks."fmt-check"]
+description = "Check Rust formatting."
+run = "cargo fmt --all -- --check"
+
+[tasks."web:dev"]
+description = "Start the web app."
+dir = "web"
+run = "bun run dev"
+
+[tasks."web:build"]
+description = "Build WASM and the web app."
+dir = "web"
+run = ["bun run build:wasm", "bun run build"]
+
+[tasks."docs:dev"]
+description = "Start the help docs."
+dir = "web/help"
+run = "bun run dev"
+
+[tasks."docs:build"]
+description = "Build the help docs."
+dir = "web/help"
+run = "bun run build"
+
+[tasks."desktop:dev"]
+description = "Start the desktop app."
+dir = "desktop"
+run = "bun run tauri:dev"
+
+[tasks."desktop:build"]
+description = "Build the desktop frontend."
+dir = "desktop"
+run = "bun run build"

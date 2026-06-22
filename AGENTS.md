@@ -82,7 +82,7 @@ Default section order:
 
 ## User Preferences
 
-When the user requests a durable behavior change, record it here or in the relevant child AGENTS.md
+- Prefer Stagehand-style local browser automation over Playwright defaults for developer env/task setup.
 
 ## Child DOX Index
 
@@ -114,6 +114,7 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
 
 - Product intent + security model: `PRD.md`
 - Local dev commands + repo layout: `README.md`
+- Local dev toolchain/env/task shortcuts: `mise.toml`
 
 ## Checks (mirrors CI)
 
