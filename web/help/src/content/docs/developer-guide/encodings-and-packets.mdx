@@ -1,21 +1,20 @@
 ---
 title: Encodings and packets
-description: Encode SharePacket values for storage, transfer, and operator workflows.
+description: Store, parse, and inspect SharePacket values safely.
 ---
 
-A split returns binary `SharePacket` values.
-Most applications should encode those packets before storing them, sending them to users, or writing them into a runbook.
+A split returns binary `SharePacket` values. Most applications should encode packets before storage, display, or transfer.
 
 ## Encode packets
 
-Use `safeparts_core::encoding` for the public encoding API.
+Use `safeparts_core::encoding` for the public text encoding API.
 
 ```rust
 use safeparts_core::encoding::{self, Encoding};
 use safeparts_core::{split_secret, CoreResult};
 
 fn encode_for_storage() -> CoreResult<Vec<String>> {
-    let packets = split_secret(b"example-secret", 2, 3, None)?;
+    let packets = split_secret(b"synthetic storage secret", 2, 3, None)?;
 
     packets
         .iter()
@@ -24,12 +23,9 @@ fn encode_for_storage() -> CoreResult<Vec<String>> {
 }
 ```
 
-`Encoding::Auto` is valid for parsing, not output.
-Trying to encode with `Auto` returns an error because output needs one concrete format.
+`Encoding::Auto` is for parsing only. Output must choose one concrete encoding.
 
-## Parse share text
-
-For operator input, `parse_share_packets` accepts pasted share text and returns both the packets and the detected encoding.
+## Parse pasted input
 
 ```rust
 use safeparts_core::encoding::{self, Encoding};
@@ -41,44 +37,39 @@ fn recover_from_paste(input: &str) -> CoreResult<Vec<u8>> {
 }
 ```
 
-If your UI already knows the format, pass the concrete encoding instead of `Auto`.
-That produces clearer errors and avoids guessing when input is malformed.
+For UI text areas where long mnemonic shares may wrap across lines, use `parse_share_packets_wrapped_mnemonics`. Blank lines still separate mnemonic shares.
 
-## Choose an encoding
+## Supported encodings
 
-`base64url` is compact and works well for files, APIs, QR-like payloads, and copy/paste between systems.
+| Encoding | Use |
+| --- | --- |
+| `Encoding::Base64url` | Compact URL-safe text. |
+| `Encoding::Base58check` | Compact text with Base58Check checksum. |
+| `Encoding::MnemoWords` | Word groups with CRC16 for manual transcription. |
+| `Encoding::MnemoBip39` | BIP-39-valid word sequences for compatible storage workflows. |
+| `Encoding::Auto` | Parse-only detection for operator input. |
 
-`base58check` is still compact but avoids ambiguous characters and includes a checksum at the text encoding layer.
-It is useful when operators may read or type shares manually.
+## Packet metadata
 
-`mnemo-words` uses words plus a CRC16 check.
-Choose it for paper workflows and human transcription, especially when the user may read a share over a call.
+Each `SharePacket` contains:
 
-`mnemo-bip39` emits BIP-39-valid phrases.
-Use it only when that compatibility is useful. A Safeparts mnemonic share is not a wallet seed.
+- `set_id`: random identifier for the split set;
+- `k` and `n`: threshold and total share count;
+- `x`: share coordinate;
+- `payload`: share bytes;
+- `crypto_params`: optional Argon2id and nonce parameters for encrypted splits.
 
-## What packet metadata means
-
-Each packet carries enough metadata for safe reconstruction:
-
-- `k` and `n`: the threshold and total share count
-- `x`: the share coordinate
-- `set_id`: a random identifier for the split set
-- `payload`: the share bytes
-- `crypto_params`: optional encryption parameters
-
-The metadata is not secret.
-It helps the combine path reject mixed sets, duplicate shares, and incompatible crypto parameters.
+The metadata is not secret. It lets combine reject mixed sets, duplicate indexes, and incompatible crypto parameters.
 
 ## Storage pattern
 
-A common application pattern is:
+A typical application flow:
 
-1. split bytes into `SharePacket` values
-2. encode each packet using one concrete encoding
-3. store each encoded string in a separate failure domain
-4. later parse at least <var>k</var> encoded shares
-5. combine packets and handle the recovered bytes as sensitive output
+1. Split bytes into `SharePacket` values.
+2. Encode each packet with one concrete encoding.
+3. Store each encoded share in a separate failure domain.
+4. Store the encoding name with custody metadata if operators will not use auto-detection.
+5. Later parse at least <var>k</var> encoded shares.
+6. Combine packets and handle recovered bytes as sensitive output.
 
-Keep the encoding name with your storage record if operators will not paste all shares through auto-detection.
-That makes future recovery less fragile.
+Do not keep enough shares together in one database row, vault item, CI secret store, or log stream unless policy treats that location like the original secret.

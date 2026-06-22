@@ -1,0 +1,69 @@
+---
+title: Desktop app
+description: Use the local Tauri app for browser-style split and recovery without a web deployment.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+The desktop app is a Tauri version of the Safeparts UI. It runs locally and calls `safeparts_core` through Tauri commands. It does not require a Safeparts server, CLI sidecar, node process, telemetry, or external service at runtime.
+
+## When to use it
+
+Use the desktop app when you want:
+
+- an installed local workbench for split and recovery;
+- a UI similar to the web app;
+- native packaging for macOS, Linux, or Windows;
+- local command execution without a browser deployment.
+
+Use the CLI or TUI when you need file-oriented binary workflows, all four encodings, or terminal-only operation.
+
+## Current UI scope
+
+The desktop UI exposes the same primary formats as the web app:
+
+- <span class="token">base64url</span>, shown as <span class="token">Letters</span>;
+- <span class="token">mnemo-words</span>, shown as <span class="token">Words</span>.
+
+The underlying core supports <span class="token">base58check</span> and <span class="token">mnemo-bip39</span>, but those are not exposed in the desktop UI yet.
+
+## Split
+
+<Steps>
+1. Open the app and choose <span class="token">Split</span>.
+2. Enter the secret.
+3. Choose <var>k</var>, <var>n</var>, and the share format.
+4. Add a passphrase only if the recovery plan stores it separately.
+5. Split and copy each share to its assigned holder or location.
+</Steps>
+
+## Combine
+
+<Steps>
+1. Choose <span class="token">Combine</span>.
+2. Paste the required shares.
+3. Enter the passphrase if the split used one.
+4. Combine and move the recovered secret only to its intended destination.
+</Steps>
+
+## Build locally
+
+```bash
+cd desktop
+bun install
+bun run tauri:dev
+```
+
+For a production frontend build:
+
+```bash
+bun run build
+```
+
+For a native bundle on the current platform:
+
+```bash
+bun run tauri:build
+```
+
+See [install and self-host](../build-and-run/) for release packages and project-wide build commands.

@@ -1,15 +1,11 @@
 ---
 title: Testing and errors
-description: Test library integrations without using real secrets.
+description: Test Safeparts integrations with synthetic data and typed failure cases.
 ---
 
-Library integrations should have tests for successful recovery and expected failures.
-Do not use production secrets as fixtures.
-Synthetic byte strings are enough to test your code paths.
+Tests should prove your integration boundaries without using production secrets. Synthetic byte strings are enough to cover split, combine, encoding, corruption, and passphrase behavior.
 
 ## Test threshold behavior
-
-Start with a basic round trip and one insufficient-share case.
 
 ```rust
 use safeparts_core::{combine_shares, split_secret, CoreError};
@@ -35,8 +31,7 @@ fn insufficient_shares_fail() {
 
 ## Test encoding boundaries
 
-If your application stores text shares, test encode and parse together.
-That catches whitespace assumptions and accidental use of the wrong encoding.
+If your application stores text shares, test encoding and parsing together.
 
 ```rust
 use safeparts_core::encoding::{self, Encoding};
@@ -58,30 +53,30 @@ fn parse_encoded_shares_from_text() {
 }
 ```
 
-## Useful error cases
+## Test passphrase behavior
 
-Handle these errors explicitly when they affect user guidance:
+Cover all three cases: correct passphrase, missing passphrase, and wrong passphrase. Your UI should give safe guidance without echoing user input.
 
-- `InvalidKAndN`: the threshold parameters are impossible
-- `NotEnoughShares`: fewer than <var>k</var> shares were supplied
-- `InconsistentMetadata`: shares came from different sets or have incompatible metadata
-- `DuplicateX`: the same share was submitted twice
-- `IntegrityCheckFailed`: the reconstructed payload did not match its tag
-- `PassphraseRequired`: encrypted shares were combined without a passphrase
-- `DecryptFailed`: the passphrase is wrong or encrypted data was tampered with
-- `CouldNotDetectEncoding`: the parser could not infer the share encoding
+## Useful error classes
 
-For user-facing tools, do not print internal packet bytes or pasted share text while reporting errors.
-The safe message is about the failure class, not the sensitive input.
+Handle these explicitly when they affect user guidance:
+
+| Error | Meaning |
+| --- | --- |
+| `InvalidKAndN` | Split parameters are outside the supported range. |
+| `NotEnoughShares` | Combine received fewer than the threshold. |
+| `DuplicateX` | The same share coordinate was supplied more than once. |
+| `InconsistentMetadata` | Shares do not belong to the same set. |
+| `CryptoParamsMismatch` | Encrypted share metadata differs across packets. |
+| `IntegrityCheckFailed` | Reconstructed bytes failed the BLAKE3 tag check. |
+| `PassphraseRequired` | Encrypted shares were combined without a passphrase. |
+| `DecryptFailed` | Passphrase is wrong or encrypted data was tampered with. |
+| `CouldNotDetectEncoding` | Auto-detection could not infer the share format. |
 
 ## Corruption tests
 
-You can corrupt encoded share text and assert that recovery fails.
-Do not rely on one exact error for all corruptions because different encodings fail at different layers.
-For example, base58check corruption may fail during decoding, while a syntactically valid packet with changed payload bytes may fail the integrity check.
+Corrupt encoded share text and assert that recovery fails. Do not require one exact error for all corruptions because different formats fail at different layers. For example, Base58Check corruption may fail during decoding, while a syntactically valid packet with changed payload bytes may fail the integrity check.
 
 ## Memory and logging
 
-Rust cannot guarantee that every copy of a secret disappears immediately.
-Design as if recovered bytes can remain in process memory for some time.
-Keep the scope small, avoid formatting secrets into strings, and prefer writing to a controlled sink over logging or panicking with context that includes sensitive values.
+Rust cannot guarantee that every copy of a secret disappears immediately. Keep recovered bytes in the smallest scope you can, avoid formatting them into strings, and do not include sensitive values in panic messages or error context.

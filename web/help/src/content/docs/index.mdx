@@ -1,76 +1,70 @@
 ---
-title: Safeparts Help
-description: Learn what Safeparts is, when to use it, and how to run the Web UI, CLI, and TUI.
+title: Safeparts documentation
+description: Plan, split, store, and recover threshold shares with Safeparts.
 template: splash
 hero:
-  tagline: Recover critical secrets without keeping them in one place.
+  tagline: Split critical secrets into shares that require cooperation to recover.
   image:
     html: '<img src="/help/logo.svg" alt="" width="160" height="160" />'
   actions:
     - text: Open the web app
       link: /
       icon: external
-    - text: Getting started
+    - text: Start with a practice run
       link: getting-started
       icon: right-arrow
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Start here
+Safeparts helps you avoid one fragile backup. It turns one secret into <var>n</var> recovery shares and requires any <var>k</var> of them to recover the original value.
 
-Safeparts is a k-of-n recovery tool.
-It lets you spread one secret across people and places so recovery takes cooperation, not one perfect backup.
+Use these docs to choose a recovery plan, pick an interface, and avoid common handling mistakes.
+
+## Choose your path
 
 <CardGrid stagger>
-	<Card title="Getting started" icon="star">
-		Do one short practice run, learn how to pick <var>k</var> and <var>n</var>, and write down a recovery plan you can follow on a bad day.
+	<Card title="Start with a practice run" icon="star">
+		Learn the flow with a synthetic secret before using Safeparts for anything important.
 		
-		[Read the guide](getting-started/)
+		[Open the quickstart](getting-started/)
 	</Card>
-	<Card title="Use cases" icon="document">
-		Real-world scenarios (personal recovery, teams, infra) and a few simple patterns for deciding who should hold which share.
+	<Card title="Choose a recovery plan" icon="document">
+		Pick <var>k</var>, <var>n</var>, share holders, locations, and a drill schedule.
 		
-		[Browse use cases](use-cases/)
+		[Plan recovery](use-cases/)
 	</Card>
-	<Card title="Security" icon="setting">
-		Threat model, storage rules, and what passphrases change (and what they don't).
+	<Card title="Read the security model" icon="warning">
+		Understand what shares protect, what passphrases change, and what storage choices still matter.
 		
-		[Read security notes](security/)
+		[Review security](security/)
 	</Card>
-	<Card title="How it works" icon="open-book">
-		The short version: threshold sharing, an integrity tag to catch mistakes, and optional encryption.
+	<Card title="Use an app or terminal" icon="laptop">
+		Use the web app, desktop app, CLI, or TUI depending on how you work.
 		
-		[Read how it works](project/)
+		[Web app](web-ui/) · [Desktop](desktop/) · [CLI](cli/) · [TUI](tui/)
 	</Card>
-	<Card title="Interfaces" icon="laptop">
-		Pick your front-end: Web UI for one-off workflows, CLI for automation, or TUI for offline/interactive sessions.
+	<Card title="Run an operations process" icon="setting">
+		Build CLI runbooks for break-glass recovery, drills, and guarded automation.
 		
-		[Web UI](web-ui/) · [CLI](cli/) · [TUI](tui/)
+		[Open operations guide](it-devops-guide/)
 	</Card>
-	<Card title="Build & run" icon="setting">
-		Install and run Safeparts on Linux/macOS/Windows, including building the web app and this docs site.
+	<Card title="Embed the Rust library" icon="open-book">
+		Use `safeparts_core` in a Rust product or internal tool.
 		
-		[Build & run](build-and-run/)
-	</Card>
-	<Card title="Developer guide" icon="document">
-		Use `safeparts_core` from Rust applications, encode share packets, and test failure paths.
-		
-		[Read the developer guide](developer-guide/)
-	</Card>
-	<Card title="IT and devops guide" icon="setting">
-		Add the CLI to runbooks for break-glass recovery, custody, and automation.
-		
-		[Read the operations guide](it-devops-guide/)
+		[Open developer guide](developer-guide/)
 	</Card>
 </CardGrid>
 
 :::caution
-Shares are sensitive. Don't paste real shares into chat, tickets, or logs.
-When you need examples for docs or debugging, use synthetic secrets.
+Use synthetic examples in chat, tickets, tests, and screenshots. Do not paste real secrets, passphrases, recovery shares, or recovered output into places you do not control.
 :::
 
-:::note
-If you're choosing a plan for the first time, start simple and do a practice run.
-You can always re-split later.
-:::
+## What Safeparts does
+
+- Splits arbitrary bytes with Shamir-style threshold sharing over <span class="token token--mono">GF(256)</span>.
+- Adds a BLAKE3 integrity tag so recovery fails when shares are corrupted or mixed.
+- Can encrypt before splitting with Argon2id and ChaCha20-Poly1305 when you add a passphrase.
+- Exposes the same core through CLI, TUI, WASM, web, desktop, and Rust APIs.
+
+Safeparts is not a vault, password manager, or wallet seed tool. Your storage plan is still the security boundary.

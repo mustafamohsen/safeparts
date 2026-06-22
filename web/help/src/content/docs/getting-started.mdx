@@ -1,94 +1,76 @@
 ---
-title: Getting started
-description: Pick a recovery plan and run a safe first split.
+title: Quickstart
+description: Run a safe practice split and learn the minimum recovery model.
 ---
 
 import { Card, CardGrid, LinkButton, Steps } from '@astrojs/starlight/components';
 
-Safeparts splits one secret into recovery shares so recovery requires cooperation, not one perfect backup.
+Start with a practice run. A short drill teaches the workflow without exposing a real secret.
 
 :::caution
-Shares are sensitive. Don't paste real shares into chat, tickets, issues, or logs.
-When you need examples, use synthetic secrets.
+Practice with a synthetic secret such as <span class="token">synthetic-secret</span>. Do not use a production key until you have tested recovery.
 :::
 
-## Mental model
+## The recovery model
 
-Safeparts turns one secret into <var>n</var> shares. Recovery requires any <var>k</var> shares.
+You choose two numbers:
 
-- Fewer than <var>k</var> shares: an attacker learns nothing useful.
-- Any <var>k</var> shares: you can reconstruct the original secret.
+- <var>n</var>: how many shares Safeparts creates.
+- <var>k</var>: how many shares are required to recover the secret.
 
-Practical limits: <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>.
+With fewer than <var>k</var> shares, recovery should not reveal useful information. With any <var>k</var> shares from the same split, recovery succeeds.
 
-## Pick a recovery plan
+The core supports <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. For real recovery plans, use <span class="token">k >= 2</span> so no one holder can recover alone.
 
-The hard part is logistics: who holds which share, how you contact them, and what you do when someone is unavailable.
+## Run the drill
 
-Start with [Use cases](use-cases/) to choose <var>k</var>/<var>n</var> and a distribution you can actually run.
-
-## Pick an interface
-
-<CardGrid>
-	<Card title="Web UI" icon="laptop">
-		Good for one-off workflows and visual confirmation.
-		
-		[Web UI guide](web-ui/)
-	</Card>
-	<Card title="CLI" icon="document">
-		Good for automation and repeatable runbooks.
-		
-		[CLI guide](cli/)
-	</Card>
-	<Card title="TUI" icon="setting">
-		Good for offline machines and interactive terminal workflows.
-		
-		[TUI guide](tui/)
-	</Card>
-</CardGrid>
+The web app is the fastest way to learn the flow.
 
 <LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
 	Open the web app
 </LinkButton>
 
-## Do a practice run (recommended)
-
-Do this once with a fake secret so you learn the flow before you trust it with a real key.
-
 <Steps>
-1. Pick <span class="token">k=2, n=3</span>.
-2. Split a synthetic secret such as <span class="token">example-secret</span>.
-3. Store the 3 shares in 3 different places (even temporarily).
-4. Recover using any 2 shares.
-5. Delete the synthetic shares.
+1. Open the <span class="token">Split</span> tab.
+2. Enter <span class="token">synthetic-secret</span> as the secret.
+3. Set <span class="token">k=2</span> and <span class="token">n=3</span>.
+4. Choose <span class="token">Words</span> if you want to read or print the shares, or <span class="token">Letters</span> if you want compact text.
+5. Click <span class="token">Split</span> and copy the three shares into temporary notes.
+6. Open the <span class="token">Combine</span> tab and recover the secret with any two shares.
+7. Delete the synthetic shares and notes.
 </Steps>
 
-## Before you split a real key
-
-Read [Security](security/) and follow the storage rules there.
-Safeparts can remove single points of failure, but it can't fix a bad distribution.
-
-## Next
+## Pick the right interface
 
 <CardGrid>
-	<Card title="Use cases" icon="star">
-		Pick <var>k</var>/<var>n</var> and a realistic share distribution.
+	<Card title="Web app" icon="laptop">
+		Best for a quick, local browser workflow. The browser UI exposes <span class="token">base64url</span> and <span class="token">mnemo-words</span>.
 		
-		[Use cases](use-cases/)
+		[Use the web app](../web-ui/)
 	</Card>
-	<Card title="Encodings" icon="open-book">
-		Choose between machine-friendly and human-friendly share formats.
+	<Card title="Desktop app" icon="laptop">
+		Best when you want an installed local app built with Tauri.
 		
-		[Encodings](encodings/)
+		[Use desktop](../desktop/)
 	</Card>
-	<Card title="Security" icon="setting">
-		Threat model and safe handling rules.
+	<Card title="CLI" icon="document">
+		Best for repeatable runbooks, files, and automation.
 		
-		[Security](security/)
+		[Use the CLI](../cli/)
 	</Card>
-	<Card title="Troubleshooting" icon="warning">
-		Common failure modes and fixes.
+	<Card title="TUI" icon="setting">
+		Best for guided terminal workflows, especially on offline machines.
 		
-		[Troubleshooting](troubleshooting/)
+		[Use the TUI](../tui/)
 	</Card>
 </CardGrid>
+
+## Before using a real secret
+
+1. Choose a recovery plan you can run under stress.
+2. Store shares in separate failure domains: different people, accounts, devices, or locations.
+3. Write down who holds each share and how recovery is approved.
+4. Run one recovery drill with synthetic data.
+5. Read the [security model](../security/) before handling production material.
+
+Next: [choose a recovery plan](../use-cases/).

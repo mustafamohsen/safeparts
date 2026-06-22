@@ -1,71 +1,84 @@
 ---
-title: سطر الأوامر (CLI)
-description: تقسيم واسترداد بطريقة قابلة للأتمتة عبر الطرفية.
+title: CLI
+description: استخدم أمر safeparts للملفات والـ runbooks والاسترداد القابل للبرمجة.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-ملف التنفيذ هو <span class="token token--mono" dir="ltr">safeparts</span>.
-افتراضياً يقرأ من stdin ويكتب إلى stdout ما لم تمرر <span class="token token--mono" dir="ltr">-o</span>.
+اسم binary الخاص بواجهة CLI هو <span class="token token--mono" dir="ltr">safeparts</span>. يقرأ من stdin افتراضياً ويكتب إلى stdout إلا إذا مررت مسارات ملفات.
+
+استخدم CLI عندما تحتاج إلى أوامر قابلة للتكرار أو مدخلات ثنائية أو كل الترميزات المدعومة أو runbooks للمشغلين.
 
 ## التقسيم
 
-قسّم سراً من stdin إلى 3 حصص بحيث تحتاج أي حصتين للاسترداد:
+قسّم stdin إلى ثلاث حصص، مع طلب أي حصتين للاسترداد:
 
 ```bash
-echo -n "my secret" | safeparts split -k 2 -n 3 -e base64
+printf '%s' 'synthetic secret' | safeparts split -k 2 -n 3 -e base64url
 ```
 
-اكتب الحصص إلى ملف:
+قسّم ملفاً واكتب الحصص إلى ملف:
 
 ```bash
-echo -n "my secret" | safeparts split -k 2 -n 3 -e base64 -o shares.txt
+safeparts split \
+  --threshold 2 \
+  --shares 3 \
+  --encoding mnemo-words \
+  --in secret.bin \
+  --out shares.txt
 ```
+
+يحتوي ملف الخرج على حصة واحدة في كل سطر للترميزات المضغوطة. لا تحتفظ بملف يحتوي كل الحصص إلا إذا كانت سياستك تتعامل معه مثل السر الأصلي.
 
 ## الاسترداد
 
-استرداد من stdin (أي <var>k</var> حصص):
+استرد من stdin:
 
 ```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine
+printf '%s\n%s\n' '<share1>' '<share2>' | safeparts combine
 ```
 
-اكتب السر المستعاد إلى ملف:
+استرد من ملف واكتب البايتات المستعادة إلى ملف:
 
 ```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -o secret.bin
+safeparts combine --in selected-shares.txt --out recovered-secret.bin
 ```
 
-## عبارة المرور
-
-:::caution
-يفضّل استخدام <span class="token token--mono" dir="ltr">--passphrase-file</span> بدلاً من <span class="token token--mono" dir="ltr">--passphrase</span> في البيئات التي تحتفظ بسجل الأوامر.
-:::
-
-التقسيم مع عبارة مرور:
+إذا لم يستطع الكشف التلقائي تحديد الصيغة، مررها صراحة:
 
 ```bash
-echo -n "my secret" | safeparts split -k 2 -n 3 -e base64 -P passphrase.txt
+safeparts combine --encoding base64url --in selected-shares.txt --out recovered-secret.bin
 ```
 
-الاسترداد مع عبارة مرور:
+## الترميزات
+
+يدعم `split` هذه الترميزات في الخرج:
+
+- <span class="token" dir="ltr">base64url</span>، مع الاسم المستعار <span class="token" dir="ltr">base64</span>
+- <span class="token" dir="ltr">base58check</span>، مع الاسم المستعار <span class="token" dir="ltr">base58</span>
+- <span class="token" dir="ltr">mnemo-words</span>
+- <span class="token" dir="ltr">mnemo-bip39</span>
+
+يمكن لـ `combine` كشف الترميز تلقائياً عند حذف `--encoding`.
+
+## عبارات المرور
+
+فضّل <span class="token token--mono" dir="ltr">--passphrase-file</span> أو <span class="token token--mono" dir="ltr">-P</span>. قد تظهر عبارات المرور المكتوبة كوسيط أمر في تاريخ shell وقوائم العمليات ومسجلات الطرفية وأدوات التدقيق.
 
 ```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -P passphrase.txt
+safeparts split -k 2 -n 3 -e base64url -P passphrase.txt -i secret.bin -o shares.txt
+safeparts combine -P passphrase.txt -i selected-shares.txt -o recovered-secret.bin
 ```
 
-## سير عمل عملي
+## شكل runbook آمن
 
 <Steps>
-1. نفّذ تجربة تدريبية باستخدام سر اصطناعي.
-2. قسّم السر الحقيقي.
-3. خزّن الحصص في أماكن منفصلة.
-4. اختبر الاسترداد فوراً باستخدام <var>k</var> حصص.
-5. احذف السر الأصلي من الأماكن المؤقتة.
+1. اختبر تسلسل الأوامر بسر اصطناعي.
+2. قسّم السر الحقيقي من stdin أو ملف متحكم به.
+3. تحقق من الاسترداد باستخدام <var>k</var> حصص بالضبط إذا سمحت السياسة بذلك.
+4. وزّع الحصص على حاملين أو مواقع منفصلة.
+5. أزل الملفات المؤقتة التي تحتوي نصاً صريحاً أو ناتجاً مستعاداً أو كل الحصص معاً.
+6. سجّل الحيازة والعتبة والترميز وخطوات الموافقة دون تسجيل نص الحصص.
 </Steps>
 
-## استكشاف الأخطاء
-
-- <samp dir="ltr">no shares provided</samp>: الإدخال فارغ.
-- <samp dir="ltr">could not detect share encoding</samp>: مرّر <span class="token token--mono" dir="ltr">--encoding</span> بشكل صريح.
-- <samp dir="ltr">combine failed</samp>: الحصص من مجموعات مختلفة أو تالفة أو عبارة المرور خاطئة.
+لإرشادات تشغيلية أعمق، راجع [Runbooks للـ CLI](../it-devops-guide/cli-runbooks/).

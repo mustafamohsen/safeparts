@@ -1,47 +1,72 @@
-# Safeparts Docs Style
+# Safeparts docs style
 
-This is a maintainer-facing guide for the help site under `web/help/`.
-It exists to keep the English and Arabic docs consistent, readable, and easy to review.
+This maintainer-facing guide keeps the help site clear, current, and non-redundant.
 
-## Voice (what to sound like)
+## Voice
 
-- Be direct and practical. Prefer instructions and concrete trade-offs.
-- Assume the reader is careful but may be stressed (recovery scenarios).
-- Say what the tool does and does not do. Avoid implied guarantees.
-- Avoid marketing tone and filler ("powerful", "effortless", "just", "simply").
-- Prefer short paragraphs and strong headings.
+- Be direct, calm, and practical.
+- Assume recovery may happen under stress.
+- Say what Safeparts does and does not do.
+- Avoid marketing language, vague guarantees, and filler.
+- Prefer short paragraphs and purposeful headings.
 
-Quick check:
+## Page quality bar
 
-- Does the page help a user make a decision or complete a procedure?
-- Are safety constraints explicit and easy to spot?
+Each page must answer:
 
-## Structure and components
+- Who is this for?
+- What task or decision does it support?
+- What belongs only on this page?
+- What should link elsewhere instead of being repeated?
+- What should the reader do next?
 
-Default patterns (use when they improve clarity):
+If a page cannot answer those questions, merge it, cut it, or narrow it.
 
-- `<CardGrid>`: curated navigation, "choose your path", page-level entry points.
-- `<Steps>`: procedures a user should follow linearly. Do not use for minor lists.
-- Callouts (`:::note`, `:::tip`, `:::caution`, `:::danger`): safety posture and sharp constraints.
+## Non-redundancy
 
-Avoid:
+- One canonical home for each concept.
+- Repeat only the local action, not the whole explanation.
+- Use links for background instead of restating previous pages.
+- Do not keep a section because an older version had it.
 
-- Long Markdown bullet lists for procedures.
-- Using components as decoration.
+Canonical homes:
 
-## Inline tokens (don’t use code styling for everything)
+- Recovery model: `getting-started.mdx` and deeper detail in `project.mdx`.
+- Security rules: `security.mdx`.
+- Encodings: `encodings.mdx`.
+- CLI syntax: `cli.mdx`.
+- Operations process: `it-devops-guide/**`.
+- Cryptographic detail: `technical-design.mdx`.
+- Rust API: `developer-guide/**`.
 
-- Variables: `<var>` (e.g. <var>k</var>, <var>n</var>)
-- Keys/shortcuts: `<kbd>`
-- UI/status strings: `<samp>`
-- Small labels/values: `<span class="token">…</span>` (use `dir="ltr"` in Arabic pages)
-- Reserve inline code for actual code/commands only.
+## Components
 
-## Bilingual parity rules (EN/AR)
+Use components when they improve scanning:
 
-- Keep a 1:1 file map: `docs/<slug>.mdx` <-> `docs/ar/<slug>.mdx`.
-- Keep section intent aligned. Arabic is not a "summary" of English.
-- Keep navigation and cross-links locale-relative:
-  - English: `project/`, `./project/`
-  - Arabic: `./project/` (stays under `/help/ar/`)
-- Any example token that could be re-ordered by RTL context MUST be rendered LTR in Arabic (`dir="ltr"`).
+- `<CardGrid>` for page entry points or choice sets.
+- `<Steps>` for ordered procedures.
+- Callouts for safety constraints and sharp boundaries.
+
+Avoid decorative components and long procedural bullet lists.
+
+## Inline tokens
+
+- Variables: `<var>` for <var>k</var> and <var>n</var>.
+- Keys: `<kbd>`.
+- UI and status strings: `<samp>`.
+- Small labels: `<span class="token">...</span>`.
+- Use `dir="ltr"` in Arabic pages for command names, encodings, equations, and code-like tokens.
+- Use inline code only for code, commands, file paths, APIs, and package names.
+
+## Bilingual parity
+
+- Keep a 1:1 file map: `docs/<slug>.mdx` and `docs/ar/<slug>.mdx`.
+- Keep section intent aligned. Arabic is not a summary of English.
+- Keep navigation locale-relative.
+- Preserve RTL quality and add `dir="ltr"` where needed.
+
+## Safety examples
+
+- Use synthetic secrets only.
+- Do not include real share packets, real keys, real passphrases, or production-like credentials.
+- Do not show workflows that place enough shares and the passphrase in one uncontrolled location without a warning.

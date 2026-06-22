@@ -1,24 +1,17 @@
 ---
 title: Library API
-description: Use safeparts_core from Rust applications and services.
+description: Use safeparts_core split, combine, encoding, packet, and error APIs.
 ---
 
-Use the `safeparts_core` crate when a Rust application needs to create or recover Safeparts recovery shares without shelling out to the CLI.
+Use `safeparts_core` when a Rust application needs Safeparts behavior without shelling out to the CLI.
 
-The crate works on bytes. It does the split, packet validation, integrity check, text encoding, and optional passphrase protection. Your application still owns storage, operator identity, audit policy, and the lifetime of recovered secret bytes.
+The crate works on bytes. It handles split, combine, packet validation, integrity checks, text encodings, and optional passphrase protection. Your application still owns storage, authorization, audit policy, and secret lifetime.
 
 :::caution
-Do not log secrets, recovered bytes, passphrases, or share text. A recovery share is sensitive even when fewer than <var>k</var> shares are present.
+Do not log secrets, recovered bytes, passphrases, encoded shares, or packet payloads.
 :::
 
 ## Add the crate
-
-Inside this repository, depend on the workspace crate by path:
-
-```toml
-[dependencies]
-safeparts_core = { path = "../safeparts/crates/safeparts_core" }
-```
 
 From another repository, use a Git dependency until a published crate is available:
 
@@ -27,7 +20,9 @@ From another repository, use a Git dependency until a published crate is availab
 safeparts_core = { git = "https://github.com/mustafamohsen/safeparts", package = "safeparts_core" }
 ```
 
-If your application wraps passphrases or recovered bytes in zeroizing containers, add `zeroize` too:
+Inside this workspace, depend on the workspace crate according to the local crate layout.
+
+If your application wraps sensitive buffers, add `zeroize`:
 
 ```toml
 [dependencies]
@@ -35,8 +30,6 @@ zeroize = "1"
 ```
 
 ## Split and combine bytes
-
-`split_secret` accepts arbitrary bytes. It does not assume UTF-8, so it works for text secrets, binary keys, exported credential files, and recovery blobs.
 
 ```rust
 use safeparts_core::{combine_shares, split_secret, CoreResult};
@@ -52,11 +45,9 @@ fn split_then_recover() -> CoreResult<()> {
 }
 ```
 
-Parameter rules are enforced by the library: <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. Recovery needs at least <var>k</var> packets from the same split set.
+The core threshold range is <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. Recovery needs at least <var>k</var> packets from the same split set.
 
 ## Encode shares for storage
-
-A split returns `SharePacket` values. Most applications should encode those packets before storing, displaying, or transferring them.
 
 ```rust
 use safeparts_core::encoding::{self, Encoding};
@@ -72,11 +63,9 @@ fn split_for_storage() -> CoreResult<Vec<String>> {
 }
 ```
 
-Store each encoded share in a separate failure domain. Keeping enough shares together in one vault item, database row, or CI secret store defeats the threshold plan.
+Store each encoded share in a separate failure domain. Keeping enough shares together defeats the threshold plan.
 
-## Parse pasted shares and recover
-
-Use `Encoding::Auto` when an operator pastes shares and the UI does not know the encoding. The parser returns both the packets and the concrete encoding it detected.
+## Parse and recover pasted shares
 
 ```rust
 use safeparts_core::encoding::{self, Encoding};
@@ -88,11 +77,9 @@ fn recover_from_paste(input: &str) -> CoreResult<Vec<u8>> {
 }
 ```
 
-For UIs where a long mnemonic share may wrap across lines, use `parse_share_packets_wrapped_mnemonics`. That mode treats multiple non-empty lines as one wrapped mnemonic share unless blank lines split shares.
+Use `parse_share_packets_wrapped_mnemonics` for text areas where one mnemonic share may wrap across multiple lines. Blank lines separate wrapped mnemonic shares.
 
 ## Add passphrase protection
-
-Passphrase protection encrypts the secret before splitting it. Recovery then requires both enough shares and the same passphrase.
 
 ```rust
 use safeparts_core::{combine_shares, split_secret, CoreResult};
@@ -114,116 +101,55 @@ fn encrypted_round_trip() -> CoreResult<()> {
 }
 ```
 
-Packets store the salt, nonce, and Argon2id parameters needed for recovery. They do not store the passphrase. Keep passphrases out of URLs, logs, panic messages, analytics events, and request metadata that your platform records by default.
-
-## Handle errors by class
-
-`CoreError` is typed. Match the cases that affect user guidance, then keep the original share text out of errors and logs.
-
-```rust
-use safeparts_core::encoding::{self, Encoding};
-use safeparts_core::{combine_shares, CoreError};
-
-fn recover_with_message(input: &str) -> Result<Vec<u8>, String> {
-    let parsed = encoding::parse_share_packets(input, Encoding::Auto).map_err(|err| match err {
-        CoreError::EmptyShareInput => "paste at least one recovery share".to_string(),
-        CoreError::CouldNotDetectEncoding => "choose the share encoding and try again".to_string(),
-        CoreError::Encoding(_) | CoreError::InvalidPacket(_) => {
-            "one or more recovery shares could not be decoded".to_string()
-        }
-        other => other.to_string(),
-    })?;
-
-    combine_shares(&parsed.packets, None).map_err(|err| match err {
-        CoreError::NotEnoughShares { k, m } => format!("need {k} shares, got {m}"),
-        CoreError::DuplicateX { .. } => "the same recovery share was provided twice".to_string(),
-        CoreError::InconsistentMetadata => "recovery shares come from different sets".to_string(),
-        CoreError::PassphraseRequired => "these recovery shares need a passphrase".to_string(),
-        CoreError::DecryptFailed => "wrong passphrase or tampered encrypted data".to_string(),
-        CoreError::IntegrityCheckFailed => "recovery shares failed the integrity check".to_string(),
-        other => other.to_string(),
-    })
-}
-```
+Packets store the salt, nonce, and Argon2id parameters needed for recovery. They do not store the passphrase.
 
 ## Public API reference
 
 ### Top-level crate API
 
-| Item | Signature or shape | Use |
-| --- | --- | --- |
-| `split_secret` | `fn split_secret(secret: &[u8], k: u8, n: u8, passphrase: Option<&[u8]>) -> CoreResult<Vec<SharePacket>>` | Main API for creating share packets. |
-| `combine_shares` | `fn combine_shares(packets: &[SharePacket], passphrase: Option<&[u8]>) -> CoreResult<Vec<u8>>` | Main API for recovering secret bytes. |
-| `tag_and_split` | `fn tag_and_split(secret: &[u8], k: u8, n: u8) -> CoreResult<Vec<SharePacket>>` | Compatibility wrapper for unprotected splits. Prefer `split_secret`. |
-| `combine_and_verify` | `fn combine_and_verify(packets: &[SharePacket]) -> CoreResult<Vec<u8>>` | Compatibility wrapper for unprotected combine. Prefer `combine_shares`. |
-| `CoreError` | enum | Typed error cases for UI and service boundaries. |
-| `CoreResult<T>` | `Result<T, CoreError>` | Convenience result alias. |
+| Item | Use |
+| --- | --- |
+| `split_secret(secret, k, n, passphrase)` | Main API for creating share packets. |
+| `combine_shares(packets, passphrase)` | Main API for recovering secret bytes. |
+| `tag_and_split(secret, k, n)` | Compatibility wrapper for unprotected splits. Prefer `split_secret` in new code. |
+| `combine_and_verify(packets)` | Compatibility wrapper for unprotected combine. Prefer `combine_shares` in new code. |
+| `CoreError` | Typed error enum. |
+| `CoreResult<T>` | Result alias for core operations. |
 
 ### `encoding` module
 
 | Item | Use |
 | --- | --- |
-| `Encoding` | Share encoding enum: `Auto`, `Base64url`, `Base58check`, `MnemoWords`, `MnemoBip39`. |
-| `Encoding::CONCRETE` | Concrete encodings valid for output. |
-| `Encoding::WITH_AUTO` | Encodings plus `Auto`, useful for combine UI options. |
-| `Encoding::label()` | Canonical label such as `base64url` or `mnemo-words`. |
-| `Encoding::parse_name(name)` | Parses canonical names and CLI aliases such as `base64` and `base58`. |
-| `ParsedSharePackets` | Parsed packet list plus detected concrete encoding. |
-| `encode_packet(packet, encoding)` | Encodes one packet as share text. `Auto` is rejected for output. |
-| `decode_packet(text, encoding)` | Decodes one share packet. `Auto` requires exactly one packet in the input. |
-| `parse_share_packets(input, encoding)` | Parses one or more shares from pasted text. |
-| `parse_share_packets_wrapped_mnemonics(input, encoding)` | Parses UI input where a mnemonic share may wrap across lines. |
-| `detect_encoding(input)` | Returns the likely concrete encoding without returning packets. |
+| `Encoding` | `Auto`, `Base64url`, `Base58check`, `MnemoWords`, and `MnemoBip39`. |
+| `Encoding::CONCRETE` | Concrete output encodings. |
+| `Encoding::WITH_AUTO` | Concrete encodings plus auto parsing. |
+| `Encoding::label()` | Canonical label for UI or storage metadata. |
+| `Encoding::parse_name(name)` | Parses canonical names and CLI aliases. |
+| `ParsedSharePackets` | Parsed packets plus detected encoding. |
+| `encode_packet(packet, encoding)` | Encode one packet as text. |
+| `decode_packet(text, encoding)` | Decode one packet. |
+| `parse_share_packets(input, encoding)` | Parse one or more shares. |
+| `parse_share_packets_wrapped_mnemonics(input, encoding)` | Parse text area input with wrapped mnemonic shares. |
+| `detect_encoding(input)` | Detect likely encoding without returning packets. |
 
 ### `packet` module
 
 | Item | Use |
 | --- | --- |
-| `SharePacket` | Packet struct with `set_id`, `k`, `n`, `x`, `payload`, and optional `crypto_params`. |
-| `SharePacket::is_encrypted()` | True when passphrase protection was used. |
-| `SharePacket::encode_binary()` | Serializes to Safeparts binary packet format. Prefer text encodings unless you control binary storage. |
-| `SharePacket::decode_binary(bytes)` | Parses the binary packet format. |
-| `packet::binary_total_len(bytes)` | Computes the full binary packet length from a byte prefix. Mainly useful for framing. |
-
-### Lower-level modules
-
-Most applications should prefer the top-level and `encoding` APIs. These lower-level modules are public for focused internals, tests, and advanced adapters.
-
-| Module | Public items | When to use |
-| --- | --- | --- |
-| `ascii` | `Encoding`, `encode_packet`, `decode_packet` | Direct base64url or base58check handling. Prefer `encoding` for new code. |
-| `mnemo_words` | `encode_packet`, `decode_packet` | Direct word-list encoding. Prefer `encoding` for new code. |
-| `mnemo_bip39` | `encode_packet`, `decode_packet` | Direct BIP-39 phrase encoding. Prefer `encoding` for new code. |
-| `crypto` | `CryptoParams`, `encrypt`, `decrypt` | Low-level encrypt/decrypt. Prefer passphrase arguments on `split_secret` and `combine_shares`. |
-| `sss` | `SetId`, `RawShare`, `split`, `combine` | Low-level Shamir shares without packet, encoding, integrity, or passphrase policy. |
-| `gf256` | `Gf256` | Core finite-field math internals. Avoid in application integrations. |
-
-## Common error cases
-
-| Error | Meaning |
-| --- | --- |
-| `InvalidKAndN` | Split parameters are outside <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. |
-| `NotEnoughShares` | Combine input has fewer than the threshold. |
-| `InconsistentMetadata` | Shares do not belong to the same set or have incompatible metadata. |
-| `DuplicateX` | The same share coordinate was supplied more than once. |
-| `InvalidPacket` or `Encoding` | Binary packet or text decoding failed. |
-| `UnknownEncoding` | An encoding name is not recognized. |
-| `EmptyShareInput` | Pasted share input had no non-empty shares. |
-| `CouldNotDetectEncoding` | Auto encoding could not choose a concrete encoding. |
-| `AutoEncodingForOutput` | Caller tried to encode output with `Encoding::Auto`. |
-| `IntegrityCheckFailed` | Reconstructed bytes did not match the internal BLAKE3 tag. |
-| `PassphraseRequired` | Encrypted shares were combined without a passphrase. |
-| `DecryptFailed` | Wrong passphrase or tampered encrypted data. |
-| `CryptoParamsMismatch` | Encrypted packet metadata does not match across shares. |
+| `SharePacket` | Packet with `set_id`, `k`, `n`, `x`, payload, and optional crypto params. |
+| `SharePacket::is_encrypted()` | Returns true when passphrase protection was used. |
+| `SharePacket::encode_binary()` | Serialize to Safeparts binary packet format. |
+| `SharePacket::decode_binary(bytes)` | Parse the binary packet format. |
+| `packet::binary_total_len(bytes)` | Compute full packet length from a byte prefix. |
 
 ## Application responsibilities
 
-`safeparts_core` handles cryptographic split/combine, packet validation, integrity checks, encodings, and optional decrypt. Your application still decides:
+`safeparts_core` does not decide:
 
-- where each share is stored
-- how share holders are authenticated
-- whether passphrase protection is required, optional, or forbidden
-- how recovered bytes are handled in memory and on disk
-- what audit events are safe to record
+- where each share is stored;
+- who may provide a share;
+- whether passphrases are required;
+- how recovered bytes move through memory or disk;
+- which audit events are safe to record.
 
-A safe audit event says recovery was attempted or completed and names the approved policy. It should not include the recovered value or share text.
+A safe audit event says that recovery was attempted or completed under an approved policy. It should not include share text or recovered values.

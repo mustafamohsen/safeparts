@@ -1,42 +1,35 @@
 ---
 title: واجهة API للمكتبة
-description: استخدام safeparts_core من تطبيقات وخدمات Rust.
+description: استخدم APIs التقسيم والاسترداد والترميز والحزم والأخطاء في safeparts_core.
 ---
 
-استخدم crate `safeparts_core` عندما يحتاج تطبيق Rust إلى إنشاء حصص استرداد Safeparts أو استعادتها دون تشغيل CLI كعملية خارجية.
+استخدم `safeparts_core` عندما يحتاج تطبيق Rust إلى سلوك Safeparts دون استدعاء CLI.
 
-تعمل crate على البايتات. وهي تنفذ التقسيم، والتحقق من الحزم، وفحص السلامة، والترميزات النصية، والحماية الاختيارية بعبارة مرور. يبقى تطبيقك مسؤولاً عن التخزين، وهوية المشغلين، وسياسة التدقيق، ومدة بقاء بايتات السر المستردة في الذاكرة.
+تعمل crate على البايتات. تتعامل مع التقسيم والاسترداد والتحقق من الحزم وفحوص السلامة والترميزات النصية وحماية عبارة المرور الاختيارية. يبقى على تطبيقك التخزين، والتفويض، وسياسة التدقيق، وعمر الأسرار.
 
 :::caution
-لا تسجل الأسرار، أو البايتات المستردة، أو عبارات المرور، أو نص الحصص. حصة الاسترداد حساسة حتى عندما يكون عدد الحصص أقل من <var>k</var>.
+لا تسجّل الأسرار أو البايتات المستعادة أو عبارات المرور أو الحصص المرمزة أو payload الحزم.
 :::
 
-## أضف crate
+## إضافة crate
 
-داخل هذا المستودع، اعتمد على crate الموجودة في workspace عبر path:
-
-```toml
-[dependencies]
-safeparts_core = { path = "../safeparts/crates/safeparts_core" }
-```
-
-من مستودع آخر، استخدم اعتماد Git إلى أن تتوفر crate منشورة:
+من repository آخر، استخدم Git dependency إلى أن تتوفر crate منشورة:
 
 ```toml
 [dependencies]
 safeparts_core = { git = "https://github.com/mustafamohsen/safeparts", package = "safeparts_core" }
 ```
 
-إذا كان تطبيقك يلف عبارات المرور أو البايتات المستردة بحاويات تمسح الذاكرة، أضف `zeroize` أيضاً:
+داخل هذا workspace، اعتمد على crate المحلية حسب بنية crate عندك.
+
+إذا كان تطبيقك يلف buffers حساسة، أضف `zeroize`:
 
 ```toml
 [dependencies]
 zeroize = "1"
 ```
 
-## قسّم واستعد البايتات
-
-تقبل `split_secret` بايتات عشوائية. لا تفترض UTF-8، لذلك تصلح للأسرار النصية، والمفاتيح الثنائية، وملفات الاعتمادات المصدّرة، وملفات الاسترداد.
+## تقسيم واسترداد البايتات
 
 ```rust
 use safeparts_core::{combine_shares, split_secret, CoreResult};
@@ -52,11 +45,9 @@ fn split_then_recover() -> CoreResult<()> {
 }
 ```
 
-تتحقق المكتبة من قاعدة المعاملات: <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. يحتاج الاسترداد إلى <var>k</var> حزم على الأقل من مجموعة التقسيم نفسها.
+مجال العتبة في النواة هو <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. يحتاج الاسترداد إلى <var>k</var> حزم على الأقل من مجموعة التقسيم نفسها.
 
-## رمّز الحصص للتخزين
-
-ينتج التقسيم قيم `SharePacket`. غالباً يجب أن يرمّز التطبيق هذه الحزم قبل تخزينها أو عرضها أو نقلها.
+## ترميز الحصص للتخزين
 
 ```rust
 use safeparts_core::encoding::{self, Encoding};
@@ -72,11 +63,9 @@ fn split_for_storage() -> CoreResult<Vec<String>> {
 }
 ```
 
-خزّن كل حصة مرمّزة في نطاق فشل منفصل. إذا احتفظت بعدد كاف من الحصص في عنصر vault واحد، أو صف قاعدة بيانات واحد، أو مخزن أسرار CI واحد، فأنت تلغي فكرة العتبة.
+خزّن كل حصة مرمزة في نطاق فشل منفصل. إبقاء عدد كافٍ من الحصص معاً يهدم خطة العتبة.
 
-## حلّل الحصص الملصقة واستعد السر
-
-استخدم `Encoding::Auto` عندما يلصق المشغل حصصاً ولا تعرف الواجهة الترميز مسبقاً. يعيد المحلل الحزم والترميز المحدد الذي اكتشفه.
+## تحليل الحصص الملصقة والاسترداد
 
 ```rust
 use safeparts_core::encoding::{self, Encoding};
@@ -88,11 +77,9 @@ fn recover_from_paste(input: &str) -> CoreResult<Vec<u8>> {
 }
 ```
 
-إذا كانت الواجهة تسمح لحصة mnemonic طويلة بأن تلتف على أكثر من سطر، فاستخدم `parse_share_packets_wrapped_mnemonics`. في هذا الوضع، تُعامل الأسطر غير الفارغة المتعددة كحصة mnemonic واحدة ملتفة، إلا إذا فصلت الأسطر الفارغة بين الحصص.
+استخدم `parse_share_packets_wrapped_mnemonics` لمناطق النص حيث قد تلتف حصة mnemonic واحدة على عدة أسطر. تفصل الأسطر الفارغة بين حصص mnemonic الملتفة.
 
-## أضف الحماية بعبارة مرور
-
-حماية عبارة المرور تشفّر السر قبل تقسيمه. عند الاسترداد، تحتاج إلى عدد كاف من الحصص وإلى عبارة المرور نفسها.
+## إضافة حماية عبارة مرور
 
 ```rust
 use safeparts_core::{combine_shares, split_secret, CoreResult};
@@ -114,116 +101,55 @@ fn encrypted_round_trip() -> CoreResult<()> {
 }
 ```
 
-تخزن الحزم الملح، والـ nonce، ومعاملات Argon2id اللازمة للاسترداد. لا تخزن عبارة المرور. أبق عبارات المرور خارج عناوين URL، والسجلات، ورسائل panic، وأحداث analytics، وبيانات الطلب التي قد تسجلها منصتك تلقائياً.
-
-## تعامل مع الأخطاء حسب النوع
-
-`CoreError` نوعي. طابق الحالات التي تؤثر في توجيه المستخدم، ثم أبق نص الحصص الأصلي خارج الأخطاء والسجلات.
-
-```rust
-use safeparts_core::encoding::{self, Encoding};
-use safeparts_core::{combine_shares, CoreError};
-
-fn recover_with_message(input: &str) -> Result<Vec<u8>, String> {
-    let parsed = encoding::parse_share_packets(input, Encoding::Auto).map_err(|err| match err {
-        CoreError::EmptyShareInput => "paste at least one recovery share".to_string(),
-        CoreError::CouldNotDetectEncoding => "choose the share encoding and try again".to_string(),
-        CoreError::Encoding(_) | CoreError::InvalidPacket(_) => {
-            "one or more recovery shares could not be decoded".to_string()
-        }
-        other => other.to_string(),
-    })?;
-
-    combine_shares(&parsed.packets, None).map_err(|err| match err {
-        CoreError::NotEnoughShares { k, m } => format!("need {k} shares, got {m}"),
-        CoreError::DuplicateX { .. } => "the same recovery share was provided twice".to_string(),
-        CoreError::InconsistentMetadata => "recovery shares come from different sets".to_string(),
-        CoreError::PassphraseRequired => "these recovery shares need a passphrase".to_string(),
-        CoreError::DecryptFailed => "wrong passphrase or tampered encrypted data".to_string(),
-        CoreError::IntegrityCheckFailed => "recovery shares failed the integrity check".to_string(),
-        other => other.to_string(),
-    })
-}
-```
+تخزّن الحزم الملح وnonce ومعلمات Argon2id المطلوبة للاسترداد. لا تخزّن عبارة المرور.
 
 ## مرجع API العام
 
 ### واجهة crate العليا
 
-| العنصر | الشكل أو التوقيع | الاستخدام |
-| --- | --- | --- |
-| `split_secret` | `fn split_secret(secret: &[u8], k: u8, n: u8, passphrase: Option<&[u8]>) -> CoreResult<Vec<SharePacket>>` | الواجهة الأساسية لإنشاء حزم الحصص. |
-| `combine_shares` | `fn combine_shares(packets: &[SharePacket], passphrase: Option<&[u8]>) -> CoreResult<Vec<u8>>` | الواجهة الأساسية لاسترداد بايتات السر. |
-| `tag_and_split` | `fn tag_and_split(secret: &[u8], k: u8, n: u8) -> CoreResult<Vec<SharePacket>>` | غلاف توافق للتقسيم دون حماية. يفضّل استخدام `split_secret`. |
-| `combine_and_verify` | `fn combine_and_verify(packets: &[SharePacket]) -> CoreResult<Vec<u8>>` | غلاف توافق للاسترداد دون حماية. يفضّل استخدام `combine_shares`. |
-| `CoreError` | enum | حالات خطأ نوعية لحدود الواجهات والخدمات. |
-| `CoreResult<T>` | `Result<T, CoreError>` | alias مريح لنتيجة الدوال. |
+| العنصر | الاستخدام |
+| --- | --- |
+| `split_secret(secret, k, n, passphrase)` | API الرئيسي لإنشاء حزم الحصص. |
+| `combine_shares(packets, passphrase)` | API الرئيسي لاسترداد بايتات السر. |
+| `tag_and_split(secret, k, n)` | غلاف توافق للتقسيم دون حماية. فضّل `split_secret` في الكود الجديد. |
+| `combine_and_verify(packets)` | غلاف توافق للاسترداد دون حماية. فضّل `combine_shares` في الكود الجديد. |
+| `CoreError` | enum للأخطاء typed. |
+| `CoreResult<T>` | alias لنتائج عمليات النواة. |
 
 ### وحدة `encoding`
 
 | العنصر | الاستخدام |
 | --- | --- |
-| `Encoding` | enum لترميز الحصص: `Auto`, `Base64url`, `Base58check`, `MnemoWords`, `MnemoBip39`. |
-| `Encoding::CONCRETE` | الترميزات المحددة الصالحة للإخراج. |
-| `Encoding::WITH_AUTO` | الترميزات مع `Auto`، مفيد لخيارات واجهة الاسترداد. |
-| `Encoding::label()` | الاسم القياسي مثل `base64url` أو `mnemo-words`. |
-| `Encoding::parse_name(name)` | يحلل الأسماء القياسية وaliases الخاصة بالـ CLI مثل `base64` و`base58`. |
-| `ParsedSharePackets` | قائمة الحزم المحللة مع الترميز المحدد الذي اكتُشف. |
-| `encode_packet(packet, encoding)` | يرمّز حزمة واحدة إلى نص حصة. يرفض `Auto` عند الإخراج. |
-| `decode_packet(text, encoding)` | يفك ترميز حصة واحدة. عند استخدام `Auto` يجب أن يحتوي الإدخال على حزمة واحدة فقط. |
-| `parse_share_packets(input, encoding)` | يحلل حصة واحدة أو أكثر من نص ملصق. |
-| `parse_share_packets_wrapped_mnemonics(input, encoding)` | يحلل إدخال واجهة قد تلتف فيه حصة mnemonic على عدة أسطر. |
-| `detect_encoding(input)` | يعيد الترميز المحدد المرجح دون إعادة الحزم. |
+| `Encoding` | `Auto`, `Base64url`, `Base58check`, `MnemoWords`, و`MnemoBip39`. |
+| `Encoding::CONCRETE` | ترميزات الخرج الملموسة. |
+| `Encoding::WITH_AUTO` | الترميزات الملموسة مع التحليل التلقائي. |
+| `Encoding::label()` | تسمية canonical للواجهة أو metadata التخزين. |
+| `Encoding::parse_name(name)` | يحلل الأسماء canonical وأسماء CLI المستعارة. |
+| `ParsedSharePackets` | الحزم المحللة مع الترميز المكتشف. |
+| `encode_packet(packet, encoding)` | ترميز حزمة واحدة كنص. |
+| `decode_packet(text, encoding)` | تحليل حزمة واحدة. |
+| `parse_share_packets(input, encoding)` | تحليل حصة أو أكثر. |
+| `parse_share_packets_wrapped_mnemonics(input, encoding)` | تحليل مدخلات منطقة نص مع حصص mnemonic ملتفة. |
+| `detect_encoding(input)` | كشف الترميز المحتمل دون إرجاع الحزم. |
 
 ### وحدة `packet`
 
 | العنصر | الاستخدام |
 | --- | --- |
-| `SharePacket` | struct للحزمة يحتوي `set_id`, و`k`, و`n`, و`x`, و`payload`, و`crypto_params` الاختيارية. |
-| `SharePacket::is_encrypted()` | صحيح عندما استُخدمت الحماية بعبارة مرور. |
-| `SharePacket::encode_binary()` | يسلْسل الحزمة إلى صيغة Safeparts الثنائية. فضّل الترميزات النصية إلا إذا كنت تتحكم بالتخزين الثنائي. |
+| `SharePacket` | حزمة فيها `set_id` و`k` و`n` و`x` وpayload ومعلمات تشفير اختيارية. |
+| `SharePacket::is_encrypted()` | يرجع true عند استخدام حماية عبارة مرور. |
+| `SharePacket::encode_binary()` | serializes إلى صيغة حزمة Safeparts الثنائية. |
 | `SharePacket::decode_binary(bytes)` | يحلل صيغة الحزمة الثنائية. |
-| `packet::binary_total_len(bytes)` | يحسب طول الحزمة الثنائية الكامل من بادئة بايتات. يفيد غالباً في framing. |
-
-### الوحدات الأدنى مستوى
-
-يفضل أن تستخدم معظم التطبيقات الواجهات العليا ووحدة `encoding`. هذه الوحدات عامة للاختبارات الدقيقة، والداخلية، والمحولات المتقدمة.
-
-| الوحدة | العناصر العامة | متى تستخدمها |
-| --- | --- | --- |
-| `ascii` | `Encoding`, `encode_packet`, `decode_packet` | التعامل المباشر مع base64url أو base58check. فضّل `encoding` للكود الجديد. |
-| `mnemo_words` | `encode_packet`, `decode_packet` | ترميز الكلمات مباشرة. فضّل `encoding` للكود الجديد. |
-| `mnemo_bip39` | `encode_packet`, `decode_packet` | ترميز عبارات BIP-39 مباشرة. فضّل `encoding` للكود الجديد. |
-| `crypto` | `CryptoParams`, `encrypt`, `decrypt` | تشفير وفك تشفير منخفض المستوى. فضّل معاملات عبارة المرور في `split_secret` و`combine_shares`. |
-| `sss` | `SetId`, `RawShare`, `split`, `combine` | حصص Shamir منخفضة المستوى دون حزم أو ترميز أو سلامة أو سياسة عبارة مرور. |
-| `gf256` | `Gf256` | تفاصيل رياضيات الحقل المحدود في النواة. تجنبها في تكاملات التطبيقات. |
-
-## حالات الخطأ الشائعة
-
-| الخطأ | المعنى |
-| --- | --- |
-| `InvalidKAndN` | معاملات التقسيم خارج <span class="token" dir="ltr">1 &lt;= k &lt;= n &lt;= 255</span>. |
-| `NotEnoughShares` | إدخال الاسترداد يحتوي على حصص أقل من العتبة. |
-| `InconsistentMetadata` | الحصص لا تنتمي إلى المجموعة نفسها أو تحمل metadata غير متوافقة. |
-| `DuplicateX` | قُدمت الحصة نفسها أو الإحداثية نفسها أكثر من مرة. |
-| `InvalidPacket` أو `Encoding` | فشل تحليل الحزمة الثنائية أو النص المرمز. |
-| `UnknownEncoding` | اسم الترميز غير معروف. |
-| `EmptyShareInput` | لا يحتوي الإدخال الملصق على حصص غير فارغة. |
-| `CouldNotDetectEncoding` | لم يستطع وضع auto اختيار ترميز محدد. |
-| `AutoEncodingForOutput` | حاول المستدعي إنشاء إخراج باستخدام `Encoding::Auto`. |
-| `IntegrityCheckFailed` | البايتات المستردة لم تطابق وسم BLAKE3 الداخلي. |
-| `PassphraseRequired` | جُمعت حصص مشفرة دون عبارة مرور. |
-| `DecryptFailed` | عبارة المرور خاطئة أو البيانات المشفرة عُبث بها. |
-| `CryptoParamsMismatch` | metadata التشفير لا تتطابق بين الحصص. |
+| `packet::binary_total_len(bytes)` | يحسب طول الحزمة الكامل من بادئة بايتات. |
 
 ## مسؤوليات التطبيق
 
-تتعامل `safeparts_core` مع التقسيم والاسترداد التشفيري، والتحقق من الحزم، وفحوص السلامة، والترميزات، وفك التشفير الاختياري. لا يزال تطبيقك يقرر:
+لا يقرر `safeparts_core`:
 
-- أين تخزن كل حصة
-- كيف تتحقق من هوية حاملي الحصص
-- هل الحماية بعبارة مرور مطلوبة أو اختيارية أو ممنوعة
-- كيف يتعامل التطبيق مع البايتات المستردة في الذاكرة وعلى القرص
-- ما أحداث التدقيق الآمنة للتسجيل
+- أين تُخزن كل حصة؛
+- من يحق له تقديم حصة؛
+- هل عبارات المرور مطلوبة؛
+- كيف تتحرك البايتات المستعادة في الذاكرة أو على القرص؛
+- أي أحداث تدقيق آمنة للتسجيل.
 
-سجل التدقيق الآمن يقول إن محاولة الاسترداد حدثت أو اكتملت، ويذكر السياسة التي وافقت عليها. لا يجب أن يتضمن القيمة المستردة أو نص الحصص.
+حدث التدقيق الآمن يقول إن الاسترداد بدأ أو اكتمل تحت سياسة معتمدة. يجب ألا يتضمن نص الحصص أو القيم المستعادة.

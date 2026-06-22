@@ -1,40 +1,67 @@
 ---
 title: Troubleshooting
-description: Common errors and how to fix them safely.
+description: Fix common split, combine, build, and UI problems without exposing secrets.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
+Use synthetic data when asking for help. Do not post real secrets, shares, passphrases, screenshots of shares, or recovered output.
+
 ## Combine fails
 
-Most combine failures are one of these:
+Most combine failures come from one of these causes:
 
-- not enough shares (<var>k</var>)
-- shares from different sets
-- a corrupted share / a typo
-- the wrong passphrase
+- fewer than <var>k</var> usable shares were provided;
+- the same share was provided twice;
+- shares came from different split sets;
+- share text was corrupted or entered with the wrong encoding;
+- the split used a passphrase and none was provided;
+- the passphrase is wrong.
 
 <Steps>
-1. Confirm you have at least <var>k</var> shares.
-2. Confirm all shares were created together (same split run).
-3. If you used a passphrase, verify the exact passphrase file/value.
-4. If you're still stuck, re-split a synthetic secret and validate the workflow end-to-end.
+1. Confirm the threshold and count how many unique shares you have.
+2. Confirm all shares were created in the same split run.
+3. Confirm the selected encoding, or let the CLI/TUI auto-detect it.
+4. If the shares are passphrase-protected, verify the exact passphrase source.
+5. If possible, run the same procedure with a synthetic secret to isolate the process from the data.
 </Steps>
 
-## Web UI says <samp>WASM module not found</samp>
+## Common error messages
 
-This usually means the WASM build step was not run.
+| Message | Meaning | What to do |
+| --- | --- | --- |
+| <samp>no shares provided</samp> | The input was empty after trimming whitespace. | Paste or load at least one share. |
+| <samp>could not detect share encoding</samp> | Auto-detection could not choose a format. | Select the encoding explicitly and retry. |
+| <samp>need at least k shares</samp> | Too few shares were supplied. Duplicate shares may also reduce the usable count. | Provide enough unique shares from the same split. |
+| <samp>duplicate x coordinate</samp> | The same share index appeared more than once. | Replace the duplicate with a different holder's share. |
+| <samp>share set metadata mismatch</samp> | Shares do not belong to the same split set or crypto parameters differ. | Restart collection and verify custody records. |
+| <samp>integrity check failed</samp> | Reconstruction produced bytes that did not match the internal tag. | Check for mixed or corrupted shares. |
+| <samp>passphrase required</samp> | The shares were created with passphrase protection. | Provide the passphrase through the approved channel. |
+| <samp>decryption failed</samp> | The passphrase is wrong or encrypted data was tampered with. | Verify the passphrase and do not retry in a loop. |
+
+## Web app says <samp>WASM module not found</samp>
+
+The web app needs generated WASM bindings.
 
 <Steps>
 1. From <span class="token token--mono">web/</span>, run <span class="token token--mono">bun run build:wasm</span>.
-2. Restart the dev server (<span class="token token--mono">bun run dev</span>).
+2. Restart the dev server with <span class="token token--mono">bun run dev</span>.
+3. Reload the browser page.
 </Steps>
 
-## Still stuck?
+## Build problems
 
-If you want a second pair of eyes, ask in the Safeparts Discord:
-[Join Discord](https://discord.gg/ZaSfpcy8At)
+- If Rust commands fail, run <span class="token token--mono">rustup update</span> and confirm `rustfmt` and `clippy` are installed.
+- If web or docs installs fail, use Bun and avoid mixing npm, pnpm, or yarn lockfiles.
+- If desktop builds fail on Linux, install the Tauri system dependencies listed in the release workflow or developer docs.
+
+## Need help
+
+Ask in Discord or open a GitHub issue with a synthetic reproduction:
+
+- https://discord.gg/ZaSfpcy8At
+- https://github.com/mustafamohsen/safeparts/issues
 
 :::caution
-Use synthetic examples when asking for help. Never post real secrets or real shares.
+Sanitize logs before sharing them. Error text should not include share content, but shell commands, screenshots, terminal scrollback, and CI output can still expose secrets.
 :::

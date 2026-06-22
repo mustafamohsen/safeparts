@@ -1,71 +1,84 @@
 ---
 title: CLI
-description: Script-friendly split and combine from the terminal.
+description: Use the safeparts command for files, runbooks, and scriptable recovery.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-The CLI binary is <span class="token token--mono">safeparts</span>.
-It reads from stdin by default and writes to stdout unless you pass <span class="token token--mono">-o</span>.
+The CLI binary is <span class="token token--mono">safeparts</span>. It reads from stdin by default and writes to stdout unless you pass file paths.
+
+Use the CLI when you need repeatable commands, binary input, all supported encodings, or operator runbooks.
 
 ## Split
 
-Split a secret from stdin into 3 shares, requiring any 2 to recover:
+Split stdin into three shares, requiring any two to recover:
 
 ```bash
-echo -n "my secret" | safeparts split -k 2 -n 3 -e base64
+printf '%s' 'synthetic secret' | safeparts split -k 2 -n 3 -e base64url
 ```
 
-Write shares to a file:
+Split a file and write shares to a file:
 
 ```bash
-echo -n "my secret" | safeparts split -k 2 -n 3 -e base64 -o shares.txt
+safeparts split \
+  --threshold 2 \
+  --shares 3 \
+  --encoding mnemo-words \
+  --in secret.bin \
+  --out shares.txt
 ```
+
+The output file contains one share per line for compact encodings. Do not keep a file containing all shares unless your policy treats it like the original secret.
 
 ## Combine
 
-Combine from stdin (any <var>k</var> shares):
+Combine shares from stdin:
 
 ```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine
+printf '%s\n%s\n' '<share1>' '<share2>' | safeparts combine
 ```
 
-Write the recovered secret to a file:
+Combine from a file and write recovered bytes to a file:
 
 ```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -o secret.bin
+safeparts combine --in selected-shares.txt --out recovered-secret.bin
 ```
+
+If auto-detection cannot identify the format, pass it explicitly:
+
+```bash
+safeparts combine --encoding base64url --in selected-shares.txt --out recovered-secret.bin
+```
+
+## Encodings
+
+`split` supports these output encodings:
+
+- <span class="token">base64url</span>, with alias <span class="token">base64</span>
+- <span class="token">base58check</span>, with alias <span class="token">base58</span>
+- <span class="token">mnemo-words</span>
+- <span class="token">mnemo-bip39</span>
+
+`combine` can auto-detect the encoding when `--encoding` is omitted.
 
 ## Passphrases
 
-:::caution
-Prefer <span class="token token--mono">--passphrase-file</span> over <span class="token token--mono">--passphrase</span> in shells that keep history.
-:::
-
-Split with a passphrase:
+Prefer <span class="token token--mono">--passphrase-file</span> or <span class="token token--mono">-P</span>. Command-line passphrase literals can appear in shell history, process listings, terminal recorders, and audit tools.
 
 ```bash
-echo -n "my secret" | safeparts split -k 2 -n 3 -e base64 -P passphrase.txt
+safeparts split -k 2 -n 3 -e base64url -P passphrase.txt -i secret.bin -o shares.txt
+safeparts combine -P passphrase.txt -i selected-shares.txt -o recovered-secret.bin
 ```
 
-Combine with a passphrase:
-
-```bash
-printf "%s\n%s\n" "<share1>" "<share2>" | safeparts combine -P passphrase.txt
-```
-
-## Practical workflow
+## Safe runbook shape
 
 <Steps>
-1. Do a practice run with a synthetic secret.
-2. Split the real secret.
-3. Store shares in separate places.
-4. Immediately test recovery with <var>k</var> shares.
-5. Delete the original secret from temporary locations.
+1. Test the command sequence with a synthetic secret.
+2. Split the real secret from stdin or a controlled file.
+3. Verify recovery with exactly <var>k</var> shares if policy allows it.
+4. Distribute shares to separate holders or locations.
+5. Remove temporary files that contain plaintext, recovered output, or all shares together.
+6. Record custody, threshold, encoding, and approval steps without recording share text.
 </Steps>
 
-## Troubleshooting
-
-- <samp>no shares provided</samp>: input was empty or only whitespace.
-- <samp>could not detect share encoding</samp>: pass <span class="token token--mono">--encoding</span> explicitly.
-- <samp>combine failed</samp>: shares are from different sets, corrupted, or the passphrase is wrong.
+For deeper operator guidance, see [CLI runbooks](../it-devops-guide/cli-runbooks/).

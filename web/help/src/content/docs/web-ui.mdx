@@ -1,37 +1,51 @@
 ---
-title: Web UI
-description: Split and combine entirely in your browser via WASM.
+title: Web app
+description: Split and recover shares locally in your browser with the WASM app.
 ---
 
 import { LinkButton, Steps } from '@astrojs/starlight/components';
 
-The web UI lives at the site root (<span class="token token--mono">/</span>).
-Split/combine runs entirely in your browser via WASM.
+The web app runs at the site root and performs split and combine in the browser through WASM. It does not need a Safeparts server for cryptographic work.
 
 <LinkButton href="/" icon="external" target="_blank" rel="noopener noreferrer">
 	Open the web app
 </LinkButton>
 
+## What the web app exposes
+
+- Split and combine for text secrets entered in the browser UI.
+- Threshold settings from <span class="token">k=2</span> up to <span class="token">n=255</span>.
+- Two share formats: <span class="token">Words</span> (<span class="token">mnemo-words</span>) and <span class="token">Letters</span> (<span class="token">base64url</span>).
+- Optional passphrase protection.
+- Best-effort format detection when you paste shares into the combine form.
+
+For binary files or all encoding formats, use the [CLI](../cli/) or [TUI](../tui/).
+
 ## Split
 
 <Steps>
-1. Paste the secret into **Secret**.
-2. Choose <var>k</var> and <var>n</var>.
-3. Choose an encoding.
-4. (Optional) set a passphrase.
-5. Click **Split**, then store each share separately.
+1. Open the <span class="token">Split</span> tab.
+2. Enter a secret.
+3. Choose <var>k</var> and <var>n</var>.
+4. Choose <span class="token">Words</span> or <span class="token">Letters</span>.
+5. Add a passphrase only if your plan includes a separate passphrase custody path.
+6. Click <span class="token">Split</span>.
+7. Store each share in a separate place.
 </Steps>
 
 ## Combine
 
 <Steps>
-1. Set the encoding (or paste a share and let the UI auto-detect).
-2. Paste at least <var>k</var> shares.
-3. Enter the passphrase if you used one.
-4. Click **Combine**.
+1. Open the <span class="token">Combine</span> tab.
+2. Paste one share per box. The app can add boxes after reading share metadata.
+3. Confirm the detected or selected format.
+4. Enter the passphrase if the split used one.
+5. Click <span class="token">Combine</span>.
+6. Copy the recovered secret only into the system that needs it.
 </Steps>
 
 ## Privacy boundary
 
-The app does not upload your secret by default.
-Anything you copy/paste or store is your responsibility.
+The default hosted web app runs locally in your browser. Your secret can still leave your device if you copy it into another service, use a modified build, install a browser extension that reads page content, or let screen capture tools record the workflow.
+
+For sensitive recovery, consider an offline machine and verify that your storage plan keeps shares separated.

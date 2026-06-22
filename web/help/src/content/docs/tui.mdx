@@ -1,44 +1,51 @@
 ---
 title: TUI
-description: Interactive terminal UI for offline or hands-on workflows.
+description: Use the interactive terminal UI for guided local split and recovery.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-The TUI binary is <span class="token token--mono">safeparts-tui</span>.
-You can also launch it via the CLI: <span class="token token--mono">safeparts tui</span>.
+The TUI binary is <span class="token token--mono">safeparts-tui</span>. You can also start it through the CLI with <span class="token token--mono">safeparts tui</span>.
 
-:::caution
-The TUI is still unstable, so you may run into bugs.
-If you hit one, please [open an issue on GitHub](https://github.com/mustafamohsen/safeparts/issues/new).
-:::
+Use the TUI when you want a guided terminal workflow, offline operation, clipboard support, and file load or save actions.
 
-## When to use the TUI
+## What the TUI supports
 
-- You want to work offline (air-gapped machine).
-- You want a guided, interactive workflow.
-- You want to save one file per share.
+- Split and combine workflows.
+- All concrete encodings: <span class="token">base64url</span>, <span class="token">base58check</span>, <span class="token">mnemo-words</span>, and <span class="token">mnemo-bip39</span>.
+- Auto-detection on combine.
+- Optional passphrases.
+- Loading secrets or share files.
+- Exporting one file per share or saving recovered bytes.
 
 ## Offline workflow
 
 <Steps>
-1. Use a machine that is offline (no network).
+1. Use a machine with the network disconnected if your procedure requires it.
 2. Run <span class="token token--mono">safeparts-tui</span>.
-3. Set <var>k</var>, <var>n</var>, and the encoding.
-4. Split, then save each share to separate media.
-5. Recover once using <var>k</var> shares to verify the plan.
+3. Choose <var>k</var>, <var>n</var>, and an encoding.
+4. Enter or load the secret.
+5. Split and export shares to separate media or holders.
+6. Recover once with <var>k</var> shares if your policy allows verification.
 </Steps>
 
 :::caution
-Offline work only helps if storage is separated.
-Don't put two shares on the same USB drive.
+Offline execution only helps if storage is separated. Do not put enough shares to recover on the same USB drive, account, or safe.
 :::
 
-## Key shortcuts
+## Keyboard shortcuts
 
-- <kbd>Enter</kbd>: run split/combine
-- <kbd>Ctrl</kbd>+<kbd>L</kbd>: load secret/share file(s)
-- <kbd>Ctrl</kbd>+<kbd>S</kbd>: save (one file per share, or recovered secret)
-- <kbd>Ctrl</kbd>+<kbd>C</kbd>: copy
-- <kbd>Ctrl</kbd>+<kbd>Q</kbd>: quit
-- <kbd>?</kbd>: help overlay
+| Keys | Action |
+| --- | --- |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> | Move focus. |
+| <kbd>Left</kbd> / <kbd>Right</kbd> | Switch between split and combine tabs. |
+| <kbd>Up</kbd> / <kbd>Down</kbd> | Change numeric values, selected encoding, or selected share depending on focus. |
+| <kbd>Enter</kbd> | Run split or combine. |
+| <kbd>Ctrl</kbd>+<kbd>L</kbd> | Load a secret file or share files. |
+| <kbd>Ctrl</kbd>+<kbd>S</kbd> | Save or export output. |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd> | Copy selected share, all shares, or recovered output depending on focus. |
+| <kbd>Ctrl</kbd>+<kbd>V</kbd> | Paste into the focused editor when clipboard access is available. |
+| <kbd>Ctrl</kbd>+<kbd>U</kbd> | Clear the focused passphrase field. |
+| <kbd>?</kbd> or <kbd>F1</kbd> | Open help. |
+| <kbd>Esc</kbd> | Close help or cancel a modal. |
+| <kbd>Ctrl</kbd>+<kbd>Q</kbd> | Quit. |

@@ -1,44 +1,43 @@
 ---
 title: Encodings
-description: Choose a share format that matches your workflow.
+description: Choose a share text format for storage, copy and paste, or manual transcription.
 ---
 
-Encodings only change how shares are represented for storage and transfer.
-The underlying share packet bytes stay the same.
+Encodings change how a share packet is written down. They do not change the threshold, the secret sharing math, or passphrase protection.
 
 :::note
-Pick the format you can store and later re-enter without mistakes.
-The best encoding is the one your recovery plan can execute.
+Choose the format your recovery process can store and re-enter accurately.
 :::
 
-## Machine-friendly
+## Formats
 
-### <span class="token">base64</span> (base64url)
+| Encoding | Best fit | Notes |
+| --- | --- | --- |
+| <span class="token">base64url</span> | Password managers, files, scripts, APIs | Compact URL-safe text. CLI alias: <span class="token">base64</span>. |
+| <span class="token">base58check</span> | Manual copy and paste with compact text | Avoids visually ambiguous characters and includes a Base58Check checksum. CLI alias: <span class="token">base58</span>. |
+| <span class="token">mnemo-words</span> | Paper, metal, and spoken recovery | Uses word groups with CRC16 to catch many transcription errors. |
+| <span class="token">mnemo-bip39</span> | Workflows that expect BIP-39-valid word sequences | Safeparts share text can look like wallet words, but it is not a wallet seed. |
 
-- Compact and easy to copy/paste
-- URL-safe (<span class="token token--mono">-</span> and <span class="token token--mono">_</span>)
-- A good fit for password managers or secure secret stores
+## Availability by interface
 
-### <span class="token">base58</span> (base58check)
+| Interface | Split output | Combine input |
+| --- | --- | --- |
+| Web app | <span class="token">base64url</span>, <span class="token">mnemo-words</span> | Same two formats, with best-effort detection on paste. |
+| Desktop app | <span class="token">base64url</span>, <span class="token">mnemo-words</span> | Same two formats, with local Tauri commands. |
+| CLI | All four concrete encodings | Auto-detect when `--encoding` is omitted, or pass a concrete encoding. |
+| TUI | All four concrete encodings | Auto-detect or choose a concrete encoding. |
+| Rust library | All four concrete encodings through `safeparts_core::encoding` | Auto parse and concrete parse APIs. |
 
-- Avoids some visually ambiguous characters
-- Includes a built-in checksum (Base58Check)
-- Nice for manual copy/paste when you want fewer "did I read that right?" moments
+## Choosing a format
 
-## Human-friendly
+Use <span class="token">base64url</span> when machines will store or move the shares. It is the shortest common option and works well in files and vault fields.
 
-### <span class="token">mnemo-words</span>
+Use <span class="token">base58check</span> when operators may read compact text by eye and you want an encoding-level checksum.
 
-- Words are easier to transcribe than long strings
-- Includes CRC16 to catch typos
-- Good for paper/metal backups
+Use <span class="token">mnemo-words</span> when humans will copy, print, read, or engrave shares.
 
-### <span class="token">mnemo-bip39</span>
-
-- Uses BIP-39-valid word sequences
-- Fits environments that already handle BIP-39 wordlists
+Use <span class="token">mnemo-bip39</span> only when BIP-39-valid word sequences help your storage process.
 
 :::caution
-Mnemonic shares are not wallet seeds.
-Do not import them into wallet software.
+Mnemonic Safeparts shares are not wallet seed phrases. Do not import them into wallet software.
 :::

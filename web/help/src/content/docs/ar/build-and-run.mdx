@@ -1,77 +1,80 @@
 ---
-title: البناء والتشغيل
-description: ثبّت Safeparts وشغّل CLI وTUI وتطبيق الويب وموقع المساعدة محلياً.
+title: التثبيت والاستضافة الذاتية
+description: ثبّت مخرجات الإصدار وابن Safeparts من المصدر وشغّل الويب وموقع المساعدة محلياً.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-## ثنائيات جاهزة (موصى بها)
+استخدم الإصدارات عندما تريد CLI أو TUI أو تطبيق سطح المكتب دون بناء المستودع. ابن من المصدر عندما تطوّر Safeparts أو تستضيف تطبيق الويب الثابت بنفسك.
 
-حمّل آخر إصدار من GitHub:
+## تنزيلات الإصدارات
+
+نزّل مخرجات الإصدار من GitHub:
 
 - https://github.com/mustafamohsen/safeparts/releases
 
-كل إصدار يتضمن:
+تتضمن حزم الإصدار أرشيفات CLI وTUI للمنصات المدعومة. يبني workflow الإصدار أيضاً حزم سطح المكتب:
 
-- <span class="token token--mono" dir="ltr">safeparts</span> (CLI)
-- <span class="token token--mono" dir="ltr">safeparts-tui</span> (واجهة طرفية)
+- Linux: AppImage و`.deb` و`.rpm`
+- Windows: NSIS `.exe` وMSI
+- macOS: `.dmg`
 
-تحقق سريع:
+فحص سريع بعد تثبيت binaries الخاصة بـ CLI/TUI:
 
 <Steps>
-1. ضع الملفات التنفيذية على <span class="token token--mono" dir="ltr">PATH</span>.
+1. ضع binaries على <span class="token token--mono" dir="ltr">PATH</span>.
 2. شغّل <span class="token token--mono" dir="ltr">safeparts --help</span>.
 3. شغّل <span class="token token--mono" dir="ltr">safeparts-tui --help</span>.
 </Steps>
 
 ### Gatekeeper في macOS
 
-إذا حمّلت الملفات التنفيذية من المتصفح، قد يضع macOS عليها علامة quarantine ويظهر التحذير "لا يمكن فتحه لأن المطور غير موثّق".
-
-إذا بنيت من المصدر، غالباً لن ترى هذا التحذير.
-
-إذا كنت تثق بالمصدر وتريد إزالة علامة quarantine:
+إذا عزل macOS ملفاً تم تنزيله وكنت تثق بمخرج الإصدار، أزل خاصية العزل:
 
 ```bash
-# عدّل هذا المسار إلى مجلد الإصدار بعد فك الضغط
 xattr -dr com.apple.quarantine /path/to/safeparts-release/
+```
 
-# أو أزلها لكل ملف تنفيذي
+أو أزلها لكل binary:
+
+```bash
 xattr -d com.apple.quarantine /path/to/safeparts
 xattr -d com.apple.quarantine /path/to/safeparts-tui
 ```
 
-## بناء من المصدر (Rust)
+## بناء binaries من المصدر
 
 المتطلبات:
 
-- Rust stable + <span class="token token--mono" dir="ltr">rustfmt</span> و <span class="token token--mono" dir="ltr">clippy</span>
-
-البناء والاختبارات:
+- Rust stable
+- `rustfmt` و`clippy`
 
 ```bash
 cargo build
 cargo test --all-features
 ```
 
-فحص بنمط CI:
+فحص lint مشابه لـ CI:
 
 ```bash
 cargo fmt --all -- --check
 cargo clippy --all-targets --all-features -- -D warnings
 ```
 
-## تطبيق الويب (Vite + React + WASM)
+Binaries الإصدار:
 
-تطبيق الويب موجود في <span class="token token--mono" dir="ltr">web/</span>.
-عمليات التقسيم/الاسترداد تتم داخل المتصفح عبر WASM.
+```bash
+cargo build --release -p safeparts -p safeparts_tui
+```
+
+## تطبيق الويب
+
+يوجد تطبيق الويب في <span class="token token--mono" dir="ltr">web/</span>. يحتاج إلى خطوة بناء WASM.
 
 المتطلبات:
 
 - Bun
-- <span class="token token--mono" dir="ltr">wasm-pack</span> (أو اترك سكربت البناء يثبته)
-
-التشغيل محلياً:
+- `wasm-pack`، أو دع script البناء يثبته
 
 ```bash
 cd web
@@ -80,25 +83,44 @@ bun run build:wasm
 bun run dev
 ```
 
-افتح http://localhost:5173.
+افتح [http://localhost:5173](http://localhost:5173).
 
-### تطبيق الويب + موقع المساعدة (Docker)
+## تطبيق سطح المكتب
 
-إذا كنت تريد أمراً واحداً يبني WASM + تطبيق الويب + موقع المساعدة ثم يخدمها لك، استخدم Dockerfile الموجود في المستودع.
-لا يوجد خادم خلفي: كل شيء يتم داخل المتصفح.
+يوجد تطبيق سطح المكتب في <span class="token token--mono" dir="ltr">desktop/</span>.
+
+```bash
+cd desktop
+bun install
+bun run tauri:dev
+```
+
+لبناء الواجهة:
+
+```bash
+bun run build
+```
+
+لبناء حزمة native لمنصتك:
+
+```bash
+bun run tauri:build
+```
+
+## تطبيق الويب والوثائق عبر Docker
+
+يبني Dockerfile في المستودع WASM وتطبيق الويب وموقع المساعدة، ثم يخدم المخرجات الثابتة عبر Nginx.
 
 ```bash
 docker build -t safeparts-webui -f web/Dockerfile .
 docker run --rm -p 8080:8080 safeparts-webui
 ```
 
-افتح http://localhost:8080.
+افتح [http://localhost:8080](http://localhost:8080). الوثائق على [http://localhost:8080/help/](http://localhost:8080/help/).
 
-المساعدة: http://localhost:8080/help/
+## موقع المساعدة
 
-## موقع المساعدة (Astro + Starlight)
-
-الموقع موجود في <span class="token token--mono" dir="ltr">web/help/</span> ويُخدم تحت <span class="token token--mono" dir="ltr">/help/</span>.
+يوجد موقع المساعدة في <span class="token token--mono" dir="ltr">web/help/</span> ويُخدم تحت <span class="token token--mono" dir="ltr">/help/</span>.
 
 ```bash
 cd web/help
@@ -107,3 +129,9 @@ bun run dev
 ```
 
 افتح [http://localhost:4321/help/](http://localhost:4321/help/).
+
+لبناء موقع المساعدة الثابت:
+
+```bash
+bun run build
+```

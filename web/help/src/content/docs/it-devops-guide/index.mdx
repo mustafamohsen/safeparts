@@ -1,69 +1,65 @@
 ---
-title: IT and devops guide
-description: Add the Safeparts CLI to operational runbooks and recovery workflows.
+title: Operations guide
+description: Add Safeparts to recovery procedures without turning it into a live secrets system.
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-The `safeparts` CLI fits runbooks where recovery should require cooperation.
-It does not replace a secrets manager, a vault, or access control.
-It gives you a way to split one recovery secret into shares and require at least <var>k</var> shares during recovery.
-
-This guide is written for teams that already operate production systems, incident procedures, and credential rotation.
-It focuses on where the CLI belongs in those workflows.
+Use Safeparts in operations when recovery should require cooperation. It is best for escrow, emergency access, recovery drills, and controlled handoff. It is not a replacement for a secrets manager that injects routine service credentials.
 
 :::caution
-A share is sensitive. Do not paste real shares into tickets, chat, CI logs, screenshots, or incident notes.
-Record custody and approvals, not share contents.
+Operational records should show custody, approvals, timestamps, and rotation. They should not include real share text, passphrases, or recovered secrets.
 :::
 
-## Where Safeparts helps
+## Where it fits
 
-Safeparts is useful for secrets that should not sit in one administrator account or one vault item:
+Good fits:
 
-- break-glass cloud credentials
-- password manager recovery keys
-- release signing key material
-- offline recovery tokens for core infrastructure
-- emergency access for a small operations team
+- break-glass cloud or infrastructure credentials;
+- password manager recovery keys;
+- release signing recovery material;
+- offline recovery tokens;
+- small-team emergency access.
 
-It is a poor fit for routine service-to-service secrets, high-frequency rotation, or secrets that need automatic online access.
-Use your normal secrets manager for those.
+Poor fits:
 
-## Operational model
+- high-frequency runtime secrets;
+- service-to-service credentials that need automatic online access;
+- workflows where one CI system would hold enough shares to recover during every deployment.
 
-A good Safeparts runbook answers five questions:
+## Minimum runbook questions
 
-1. What secret is split?
-2. Who holds each share?
-3. How many shares are required?
-4. Where does recovery happen?
-5. What rotates after recovery?
+A safe runbook answers these before a real split happens:
 
-The last question matters.
-If an incident brings shares together, treat the recovered secret and the gathered shares as exposed.
-Rotate the underlying credential and create a fresh split after the incident.
+1. What exact secret is being split?
+2. What threshold is required?
+3. Who or what holds each share?
+4. Who approves recovery?
+5. Where does recovery happen?
+6. What gets rotated after recovery?
+
+If recovery gathers enough shares to meet the threshold, treat the event as sensitive even when the process was authorized.
 
 ## Read next
 
 <CardGrid>
 	<Card title="CLI runbooks" icon="document">
-		Use stdin, files, passphrase files, and encodings safely.
+		Write repeatable split and combine procedures with file input, passphrase files, and cleanup steps.
 		
-		[Write CLI runbooks](cli-runbooks/)
+		[Write runbooks](cli-runbooks/)
 	</Card>
-	<Card title="Break-glass workflows" icon="warning">
-		Design recovery procedures for incidents and privileged credentials.
+	<Card title="Break-glass recovery" icon="warning">
+		Design emergency recovery for privileged credentials without giving one person full control.
 		
-		[Plan break-glass recovery](break-glass/)
+		[Plan break-glass](break-glass/)
 	</Card>
 	<Card title="Automation patterns" icon="setting">
-		Use the CLI in scripts without leaking sensitive material into logs.
+		Use Safeparts in scripts and CI drills without leaking sensitive material into logs.
 		
-		[Automate carefully](automation/)
+		[Automate safely](automation/)
 	</Card>
 	<Card title="CLI reference" icon="open-book">
-		Review the command-level reference and common errors.
+		Review command syntax, encodings, and passphrase flags.
 		
 		[Open CLI reference](../cli/)
 	</Card>

@@ -1,56 +1,52 @@
 ---
-title: Security
-description: Threat model, safe handling rules, and what passphrases change.
+title: Security model
+description: Understand the Safeparts threat model, safe storage rules, and passphrase trade-offs.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-Safeparts removes single points of failure.
-It does not make storage and distribution decisions for you.
+Safeparts reduces single points of failure. It does not choose safe holders, protect your storage locations, or prevent an approved quorum from recovering the secret.
 
-## Threat model (what to assume)
+## What to assume
 
-- If an attacker gets <var>k</var> shares, they can reconstruct the secret.
-- If an attacker gets fewer than <var>k</var> shares, they learn nothing useful.
-- If you lose too many shares (fewer than <var>k</var> remain), recovery is impossible.
+- Anyone with at least <var>k</var> valid shares from the same split can recover the secret.
+- Fewer than <var>k</var> shares should not reveal useful information about the secret.
+- If fewer than <var>k</var> shares remain available, recovery is impossible.
+- A passphrase adds another requirement, but it does not fix a weak storage plan.
 
 :::caution
-Treat shares like the secret itself.
-Don't paste them into chat, tickets, logs, or screenshots.
+Treat each share as sensitive. Do not paste real shares into chat, tickets, issues, CI logs, screenshots, or analytics tools.
 :::
 
 ## Storage rules
 
 <Steps>
-1. Separate failure modes: different people, devices, and locations.
-2. Avoid co-location: two shares in the same safe is one compromise away from disclosure.
-3. Avoid centralization: a shared drive holding multiple shares defeats the point.
-4. Keep a contact/runbook: who holds each share, and what to do if someone is unavailable.
-5. Practice recovery periodically.
+1. Separate shares across independent people, accounts, devices, or physical locations.
+2. Avoid keeping enough shares in one vault, safe, drive, ticket, repository, or CI secret store.
+3. Keep a custody record that names the holder or role for each share without storing the share text.
+4. Practice recovery with synthetic data before relying on the plan.
+5. Rotate the underlying secret after any real recovery or suspected exposure.
 </Steps>
 
-## Passphrases (optional)
+## Passphrases
 
-Safeparts can encrypt the secret before splitting it.
-With a passphrase, an attacker needs both:
+When you add a passphrase, Safeparts encrypts the secret before splitting it. Recovery then requires both enough shares and the passphrase.
 
-- at least <var>k</var> shares, and
-- the passphrase.
+Use a passphrase when shares may travel through higher-risk environments, when share holders should not be enough on their own, or when policy requires a knowledge factor.
 
-:::note
-Passphrases do not replace share separation.
-They add a second requirement, but the storage plan is still the security boundary.
-:::
+Keep the passphrase separate from the shares. If the same person, vault, or device can provide both the passphrase and enough shares, the extra protection is mostly procedural.
 
-## Web UI privacy boundary
+## Local execution boundaries
 
-The web UI runs split/combine entirely in your browser via WASM (no backend required).
-Your secret is not uploaded unless you choose to copy/paste it somewhere else or deploy a modified build.
+The web app performs split and combine in your browser through WASM. The desktop app uses local Tauri commands over `safeparts_core`. The CLI and TUI run locally on your machine.
 
-## Build output
+Safeparts does not upload secrets by default. Secrets can still leak if you paste them into another service, use a modified build, save them to an unsafe location, or let logs and screen recorders capture them.
 
-When deploying the web UI yourself, publish <span class="token token--mono">web/dist/</span>.
+## If something goes wrong
 
-:::note
-For a deeper technical view of Safeparts' crypto choices and operational procedures, see [Technical design](technical-design/).
-:::
+- If one share is lost, check whether at least <var>k</var> shares still remain. If yes, recover, rotate the underlying secret, and create a new split.
+- If one share may have been copied, treat that share as compromised.
+- If enough shares may have been copied to reach <var>k</var>, treat the original secret as compromised.
+- If recovery happens on an untrusted machine, rotate the recovered credential as soon as possible.
+
+For implementation details, see [how Safeparts works](../project/) and [technical design](../technical-design/).

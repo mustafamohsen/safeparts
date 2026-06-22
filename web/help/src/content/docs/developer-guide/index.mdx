@@ -1,72 +1,66 @@
 ---
 title: Developer guide
-description: Use safeparts_core from Rust applications and services.
+description: Embed safeparts_core in Rust applications without shelling out to the CLI.
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-Safeparts exposes its core implementation as the `safeparts_core` crate.
-Use it when your Rust application needs to create or recover threshold shares without shelling out to the CLI.
+Use `safeparts_core` when a Rust application needs to create, encode, parse, inspect, or recover Safeparts shares inside its own process.
 
-This guide assumes you already know Rust error handling, byte-oriented APIs, and the operational risk of handling secrets in process memory.
-It focuses on the library boundary: what goes in, what comes out, and where your application must make policy decisions.
+The library handles the cryptographic split and combine flow. Your application still owns storage, authentication, audit boundaries, passphrase prompts, and the lifetime of sensitive bytes.
 
 :::caution
-Do not log secrets, recovered plaintext, or share text.
-Treat every share as sensitive, even when fewer than <var>k</var> shares are present.
+Do not log secrets, passphrases, share text, packet payloads, or recovered bytes. A share is sensitive even when fewer than <var>k</var> shares are present.
 :::
 
-## When to use the Rust library
+## When the library is the right boundary
 
-Use `safeparts_core` when Safeparts is part of another product or internal tool:
+Use `safeparts_core` for:
 
-- a recovery workflow inside a Rust service
-- an admin tool that writes share packets to separate storage locations
-- a backup utility that needs deterministic tests around split and combine behavior
-- a desktop or terminal application with its own UI
+- product workflows that need threshold recovery;
+- internal admin tools with custom storage;
+- desktop or terminal apps with their own UI;
+- tests that need typed split and combine behavior;
+- metadata inspection without printing share text.
 
-Use the CLI instead when the workflow is mostly shell, incident runbooks, or operator-driven automation.
-The library gives you control, but it also makes your application responsible for input handling, storage, audit boundaries, and secret lifetime.
+Use the CLI when the workflow belongs in a shell runbook or incident procedure.
 
-## Core model
-
-The main API works on bytes:
+## Minimal round trip
 
 ```rust
 use safeparts_core::{combine_shares, split_secret, CoreResult};
 
 fn main() -> CoreResult<()> {
-    let packets = split_secret(b"database recovery token", 2, 3, None)?;
+    let packets = split_secret(b"synthetic integration secret", 2, 3, None)?;
     let recovered = combine_shares(&packets[..2], None)?;
 
-    assert_eq!(recovered, b"database recovery token");
+    assert_eq!(recovered, b"synthetic integration secret");
     Ok(())
 }
 ```
 
-A split returns `SharePacket` values. A packet contains metadata (`k`, `n`, share index, set ID), the share payload, and optional encryption parameters.
-You usually encode packets before storing or displaying them.
+A split returns `SharePacket` values. Most applications encode those packets before storage or display.
 
 ## Read next
 
 <CardGrid>
 	<Card title="Library API" icon="document">
-		Split, combine, passphrase handling, and API boundaries.
+		Use split, combine, encoding, passphrase, and error APIs.
 		
-		[Use the library API](library-api/)
+		[Use the API](library-api/)
 	</Card>
 	<Card title="Encodings and packets" icon="open-book">
-		Choose a share encoding and understand what packet metadata means.
+		Understand packet metadata and text encodings.
 		
-		[Encode share packets](encodings-and-packets/)
+		[Handle packets](encodings-and-packets/)
 	</Card>
 	<Card title="Testing and errors" icon="setting">
-		Write tests for threshold behavior, corrupted shares, and wrong passphrases.
+		Test success, thresholds, corrupted input, and passphrase failures with synthetic data.
 		
-		[Test integration behavior](testing-and-errors/)
+		[Test integrations](testing-and-errors/)
 	</Card>
 	<Card title="Technical design" icon="star">
-		Review the cryptographic data flow behind the library.
+		Review data flow and cryptographic choices.
 		
 		[Read technical design](../technical-design/)
 	</Card>

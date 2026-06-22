@@ -1,22 +1,25 @@
 ---
-title: Build and run
-description: Install Safeparts and run the CLI, TUI, web app, and docs locally.
+title: Install and self-host
+description: Install release artifacts, build Safeparts from source, and run the web and docs sites locally.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-## Prebuilt binaries (recommended)
+Use releases when you want the CLI, TUI, or desktop app without building the repository. Build from source when you are developing Safeparts or self-hosting the static web app.
 
-Download the latest release from GitHub:
+## Release downloads
+
+Download release artifacts from GitHub:
 
 - https://github.com/mustafamohsen/safeparts/releases
 
-Each release includes:
+Release packaging includes CLI and TUI archives for supported platforms. The release workflow also builds desktop bundles:
 
-- <span class="token token--mono">safeparts</span> (CLI)
-- <span class="token token--mono">safeparts-tui</span> (terminal UI)
+- Linux: AppImage, `.deb`, and `.rpm`
+- Windows: NSIS `.exe` and MSI
+- macOS: `.dmg`
 
-Quick sanity check:
+Quick check after installing CLI/TUI binaries:
 
 <Steps>
 1. Put the binaries on your <span class="token token--mono">PATH</span>.
@@ -26,28 +29,25 @@ Quick sanity check:
 
 ### macOS Gatekeeper
 
-If you download the release binaries via a browser, macOS may quarantine them and show "cannot be opened because the developer cannot be verified".
-
-If you built from source, you usually will not see this.
-
-If you trust the download and want to remove the quarantine attribute:
+If macOS quarantines a downloaded binary and you trust the release artifact, remove the quarantine attribute:
 
 ```bash
-# Point this at the folder you extracted the release into
 xattr -dr com.apple.quarantine /path/to/safeparts-release/
+```
 
-# Or remove it per-binary
+Or remove it per binary:
+
+```bash
 xattr -d com.apple.quarantine /path/to/safeparts
 xattr -d com.apple.quarantine /path/to/safeparts-tui
 ```
 
-## Build from source (Rust)
+## Build Rust binaries from source
 
-Prereqs:
+Prerequisites:
 
-- Rust stable + <span class="token token--mono">rustfmt</span> and <span class="token token--mono">clippy</span>
-
-Build + tests:
+- Rust stable
+- `rustfmt` and `clippy`
 
 ```bash
 cargo build
@@ -61,17 +61,20 @@ cargo fmt --all -- --check
 cargo clippy --all-targets --all-features -- -D warnings
 ```
 
-## Web UI (Vite + React + WASM)
+Release binaries:
 
-The web app lives in <span class="token token--mono">web/</span>.
-It runs split/combine in your browser via WASM.
+```bash
+cargo build --release -p safeparts -p safeparts_tui
+```
 
-Prereqs:
+## Web app
+
+The web app lives in <span class="token token--mono">web/</span>. It requires a WASM build step.
+
+Prerequisites:
 
 - Bun
-- <span class="token token--mono">wasm-pack</span> (or let the build script install it)
-
-Run locally:
+- `wasm-pack`, or allow the build script to install it
 
 ```bash
 cd web
@@ -80,24 +83,44 @@ bun run build:wasm
 bun run dev
 ```
 
-Open http://localhost:5173.
+Open [http://localhost:5173](http://localhost:5173).
 
-### Web UI + docs (Docker)
+## Desktop app
 
-If you want a single command that builds WASM + the web UI + the docs site and serves them, you can use the repo's Dockerfile.
+The desktop app lives in <span class="token token--mono">desktop/</span>.
+
+```bash
+cd desktop
+bun install
+bun run tauri:dev
+```
+
+Build the frontend:
+
+```bash
+bun run build
+```
+
+Build a native bundle for your host platform:
+
+```bash
+bun run tauri:build
+```
+
+## Web app and docs with Docker
+
+The repository Dockerfile builds WASM, the web app, and the help site, then serves the static output through Nginx.
 
 ```bash
 docker build -t safeparts-webui -f web/Dockerfile .
 docker run --rm -p 8080:8080 safeparts-webui
 ```
 
-Open http://localhost:8080.
+Open [http://localhost:8080](http://localhost:8080). Docs are at [http://localhost:8080/help/](http://localhost:8080/help/).
 
-Docs: http://localhost:8080/help/
+## Help site
 
-## Help/docs site (Astro + Starlight)
-
-This site lives in <span class="token token--mono">web/help/</span> and is served under <span class="token token--mono">/help/</span>.
+The help site lives in <span class="token token--mono">web/help/</span> and is served under <span class="token token--mono">/help/</span>.
 
 ```bash
 cd web/help
@@ -106,3 +129,9 @@ bun run dev
 ```
 
 Open [http://localhost:4321/help/](http://localhost:4321/help/).
+
+Build the static help site:
+
+```bash
+bun run build
+```

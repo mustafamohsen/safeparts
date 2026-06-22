@@ -1,123 +1,101 @@
 ---
-title: Use cases
-description: Real-world scenarios and how to choose a share distribution.
+title: Choose a recovery plan
+description: Select a threshold, share distribution, and drill schedule that people can follow.
 ---
 
 import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
 
-Use cases are not just "what <var>k</var>/<var>n</var> should I pick?".
-They are about people, logistics, and what you can actually pull off when recovery matters.
+A good Safeparts plan is mostly logistics. The math decides how many shares are needed. Your plan decides who can find them, who can approve recovery, and what happens when someone is unavailable.
 
 :::tip
-If you need a starting point: <span class="token">k=2, n=3</span> for personal recovery, <span class="token">k=3, n=5</span> for teams.
+Useful starting points: <span class="token">k=2, n=3</span> for personal recovery and <span class="token">k=3, n=5</span> for small teams.
 :::
 
-:::caution
-Safeparts does not stop someone who holds <var>k</var> shares from reconstructing.
-The security boundary is where shares live and who can access them.
-:::
-
-## Scenarios
-
-Use this page to pick a plan you can execute under pressure:
-who holds which share, what happens if someone is unavailable, and how you'll practice recovery.
+## Common plans
 
 <CardGrid>
-	<Card title="Password manager recovery" icon="star">
-		Recommended: <span class="token">k=2, n=3</span>.
-		Two locations you control, plus one off-site fallback.
+	<Card title="Personal recovery" icon="star">
+		Use <span class="token">k=2, n=3</span> for password manager recovery keys, backup codes, and personal emergency access.
 	</Card>
-	<Card title="Family / executor planning" icon="open-book">
-		Recommended: <span class="token">k=2, n=4</span>.
-		Recovery without any single person holding full access.
+	<Card title="Family or executor access" icon="open-book">
+		Use <span class="token">k=2, n=4</span> when no single person should hold full access, but recovery must remain practical.
 	</Card>
-	<Card title="Small team infra secret" icon="document">
-		Recommended: <span class="token">k=3, n=5</span>.
-		Split across roles, plus one offline vault.
+	<Card title="Team secret" icon="document">
+		Use <span class="token">k=3, n=5</span> for shared operational recovery where one person cannot act alone.
 	</Card>
-	<Card title="Break-glass procedure" icon="setting">
-		Recommended: <span class="token">k=2, n=4</span>.
-		Keep one share offline; require two parties during incidents.
-	</Card>
-	<Card title="Two-factor backup codes" icon="laptop">
-		Recommended: <span class="token">k=2, n=3</span>.
-		Store shares so a single device compromise doesn't disable 2FA.
-	</Card>
-	<Card title="Agency / client handoff" icon="pen">
-		Recommended: <span class="token">k=2, n=3</span>.
-		Split between agency vault, client vault, and a sealed offline copy.
+	<Card title="Break-glass credential" icon="warning">
+		Use <span class="token">k=3, n=5</span> or <span class="token">k=2, n=4</span> for rare emergency access with approval and rotation.
 	</Card>
 </CardGrid>
 
-## Pattern: personal recovery (<span class="token">k=2, n=3</span>)
+## Personal recovery: <span class="token">k=2, n=3</span>
 
-Good for password manager recovery keys, 2FA backup codes, and other personal secrets.
-
-Suggested distribution:
-
-- Share A: a place you can reach quickly (password manager note, separate device/account)
-- Share B: sealed offline copy (paper/metal)
-- Share C: off-site fallback (trusted person, safe deposit box)
-
-<Steps>
-1. Split with <span class="token">k=2, n=3</span>.
-2. Put the shares in the three locations.
-3. Do a recovery drill using any 2 shares.
-4. Write down where the third share lives and how to access it.
-</Steps>
-
-## Pattern: team secret (<span class="token">k=3, n=5</span>)
-
-Good when you want separation of duties:
-no one person can act alone, but the team can still recover during an incident.
-
-Suggested distribution (by role):
-
-- Share 1: operations
-- Share 2: security
-- Share 3: engineering lead
-- Share 4: executive sponsor
-- Share 5: offline vault
-
-<Steps>
-1. Document who holds each share (role + backup contact).
-2. Write an incident runbook: who initiates, how approval happens, where shares are gathered.
-3. Practice once before using the plan for production secrets.
-</Steps>
-
-## Pattern: break-glass (<span class="token">k=2, n=4</span>)
-
-Good when recovery should be rare and auditable.
+Use this when the main risk is losing access, not managing a large approval process.
 
 Suggested distribution:
 
-- Share 1: on-call lead (rotates)
-- Share 2: security lead
-- Share 3: offline vault
-- Share 4: backup executive or compliance
+- Share 1: a place you can reach quickly, separate from the original secret.
+- Share 2: sealed offline copy on paper or metal.
+- Share 3: off-site fallback with a trusted person or secure location.
 
-:::caution
-After any break-glass event, rotate the underlying secret and re-split.
-Treat gathered shares as compromised.
+<Steps>
+1. Run a synthetic drill with the same threshold.
+2. Split the real recovery secret.
+3. Store each share in its assigned place.
+4. Recover once with two shares if your policy allows it.
+5. Record where each share lives without recording the share text.
+</Steps>
+
+## Team recovery: <span class="token">k=3, n=5</span>
+
+Use this when recovery should require cooperation and still survive one or two unavailable people.
+
+Suggested custody:
+
+- Operations lead.
+- Security lead.
+- Engineering lead.
+- Executive sponsor or compliance custodian.
+- Offline company vault.
+
+The runbook should name the approver, the recovery location, the participating roles, and the rotation step after recovery.
+
+## Break-glass recovery
+
+Break-glass secrets are high-impact and rarely used. Keep the process short, auditable, and practiced.
+
+Required choices:
+
+- Who can declare a break-glass event.
+- Which custodians must participate.
+- Where recovery happens.
+- How the recovered credential is used.
+- What gets rotated afterward.
+
+:::danger
+After a break-glass recovery, assume the gathered shares and recovered credential were exposed. Rotate the underlying credential and create a new split.
 :::
 
-## How to choose holders
+## Holder selection
+
+Choose holders and locations with independent failure modes.
 
 <CardGrid>
-	<Card title="Prefer independent failures" icon="setting">
-		Different people, devices, and locations. Avoid "same safe, two envelopes".
+	<Card title="Avoid co-location" icon="warning">
+		Two shares in the same safe, vault item, ticket system, or cloud account can fail as one share.
 	</Card>
-	<Card title="Design for the worst day" icon="warning">
-		Recovery happens when you're stressed: outages, travel, illness, or loss.
+	<Card title="Plan for absence" icon="setting">
+		Recovery should still work during travel, illness, turnover, or an outage.
 	</Card>
-	<Card title="Write down the runbook" icon="document">
-		Document who has each share and what to do if a holder is unavailable.
+	<Card title="Document custody" icon="document">
+		Record holder names or roles, contact paths, encoding, threshold, and drill schedule. Do not record the shares.
 	</Card>
 </CardGrid>
 
-## When to add a passphrase
+## Drill schedule
 
-If the risk of share theft is high (travel, shared environments, hostile endpoints), add a passphrase.
-That changes the attack from "steal <var>k</var> shares" to "steal <var>k</var> shares and the passphrase".
+Run drills with synthetic data first. For production procedures, schedule a periodic custody check and a recovery drill that follows the same approval path without exposing live credentials.
 
-See [Security](security/).
+A drill should confirm that holders can find their shares, operators know the commands or app workflow, and the team knows when to rotate secrets.
+
+Next: [read the security model](../security/) or [write an operations runbook](../it-devops-guide/).

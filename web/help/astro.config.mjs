@@ -18,7 +18,7 @@ export default defineConfig({
 			// If you change `base`, update the explicit `/help/...` paths below.
 			title: { en: 'Safeparts Help', ar: 'مساعدة Safeparts' },
 			description:
-				'Recover critical secrets without keeping them in one place. Guides for Web, CLI, and TUI.',
+				'Recover critical secrets without keeping them in one place. Guides for web, desktop, CLI, and TUI.',
 			defaultLocale: 'root',
 			locales: {
 				root: { label: 'English', lang: 'en' },
@@ -129,46 +129,25 @@ for (const a of document.querySelectorAll('a[href]')) {
 					},
 				},
 			],
-				sidebar: [
+			sidebar: [
 				{
-					label: 'Start Here',
-					translations: { ar: 'ابدأ هنا' },
-					items: [{ slug: 'project' }, { slug: 'getting-started' }],
+					label: 'Start',
+					translations: { ar: 'البداية' },
+					items: [{ slug: 'getting-started' }, { slug: 'use-cases' }, { slug: 'security' }],
 				},
 				{
-					label: 'Interfaces',
-					translations: { ar: 'الواجهات' },
-					items: [{ slug: 'web-ui' }, { slug: 'cli' }, { slug: 'tui' }],
+					label: 'Use Safeparts',
+					translations: { ar: 'استخدام Safeparts' },
+					items: [{ slug: 'web-ui' }, { slug: 'desktop' }, { slug: 'cli' }, { slug: 'tui' }],
 				},
 				{
-					label: 'Build & Run',
-					translations: { ar: 'البناء والتشغيل' },
-					items: [{ slug: 'build-and-run' }],
-				},
-				{
-					label: 'Guides',
-					translations: { ar: 'الأدلة' },
+					label: 'Operations',
+					translations: { ar: 'العمليات' },
 					items: [
-						{
-							label: 'Developer guide',
-							translations: { ar: 'دليل المطورين' },
-							items: [
-								{ slug: 'developer-guide' },
-								{ slug: 'developer-guide/library-api' },
-								{ slug: 'developer-guide/encodings-and-packets' },
-								{ slug: 'developer-guide/testing-and-errors' },
-							],
-						},
-						{
-							label: 'IT and devops guide',
-							translations: { ar: 'دليل IT وDevOps' },
-							items: [
-								{ slug: 'it-devops-guide' },
-								{ slug: 'it-devops-guide/cli-runbooks' },
-								{ slug: 'it-devops-guide/break-glass' },
-								{ slug: 'it-devops-guide/automation' },
-							],
-						},
+						{ slug: 'it-devops-guide' },
+						{ slug: 'it-devops-guide/cli-runbooks' },
+						{ slug: 'it-devops-guide/break-glass' },
+						{ slug: 'it-devops-guide/automation' },
 					],
 				},
 				{
@@ -176,10 +155,20 @@ for (const a of document.querySelectorAll('a[href]')) {
 					translations: { ar: 'مراجع' },
 					items: [
 						{ slug: 'encodings' },
-						{ slug: 'security' },
+						{ slug: 'project' },
 						{ slug: 'technical-design' },
-						{ slug: 'use-cases' },
+						{ slug: 'build-and-run' },
 						{ slug: 'troubleshooting' },
+					],
+				},
+				{
+					label: 'Developers',
+					translations: { ar: 'المطورون' },
+					items: [
+						{ slug: 'developer-guide' },
+						{ slug: 'developer-guide/library-api' },
+						{ slug: 'developer-guide/encodings-and-packets' },
+						{ slug: 'developer-guide/testing-and-errors' },
 					],
 				},
 			],

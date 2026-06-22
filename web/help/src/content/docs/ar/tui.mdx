@@ -1,44 +1,51 @@
 ---
-title: واجهة الطرفية (TUI)
-description: واجهة تفاعلية للطرفية مناسبة للأجهزة دون اتصال ولسير العمل اليدوي.
+title: TUI
+description: استخدم واجهة الطرفية التفاعلية للتقسيم والاسترداد المحلي الموجّه.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-ملف التنفيذ هو <span class="token token--mono" dir="ltr">safeparts-tui</span>.
-يمكنك أيضاً تشغيله عبر CLI: <span class="token token--mono" dir="ltr">safeparts tui</span>.
+اسم binary الخاص بواجهة TUI هو <span class="token token--mono" dir="ltr">safeparts-tui</span>. يمكنك تشغيلها أيضاً عبر CLI باستخدام <span class="token token--mono" dir="ltr">safeparts tui</span>.
 
-:::caution
-واجهة TUI ما زالت غير مستقرة، وقد تواجه بعض الأخطاء.
-إذا واجهت مشكلة، يرجى [فتح Issue على GitHub](https://github.com/mustafamohsen/safeparts/issues/new).
-:::
+استخدم TUI عندما تريد سير عمل موجهاً داخل الطرفية، وتشغيلاً دون اتصال، ودعم clipboard، وإجراءات تحميل أو حفظ للملفات.
 
-## متى تستخدم TUI
+## ماذا تدعم TUI
 
-- عندما تريد العمل دون اتصال (جهاز معزول).
-- عندما تريد سير عمل تفاعلياً موجهاً.
-- عندما تريد حفظ ملف لكل حصة.
+- سير التقسيم والاسترداد.
+- كل الترميزات الملموسة: <span class="token" dir="ltr">base64url</span> و<span class="token" dir="ltr">base58check</span> و<span class="token" dir="ltr">mnemo-words</span> و<span class="token" dir="ltr">mnemo-bip39</span>.
+- كشف تلقائي عند الاسترداد.
+- عبارات مرور اختيارية.
+- تحميل ملفات الأسرار أو ملفات الحصص.
+- تصدير ملف لكل حصة أو حفظ البايتات المستعادة.
 
 ## سير عمل دون اتصال
 
 <Steps>
-1. استخدم جهازاً دون اتصال (بدون شبكة).
+1. استخدم جهازاً مفصولاً عن الشبكة إذا كان الإجراء يتطلب ذلك.
 2. شغّل <span class="token token--mono" dir="ltr">safeparts-tui</span>.
-3. اضبط <var>k</var> و <var>n</var> والترميز.
-4. قسّم ثم احفظ كل حصة على وسيط منفصل.
-5. استعد مرة واحدة باستخدام <var>k</var> حصص للتحقق من الخطة.
+3. اختر <var>k</var> و<var>n</var> والترميز.
+4. أدخل السر أو حمّله.
+5. قسّم وصدّر الحصص إلى وسائط أو حاملين منفصلين.
+6. استرد مرة واحدة باستخدام <var>k</var> حصص إذا سمحت السياسة بالتحقق.
 </Steps>
 
 :::caution
-العمل دون اتصال يفيد فقط إذا كانت الحصص مخزنة بشكل منفصل.
-لا تضع حصتين على نفس USB.
+التشغيل دون اتصال لا يفيد إلا إذا كان التخزين منفصلاً. لا تضع عدداً كافياً من الحصص للاسترداد على USB واحد أو حساب واحد أو خزنة واحدة.
 :::
 
 ## اختصارات لوحة المفاتيح
 
-- <kbd dir="ltr">Enter</kbd>: تنفيذ التقسيم/الاسترداد
-- <kbd dir="ltr">Ctrl</kbd>+<kbd dir="ltr">L</kbd>: تحميل ملفات السر/الحصص
-- <kbd dir="ltr">Ctrl</kbd>+<kbd dir="ltr">S</kbd>: حفظ (ملف لكل حصة أو السر المستعاد)
-- <kbd dir="ltr">Ctrl</kbd>+<kbd dir="ltr">C</kbd>: نسخ
-- <kbd dir="ltr">Ctrl</kbd>+<kbd dir="ltr">Q</kbd>: خروج
-- <kbd dir="ltr">?</kbd>: نافذة مساعدة
+| المفاتيح | الإجراء |
+| --- | --- |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> | نقل التركيز. |
+| <kbd>Left</kbd> / <kbd>Right</kbd> | التبديل بين تبويبي التقسيم والاسترداد. |
+| <kbd>Up</kbd> / <kbd>Down</kbd> | تغيير القيم الرقمية أو الترميز المحدد أو الحصة المحددة حسب موضع التركيز. |
+| <kbd>Enter</kbd> | تنفيذ التقسيم أو الاسترداد. |
+| <kbd>Ctrl</kbd>+<kbd>L</kbd> | تحميل ملف سر أو ملفات حصص. |
+| <kbd>Ctrl</kbd>+<kbd>S</kbd> | الحفظ أو التصدير. |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd> | نسخ الحصة المحددة أو كل الحصص أو الناتج المستعاد حسب موضع التركيز. |
+| <kbd>Ctrl</kbd>+<kbd>V</kbd> | اللصق في المحرر المركز عندما يتوفر clipboard. |
+| <kbd>Ctrl</kbd>+<kbd>U</kbd> | مسح حقل عبارة المرور المركز. |
+| <kbd>?</kbd> أو <kbd>F1</kbd> | فتح المساعدة. |
+| <kbd>Esc</kbd> | إغلاق المساعدة أو إلغاء نافذة. |
+| <kbd>Ctrl</kbd>+<kbd>Q</kbd> | الخروج. |
