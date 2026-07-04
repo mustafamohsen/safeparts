@@ -1,5 +1,7 @@
 # Safeparts
 
+> Safeparts is a local-first Rust toolkit for splitting bytes into threshold shares and recombining them through a core library, CLI, TUI, WASM bindings, web UI, and help site.
+
 LLM integration + maintenance guide for this repository.
 This is not end-user documentation. It exists to help an LLM locate the right code, use the APIs correctly, and make safe changes.
 
@@ -63,7 +65,8 @@ Where this logic lives
 - Split/combine API: `crates/safeparts_core/src/lib.rs`
 - Shamir split/combine: `crates/safeparts_core/src/sss.rs` + `crates/safeparts_core/src/gf256.rs`
 - Share packet format: `crates/safeparts_core/src/packet.rs`
-- Encodings: `crates/safeparts_core/src/ascii.rs`, `crates/safeparts_core/src/mnemo_words.rs`, `crates/safeparts_core/src/mnemo_bip39.rs`
+- Unified encoding API: `crates/safeparts_core/src/encoding.rs`
+- Encoding implementations: `crates/safeparts_core/src/ascii.rs`, `crates/safeparts_core/src/mnemo_words.rs`, `crates/safeparts_core/src/mnemo_bip39.rs`
 - Optional encryption: `crates/safeparts_core/src/crypto.rs`
 
 Constraints and edge cases
@@ -130,9 +133,10 @@ Important: mnemonic outputs are an encoding for share packets, not wallet seed p
 Primary entry point: `crates/safeparts_core/src/lib.rs`
 
 Modules
-- `ascii`: base64url/base58check encoding of SharePacket bytes
-- `mnemo_words`: word-based encoding + CRC16
-- `mnemo_bip39`: BIP-39-valid encoding (multi-frame)
+- `encoding`: primary API for text encoding, parsing pasted shares, and auto-detection
+- `ascii`: base64url/base58check implementation for SharePacket bytes
+- `mnemo_words`: word-based encoding + CRC16 implementation
+- `mnemo_bip39`: BIP-39-valid encoding implementation (multi-frame)
 - `packet`: SharePacket binary format
 - `sss`: Shamir split/combine over GF(256)
 - `crypto`: Argon2id + ChaCha20-Poly1305
@@ -156,7 +160,8 @@ Errors you should handle
 
 Rust integration example (encode shares as base64url strings)
 ```rust
-use safeparts_core::{ascii, combine_shares, packet::SharePacket, split_secret, CoreResult};
+use safeparts_core::encoding::{self, Encoding};
+use safeparts_core::{combine_shares, split_secret, CoreResult};
 
 fn main() -> CoreResult<()> {
     let packets = split_secret(b"secret", 2, 3, None)?;
@@ -164,15 +169,11 @@ fn main() -> CoreResult<()> {
     // Store/transport as strings.
     let encoded: Vec<String> = packets
         .iter()
-        .map(|p| ascii::encode_packet(p, ascii::Encoding::Base64url))
+        .map(|p| encoding::encode_packet(p, Encoding::Base64url))
         .collect::<CoreResult<_>>()?;
 
     // Later: decode strings back into SharePackets.
-    let decoded: Vec<SharePacket> = encoded
-        .iter()
-        .take(2)
-        .map(|s| ascii::decode_packet(s, ascii::Encoding::Base64url))
-        .collect::<CoreResult<_>>()?;
+    let decoded = encoding::parse_share_packets(&encoded[..2].join("\n"), Encoding::Base64url)?.packets;
 
     let recovered = combine_shares(&decoded, None)?;
     assert_eq!(recovered, b"secret");
@@ -198,8 +199,8 @@ I/O rules
 - `-i -` and `-o -` explicitly select stdin/stdout.
 
 Encoding flags (CLI)
-- `base64` (alias `base64url`)
-- `base58` (alias `base58check`)
+- `base64url` (alias `base64`)
+- `base58check` (alias `base58`)
 - `mnemo-words`
 - `mnemo-bip39`
 
@@ -207,11 +208,12 @@ Passphrase flags (CLI)
 - `-p/--passphrase <text>` or `-P/--passphrase-file <path>` (file input trims trailing `\n`/`\r`).
 - Prefer `--passphrase-file` in real usage to avoid shell history.
 
-Auto-detect (CLI combine)
+Auto-detect (CLI combine and core `encoding::parse_share_packets`)
 - If any non-empty line contains '/' or has multiple words, treat input as mnemonic.
   - If any line contains '/', decode as mnemo-bip39.
   - Otherwise decode as mnemo-words.
 - Otherwise, try base64url decode first; if that fails, try base58check.
+- `Encoding::Auto` is valid for parsing only; encoding output must choose a concrete format.
 
 Mnemonic parsing (CLI combine)
 - Mnemonic shares may be pasted as blank-line separated blocks (recommended).
@@ -389,6 +391,7 @@ Add binary-secret support to the web UI
 
 ## Primary sources (when in doubt)
 - Core: `crates/safeparts_core/src/lib.rs`
+- Encoding API: `crates/safeparts_core/src/encoding.rs`
 - Packet format: `crates/safeparts_core/src/packet.rs`
 - CLI: `crates/safeparts/src/main.rs`
 - WASM: `crates/safeparts_wasm/src/lib.rs`

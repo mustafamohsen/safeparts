@@ -1,44 +1,39 @@
 # Safeparts
 
-LLM index for this repository.
-Read `llms-full.txt` for the detailed, code-backed guide (APIs, invariants, change recipes).
+> Safeparts is a local-first Rust toolkit for splitting bytes into threshold shares and recombining them through a core library, CLI, TUI, WASM bindings, web UI, and help site.
 
-## Safety / privacy (treat as secrets)
-- Share strings, SharePacket bytes, reconstructed secrets, ciphertext, and passphrases.
-- Do not paste real secrets/shares into issues, chat, logs, screenshots, or test fixtures.
-- Use synthetic inputs in examples/tests. Do not commit generated build output (notably `web/src/wasm_pkg/` and `target/`).
+Use this file as the compact LLM map. Read `llms-full.txt` for the detailed, code-backed maintenance guide with APIs, invariants, parsing rules, and safe change recipes.
 
-## What this repo ships
-- Rust library: `crates/safeparts_core/` (split/combine, packet format, encodings, optional encryption)
-- CLI: `crates/safeparts/` -> `safeparts`
-- TUI: `crates/safeparts_tui/` -> `safeparts-tui` (+ `safeparts tui` launcher)
-- WASM bindings: `crates/safeparts_wasm/` (wasm-bindgen API used by the web UI)
-- Web UI: `web/` (Vite + React, local-only WASM)
-- Help site: `web/help/` (Astro/Starlight, built into `web/dist/help/`)
+Safety rules: treat share strings, SharePacket bytes, reconstructed secrets, ciphertext, and passphrases as secrets. Use only synthetic inputs in examples/tests. Do not commit generated build output such as `target/`, `web/dist/`, or `web/src/wasm_pkg/`.
 
-## Read order (entry points)
-1. `llms-full.txt`
-2. Core API + invariants: `crates/safeparts_core/src/lib.rs`
-3. Packet format: `crates/safeparts_core/src/packet.rs`
-4. CLI contract: `crates/safeparts/src/main.rs`
-5. TUI contract: `crates/safeparts_tui/src/domain.rs` and `crates/safeparts_tui/src/app.rs`
-6. WASM contract: `crates/safeparts_wasm/src/lib.rs`
-7. Web UI flows: `web/src/components/SplitForm.tsx` and `web/src/components/CombineForm.tsx`
-8. CI truth: `.github/workflows/`
+## Core references
 
-## High-value repo docs (secondary sources)
-- `AGENTS.md` (repo snapshot + check pointers)
-- `PRD.md` (intent + threat model)
-- `README.md` (quickstart)
-- `docs/agents/checks.md` (commands that match CI)
-- `docs/agents/conventions.md` (repo standards)
-- `web/help/src/content/docs/` (end-user docs; may lag code)
+- [Full LLM guide](llms-full.txt): Detailed repository guide for LLM agents.
+- [Core API](crates/safeparts_core/src/lib.rs): Split/combine entry points and security flow.
+- [Unified encoding API](crates/safeparts_core/src/encoding.rs): Text encoding, parsing, and auto-detection for share packets.
+- [Share packet format](crates/safeparts_core/src/packet.rs): Versioned binary packet layout and metadata.
+- [Crypto defaults](crates/safeparts_core/src/crypto.rs): Argon2id + ChaCha20-Poly1305 implementation.
 
-## CI-style commands
-- Rust: `cargo fmt --all -- --check && cargo clippy --all-targets --all-features -- -D warnings && cargo test --all-features`
-- Web (from `web/`): `bun install && bun run build:wasm && bun run build`
-- Docs (from `web/help/`): `bun install && bun run build`
+## Product surfaces
 
-## Encoding name collision (important)
-- CLI flags: `base64`, `base58`, `mnemo-words`, `mnemo-bip39`
-- WASM/web strings: `base64url`, `base58check`, `mnemo-words`, `mnemo-bip39`
+- [CLI](crates/safeparts/src/main.rs): `safeparts split`, `safeparts combine`, and `safeparts tui` launcher.
+- [TUI domain rules](crates/safeparts_tui/src/domain.rs): Interactive parsing, encoding, and combine/split logic.
+- [TUI app](crates/safeparts_tui/src/app.rs): Key handling and terminal UI behavior.
+- [WASM bindings](crates/safeparts_wasm/src/lib.rs): Browser-facing `split_secret`, `combine_shares`, `share_threshold`, and `inspect_share` exports.
+- [Web split flow](web/src/components/SplitForm.tsx): Browser split UX over WASM.
+- [Web combine flow](web/src/components/CombineForm.tsx): Browser combine UX, paste heuristics, and encoding selection.
+
+## Repository guidance
+
+- [Agent contract](AGENTS.md): Repository instructions, DOX rules, check pointers, and child documentation index.
+- [Product requirements](PRD.md): Product intent, privacy posture, and threat model.
+- [README](README.md): Human quickstart and development commands.
+- [CI-style checks](docs/agents/checks.md): Local verification commands matching CI.
+- [Conventions](docs/agents/conventions.md): Coding and testing standards.
+
+## Optional
+
+- [Help docs](web/help/src/content/docs/): End-user documentation source; code remains the source of truth.
+- [Web app entry](web/src/App.tsx): App shell, locale wiring, and help URL integration.
+- [WASM build script](web/scripts/build-wasm.sh): Generates `web/src/wasm_pkg/` for the web app.
+- [Release packaging](scripts/release/README.md): Local release archive workflow.
