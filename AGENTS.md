@@ -2,7 +2,7 @@
 
 Keep this file short. It contains only the essentials and links to the deeper, task-specific guidance.
 
-<-- Begin DOX -->
+<!-- Begin DOX -->
 
 # DOX framework
 
@@ -98,7 +98,7 @@ Default section order:
 - `mobile/`: mobile prototype/native artifacts.
 
 Top-level files not covered by a child AGENTS.md remain owned here, including `README.md`, `PRD.md`, `CONTEXT.md`, `Cargo.toml`, lockfiles, and CI config under `.github/`.
-<-- end DOX -->
+<!-- end DOX -->
 
 ## Repo snapshot
 
