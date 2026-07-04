@@ -77,8 +77,17 @@ def run(args: list[str]) -> tuple[int, str]:
     return proc.returncode, proc.stdout.strip()
 
 
+def is_git_ignored(path: Path) -> bool:
+    rel = path.relative_to(REPO_ROOT).as_posix()
+    code, _ = run(["git", "check-ignore", "-q", rel])
+    return code == 0
+
+
 def list_agents_files() -> list[Path]:
-    return sorted(REPO_ROOT.rglob("AGENTS.md"), key=lambda p: p.as_posix())
+    return sorted(
+        (path for path in REPO_ROOT.rglob("AGENTS.md") if not is_git_ignored(path)),
+        key=lambda p: p.as_posix(),
+    )
 
 
 def child_index_lines(path: Path) -> list[str]:
