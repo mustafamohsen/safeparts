@@ -10,7 +10,7 @@ Owns the Vite + React browser UI, web packaging, WASM build integration, and loc
 - `scripts/`: web helper scripts, including WASM package generation.
 - `tests/`: Playwright/axe browser tests.
 - `help/`: Astro + Starlight documentation site; see its child AGENTS.md.
-- `Dockerfile`, `nginx.conf`, `public/`, and package config for static deployment.
+- `Dockerfile`, `nginx.conf`, `public/`, `cloudflare-worker.ts`, and package config for static deployment.
 
 ## Local Contracts
 

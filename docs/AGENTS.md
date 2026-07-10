@@ -8,6 +8,7 @@ Owns internal repository documentation for agents and developers.
 
 - `agents/`: coding-agent checks, conventions, and task notes.
 - `dev/`: human developer onboarding, workflows, surface guides, and DX maintenance docs.
+- `deployment/`: operational guides for supported deployments.
 
 ## Local Contracts
 
@@ -30,3 +31,4 @@ Owns internal repository documentation for agents and developers.
 
 - `agents/`: agent-oriented checks, conventions, and durable task notes.
 - `dev/`: contributor onboarding, workflows, feature coverage, and surface guides.
+- `deployment/`: supported deployment setup and validation guides.
