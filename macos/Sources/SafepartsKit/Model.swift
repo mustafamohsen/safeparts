@@ -483,6 +483,7 @@ public final class AppModel: ObservableObject {
         panel.prompt = "Export"
         guard panel.runModal() == .OK, let directory = panel.url else { return }
         let output = shares.map { (Self.fileName($0), Data($0.text.utf8)) }
+        let token = splitToken
         splitStatus = .init(.working, "Exporting \(output.count) recovery shares…")
         Task {
             let failure = await Task.detached(priority: .userInitiated) { () -> String? in
@@ -495,6 +496,7 @@ public final class AppModel: ObservableObject {
                 }
                 return nil
             }.value
+            guard splitToken == token else { return }
             if let failure {
                 splitStatus = .init(.failure, "Export stopped because \(failure) could not be written. Check the destination before trying again.")
             } else {
@@ -515,6 +517,7 @@ public final class AppModel: ObservableObject {
     }
 
     private func write(_ data: Data, to url: URL, success: String, task: WorkbenchTask) {
+        let token = token(for: task)
         setStatus(.init(.working, "Writing \(url.lastPathComponent)…"), for: task)
         Task {
             let error = await Task.detached(priority: .userInitiated) { () -> String? in
@@ -525,11 +528,19 @@ public final class AppModel: ObservableObject {
                     return error.localizedDescription
                 }
             }.value
+            guard self.token(for: task) == token else { return }
             if let error {
                 setStatus(.init(.failure, error), for: task)
             } else {
                 setStatus(.init(.success, success), for: task)
             }
+        }
+    }
+
+    private func token(for task: WorkbenchTask) -> UUID {
+        switch task {
+        case .split: splitToken
+        case .recover: recoveryToken
         }
     }
 
