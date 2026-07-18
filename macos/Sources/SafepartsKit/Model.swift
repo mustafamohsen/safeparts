@@ -105,14 +105,14 @@ public final class AppModel: ObservableObject {
     @Published public var splitPassphrase = ""
     @Published public var threshold = 2
     @Published public var shareCount = 3
-    @Published public var encoding: ShareEncoding = .base64url
+    @Published public var encoding: ShareEncoding = .mnemoWords
     @Published public private(set) var shares: [EncodedShare] = []
     @Published public private(set) var splitStatus: AppStatus?
     @Published public private(set) var isSplitting = false
 
-    @Published public var shareInput = ""
+    @Published public private(set) var recoveryShareInputs = ["", ""]
     @Published public var recoveryPassphrase = ""
-    @Published public var recoveryEncoding: ShareEncoding = .auto
+    @Published public var recoveryEncoding: ShareEncoding = .mnemoWords
     @Published public private(set) var inspection: Inspection?
     @Published public private(set) var recovery: Recovery?
     @Published public private(set) var recoveryStatus: AppStatus?
@@ -120,7 +120,9 @@ public final class AppModel: ObservableObject {
 
     private var splitToken = UUID()
     private var recoveryToken = UUID()
+    private var inspectionToken = UUID()
     private var inspectionTask: Task<Void, Never>?
+    private var recoveryEncodingWasManuallySelected = false
 
     public init() {}
 
@@ -132,8 +134,24 @@ public final class AppModel: ObservableObject {
         !currentSecretData.isEmpty && !isSplitting && encoding != .auto
     }
 
+    public var shareInput: String {
+        recoveryShareInputs
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n\n")
+    }
+
+    public var minimumRecoveryShareCount: Int {
+        max(2, inspection.map { Int($0.threshold) } ?? 2)
+    }
+
+    public var recoveryPassphraseEnabled: Bool {
+        inspection?.encrypted == true
+    }
+
     public var canRecover: Bool {
-        !shareInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isRecovering
+        guard !isRecovering, inspection?.ready == true else { return false }
+        return !recoveryPassphraseEnabled || !recoveryPassphrase.isEmpty
     }
 
     public var canExportCurrentResult: Bool {
@@ -184,15 +202,29 @@ public final class AppModel: ObservableObject {
     }
 
     public func updateShareInput(_ input: String) {
-        shareInput = input
-        invalidateRecoveryResult()
-        scheduleInspection()
+        let normalized = input.replacingOccurrences(of: "\r\n", with: "\n")
+        let values = normalized
+            .components(separatedBy: "\n\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        recoveryShareInputs = values + Array(repeating: "", count: max(0, 2 - values.count))
+        refreshRecoveryInput()
+    }
+
+    public func updateRecoveryShare(at index: Int, with value: String) {
+        guard recoveryShareInputs.indices.contains(index) else { return }
+        recoveryShareInputs[index] = value
+        refreshRecoveryInput()
+    }
+
+    public func addRecoveryShareInput() {
+        recoveryShareInputs.append("")
     }
 
     public func setRecoveryEncoding(_ selected: ShareEncoding) {
+        recoveryEncodingWasManuallySelected = true
         recoveryEncoding = selected
         invalidateRecoveryResult()
-        scheduleInspection()
     }
 
     public func clearSplit() {
@@ -207,9 +239,12 @@ public final class AppModel: ObservableObject {
 
     public func clearRecovery() {
         recoveryToken = UUID()
+        inspectionToken = UUID()
         inspectionTask?.cancel()
-        shareInput = ""
+        recoveryShareInputs = ["", ""]
         recoveryPassphrase = ""
+        recoveryEncoding = .mnemoWords
+        recoveryEncodingWasManuallySelected = false
         inspection = nil
         recovery = nil
         recoveryStatus = nil
@@ -317,17 +352,26 @@ public final class AppModel: ObservableObject {
         inspectionTask?.cancel()
         inspection = nil
         let input = shareInput
-        guard !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        let selected = recoveryEncoding
+        guard !input.isEmpty else { return }
+        let token = UUID()
+        inspectionToken = token
 
         inspectionTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(250))
             guard !Task.isCancelled else { return }
             let value = await Task.detached(priority: .utility) {
-                try? inspectShareInput(input: input, selected: selected)
+                try? inspectShareInput(input: input, selected: .auto)
             }.value
-            guard !Task.isCancelled else { return }
-            self?.inspection = value
+            guard !Task.isCancelled, let self, self.inspectionToken == token else { return }
+            self.inspection = value
+            guard let value else { return }
+            if !self.recoveryEncodingWasManuallySelected {
+                self.recoveryEncoding = value.detectedEncoding
+            }
+            self.ensureRecoveryShareInputCount(Int(value.threshold))
+            if !value.encrypted {
+                self.recoveryPassphrase = ""
+            }
         }
     }
 
@@ -514,6 +558,16 @@ public final class AppModel: ObservableObject {
         panel.nameFieldStringValue = "recovered-secret"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         write(recovery.bytes, to: url, success: "Saved the recovered secret.", task: .recover)
+    }
+
+    private func refreshRecoveryInput() {
+        invalidateRecoveryResult()
+        scheduleInspection()
+    }
+
+    private func ensureRecoveryShareInputCount(_ requiredCount: Int) {
+        let missingCount = max(0, max(2, requiredCount) - recoveryShareInputs.count)
+        recoveryShareInputs.append(contentsOf: Array(repeating: "", count: missingCount))
     }
 
     private func write(_ data: Data, to url: URL, success: String, task: WorkbenchTask) {

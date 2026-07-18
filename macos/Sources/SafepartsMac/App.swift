@@ -46,14 +46,10 @@ struct ContentView: View {
     @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        NavigationSplitView {
-            List(WorkbenchTask.allCases, selection: $model.task) { task in
-                Label(task.rawValue, systemImage: task == .split ? "square.split.2x1" : "arrow.triangle.2.circlepath")
-                    .tag(task)
-            }
-            .navigationTitle("Safeparts")
-            .navigationSplitViewColumnWidth(min: 180, ideal: 210)
-        } detail: {
+        VStack(spacing: 0) {
+            TaskSwitcher()
+            Divider()
+
             switch model.task {
             case .split:
                 SplitView()
@@ -73,6 +69,42 @@ struct ContentView: View {
                 .help("Clear the current task (Command-Shift-Delete)")
             }
         }
+    }
+}
+
+struct TaskSwitcher: View {
+    @EnvironmentObject private var model: AppModel
+
+    var body: some View {
+        ZStack {
+            Picker("Task", selection: $model.task) {
+                ForEach(WorkbenchTask.allCases) { task in
+                    Text(task.rawValue).tag(task)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+            .frame(width: 260)
+
+            HStack {
+                HStack(spacing: 7) {
+                    Image("safeparts-logo", bundle: .module)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22, height: 22)
+                    Text("Safeparts")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Safeparts")
+
+                Spacer()
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 9)
+        .background(.bar)
     }
 }
 
@@ -150,15 +182,14 @@ struct SplitView: View {
                     .onChange(of: model.shareCount) { _, _ in model.invalidateSplitResult() }
                 }
 
-                Picker("Share encoding", selection: $model.encoding) {
-                    Text("Base64url").tag(ShareEncoding.base64url)
-                    Text("Base58Check").tag(ShareEncoding.base58check)
-                    Text("Mnemonic words").tag(ShareEncoding.mnemoWords)
-                    Text("BIP-39 mnemonic").tag(ShareEncoding.mnemoBip39)
-                }
-                .onChange(of: model.encoding) { _, _ in model.invalidateSplitResult() }
+                ShareEncodingSelector(selection: $model.encoding)
+                    .onChange(of: model.encoding) { _, _ in model.invalidateSplitResult() }
 
-                SecureField("Optional passphrase", text: $model.splitPassphrase)
+                LabeledContent("Passphrase") {
+                    SecureField("Passphrase", text: $model.splitPassphrase)
+                        .labelsHidden()
+                        .accessibilityLabel("Passphrase")
+                }
                     .onChange(of: model.splitPassphrase) { _, _ in model.invalidateSplitResult() }
             }
 
@@ -218,15 +249,28 @@ struct ShareRow: View {
                 Label("Share \(share.index) of \(share.shareCount)", systemImage: "key.horizontal")
                     .font(.headline)
                 Spacer()
-                ControlGroup {
-                    Button("Copy", systemImage: "doc.on.doc") {
+                HStack(spacing: 2) {
+                    Button {
                         model.copy(share.text)
+                    } label: {
+                        Image(systemName: "doc.on.doc")
+                            .frame(width: 24, height: 22)
                     }
-                    Button("Save…", systemImage: "square.and.arrow.down") {
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel("Copy share \(share.index)")
+                    .help("Copy share")
+
+                    Button {
                         model.saveShare(share)
+                    } label: {
+                        Image(systemName: "arrow.down.to.line")
+                            .frame(width: 24, height: 22)
                     }
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel("Save share \(share.index)")
+                    .help("Save share…")
                 }
-                .labelStyle(.iconOnly)
+                .controlSize(.small)
             }
 
             ScrollView([.horizontal, .vertical]) {
@@ -246,17 +290,17 @@ struct ShareRow: View {
 struct RecoverView: View {
     @EnvironmentObject private var model: AppModel
 
-    private var shareInputBinding: Binding<String> {
-        Binding(
-            get: { model.shareInput },
-            set: { model.updateShareInput($0) }
-        )
-    }
-
     private var encodingBinding: Binding<ShareEncoding> {
         Binding(
             get: { model.recoveryEncoding },
             set: { model.setRecoveryEncoding($0) }
+        )
+    }
+
+    private func shareBinding(at index: Int) -> Binding<String> {
+        Binding(
+            get: { model.recoveryShareInputs[index] },
+            set: { model.updateRecoveryShare(at: index, with: $0) }
         )
     }
 
@@ -267,36 +311,64 @@ struct RecoverView: View {
                 subtitle: "Add enough recovery shares from the same set."
             )
 
-            Section("Recovery shares") {
-                TextEditor(text: shareInputBinding)
-                    .font(.body.monospaced())
-                    .frame(minHeight: 190)
-                    .accessibilityLabel("Recovery share text")
+            Section {
+                ForEach(model.recoveryShareInputs.indices, id: \.self) { index in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("Share \(index + 1)")
+                                .font(.subheadline.weight(.medium))
+                            Spacer()
+                            if index < model.minimumRecoveryShareCount {
+                                Text("Required")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        TextEditor(text: shareBinding(at: index))
+                            .font(.caption.monospaced())
+                            .frame(minHeight: 72, maxHeight: 112)
+                            .accessibilityLabel("Recovery share \(index + 1)")
+                    }
+                    .padding(.vertical, 2)
+                }
 
                 HStack {
-                    Button("Paste", systemImage: "doc.on.clipboard", action: model.pasteShares)
+                    Button("Paste Shares", systemImage: "doc.on.clipboard", action: model.pasteShares)
                     Button("Import Files…", systemImage: "doc.on.doc") {
                         model.chooseShareFiles()
                     }
+                    Spacer()
+                    Button("Add Share", systemImage: "plus") {
+                        model.addRecoveryShareInput()
+                    }
+                    .buttonStyle(.borderless)
+                }
+            } header: {
+                HStack {
+                    Text("Recovery shares")
+                    Spacer()
+                    Text("At least \(model.minimumRecoveryShareCount)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
 
             Section("Recovery options") {
-                Picker("Share encoding", selection: encodingBinding) {
-                    Text("Auto-detect").tag(ShareEncoding.auto)
-                    Text("Base64url").tag(ShareEncoding.base64url)
-                    Text("Base58Check").tag(ShareEncoding.base58check)
-                    Text("Mnemonic words").tag(ShareEncoding.mnemoWords)
-                    Text("BIP-39 mnemonic").tag(ShareEncoding.mnemoBip39)
-                }
+                ShareEncodingSelector(selection: encodingBinding)
 
-                SecureField("Passphrase, if required", text: $model.recoveryPassphrase)
-                    .onChange(of: model.recoveryPassphrase) { _, _ in model.invalidateRecoveryResult() }
+                LabeledContent("Passphrase") {
+                    SecureField("Passphrase", text: $model.recoveryPassphrase)
+                        .labelsHidden()
+                        .accessibilityLabel("Passphrase")
+                        .disabled(!model.recoveryPassphraseEnabled)
+                        .onChange(of: model.recoveryPassphrase) { _, _ in model.invalidateRecoveryResult() }
+                }
             }
 
             if let inspection = model.inspection {
                 Section("Share summary") {
-                    LabeledContent("Detected encoding", value: inspection.detectedEncoding.displayName)
+                    LabeledContent("Detected format", value: inspection.detectedEncoding.friendlyName)
                     LabeledContent("Recovery threshold", value: "\(inspection.threshold) of \(inspection.shareCount)")
                     LabeledContent("Shares provided", value: "\(inspection.providedCount)")
                     LabeledContent("Passphrase protected", value: inspection.encrypted ? "Yes" : "No")
@@ -415,14 +487,105 @@ struct StatusView: View {
     }
 }
 
+struct ShareEncodingSelector: View {
+    @Binding var selection: ShareEncoding
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Share format")
+                .font(.subheadline.weight(.medium))
+
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(Array(ShareEncoding.friendlyChoices.enumerated()), id: \.offset) { _, encoding in
+                    let selected = selection == encoding
+                    Button {
+                        selection = encoding
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: encoding.symbolName)
+                                .font(.title3)
+                                .foregroundStyle(selected ? Color.accentColor : .secondary)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(encoding.friendlyName)
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(.primary)
+                                Text(encoding.friendlyDescription)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
+                            }
+
+                            Spacer(minLength: 4)
+
+                            if selected {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Color.accentColor)
+                            }
+                        }
+                        .padding(.horizontal, 11)
+                        .padding(.vertical, 9)
+                        .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
+                        .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .background(
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .fill(selected ? Color.accentColor.opacity(0.11) : Color.secondary.opacity(0.06))
+                    )
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .stroke(selected ? Color.accentColor.opacity(0.65) : Color.secondary.opacity(0.18))
+                    }
+                    .accessibilityLabel("\(encoding.friendlyName), \(encoding.friendlyDescription)")
+                    .accessibilityValue(selected ? "Selected" : "")
+                }
+            }
+        }
+    }
+}
+
 extension ShareEncoding {
-    var displayName: String {
+    static let friendlyChoices: [ShareEncoding] = [
+        .mnemoWords,
+        .base64url,
+        .base58check,
+        .mnemoBip39,
+    ]
+
+    var friendlyName: String {
         switch self {
-        case .auto: "Auto-detect"
-        case .base64url: "Base64url"
-        case .base58check: "Base58Check"
-        case .mnemoWords: "Mnemonic words"
-        case .mnemoBip39: "BIP-39 mnemonic"
+        case .auto: "Automatic"
+        case .base64url: "Letters"
+        case .base58check: "Checked letters"
+        case .mnemoWords: "Words"
+        case .mnemoBip39: "BIP-39 words"
+        }
+    }
+
+    var friendlyDescription: String {
+        switch self {
+        case .auto: "Detect the format"
+        case .base64url: "Compact alphanumeric text"
+        case .base58check: "Compact text with typo detection"
+        case .mnemoWords: "Easy-to-write mnemonic words"
+        case .mnemoBip39: "Familiar BIP-39 vocabulary"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .auto: "wand.and.stars"
+        case .base64url: "textformat.abc"
+        case .base58check: "checkmark.seal"
+        case .mnemoWords: "text.book.closed"
+        case .mnemoBip39: "list.bullet.rectangle"
         }
     }
 }

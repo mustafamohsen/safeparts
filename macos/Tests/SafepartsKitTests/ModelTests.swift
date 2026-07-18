@@ -3,6 +3,15 @@ import Testing
 @testable import SafepartsKit
 
 @MainActor
+private func waitUntil(_ condition: @MainActor () -> Bool) async -> Bool {
+    for _ in 0 ..< 100 {
+        if condition() { return true }
+        try? await Task.sleep(for: .milliseconds(100))
+    }
+    return condition()
+}
+
+@MainActor
 @Test
 func thresholdClampingAndTaskScopedClear() async {
     let model = AppModel()
@@ -12,7 +21,7 @@ func thresholdClampingAndTaskScopedClear() async {
     #expect(model.threshold == 3)
 
     model.secretText = "sensitive"
-    model.shareInput = "share"
+    model.updateShareInput("share")
     model.splitPassphrase = "split pass"
     model.recoveryPassphrase = "recover pass"
     model.task = .split
@@ -25,7 +34,86 @@ func thresholdClampingAndTaskScopedClear() async {
 
     model.clear()
     #expect(model.shareInput.isEmpty)
+    #expect(model.recoveryShareInputs == ["", ""])
     #expect(model.recoveryPassphrase.isEmpty)
+}
+
+@MainActor
+@Test
+func recoveryInputsFollowMetadataAndEnablePassphrase() async throws {
+    let model = AppModel()
+    #expect(model.encoding == .mnemoWords)
+    #expect(model.recoveryEncoding == .mnemoWords)
+    #expect(model.recoveryShareInputs == ["", ""])
+    #expect(!model.recoveryPassphraseEnabled)
+
+    let shares = try splitSecret(
+        secret: Data("protected".utf8),
+        threshold: 4,
+        shareCount: 5,
+        selected: .base58check,
+        passphrase: "correct"
+    )
+    model.updateShareInput(shares[0].text)
+    #expect(await waitUntil { model.inspection?.threshold == 4 })
+
+    #expect(model.inspection?.threshold == 4)
+    #expect(model.recoveryShareInputs.count == 4)
+    #expect(model.recoveryEncoding == .base58check)
+    #expect(model.recoveryPassphraseEnabled)
+
+    model.setRecoveryEncoding(.mnemoBip39)
+    #expect(model.recoveryEncoding == .mnemoBip39)
+
+    model.updateShareInput(shares.prefix(4).map(\.text).joined(separator: "\n\n"))
+    #expect(await waitUntil { model.inspection?.ready == true })
+    #expect(model.inspection?.ready == true)
+    #expect(model.recoveryEncoding == .mnemoBip39)
+    #expect(!model.canRecover)
+
+    model.setRecoveryEncoding(.base58check)
+    model.recoveryPassphrase = "correct"
+    #expect(model.canRecover)
+    await model.recover()
+    #expect(model.recoveredText == "protected")
+
+    let plainShares = try splitSecret(
+        secret: Data("plain".utf8),
+        threshold: 2,
+        shareCount: 3,
+        selected: .mnemoWords,
+        passphrase: nil
+    )
+    model.updateShareInput(plainShares[0].text)
+    #expect(await waitUntil { model.inspection?.detectedEncoding == .mnemoWords })
+    #expect(!model.recoveryPassphraseEnabled)
+    #expect(model.recoveryPassphrase.isEmpty)
+}
+
+@MainActor
+@Test
+func staleShareInspectionCannotPublishAfterManualSelectionOrClear() async throws {
+    let model = AppModel()
+    let shares = try splitSecret(
+        secret: Data("metadata".utf8),
+        threshold: 4,
+        shareCount: 5,
+        selected: .base58check,
+        passphrase: "pass"
+    )
+
+    model.updateShareInput(shares[0].text)
+    model.setRecoveryEncoding(.mnemoWords)
+    #expect(await waitUntil { model.inspection?.threshold == 4 })
+    #expect(model.inspection?.threshold == 4)
+    #expect(model.recoveryEncoding == .mnemoWords)
+
+    model.updateShareInput(shares[0].text)
+    model.clearRecovery()
+    try await Task.sleep(for: .milliseconds(400))
+    #expect(model.inspection == nil)
+    #expect(model.recoveryShareInputs == ["", ""])
+    #expect(!model.recoveryPassphraseEnabled)
 }
 
 @MainActor
