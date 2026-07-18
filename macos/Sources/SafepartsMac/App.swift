@@ -225,9 +225,16 @@ struct SplitView: View {
                             .frame(width: 200)
                             .accessibilityLabel("Export filename prefix")
                         Spacer()
-                        Button("Export All…", systemImage: "folder.badge.plus") {
+                        Button {
                             model.exportAllShares()
+                        } label: {
+                            Image(systemName: "folder.badge.plus")
+                                .frame(width: 24, height: 22)
                         }
+                        .buttonStyle(.borderless)
+                        .controlSize(.small)
+                        .accessibilityLabel("Export all shares")
+                        .help("Export All…")
                     }
                 }
             }
@@ -414,10 +421,6 @@ struct RecoverView: View {
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.return, modifiers: .command)
                     .disabled(!model.canRecover)
-
-                    Text("Command-Return")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
                 }
 
                 if let status = model.recoveryStatus {
@@ -427,21 +430,42 @@ struct RecoverView: View {
 
             if let recovery = model.recovery {
                 Section("Recovered secret") {
-                    if let text = model.recoveredText {
-                        Text(text)
-                            .font(.body.monospaced())
-                            .textSelection(.enabled)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Button("Copy Text", systemImage: "doc.on.doc") {
-                            model.copy(text)
+                    HStack(alignment: .top, spacing: 12) {
+                        if let text = model.recoveredText {
+                            Text(text)
+                                .font(.body.monospaced())
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            Label("Binary data (\(recovery.bytes.count.formatted()) bytes)", systemImage: "doc")
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                    } else {
-                        Label("Binary data (\(recovery.bytes.count.formatted()) bytes)", systemImage: "doc")
-                            .foregroundStyle(.secondary)
-                    }
 
-                    Button("Save Recovered Secret…", systemImage: "square.and.arrow.down") {
-                        model.saveRecovery()
+                        HStack(spacing: 2) {
+                            if let text = model.recoveredText {
+                                Button {
+                                    model.copy(text)
+                                } label: {
+                                    Image(systemName: "doc.on.doc")
+                                        .frame(width: 24, height: 22)
+                                }
+                                .buttonStyle(.borderless)
+                                .accessibilityLabel("Copy recovered text")
+                                .help("Copy text")
+                            }
+
+                            Button {
+                                model.saveRecovery()
+                            } label: {
+                                Image(systemName: "arrow.down.to.line")
+                                    .frame(width: 24, height: 22)
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Save recovered secret")
+                            .help("Save Recovered Secret…")
+                        }
+                        .controlSize(.small)
                     }
                 }
             }

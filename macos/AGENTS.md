@@ -19,7 +19,7 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 - Put the Safeparts title and logo in the system title bar. The segmented task switcher contains only Split and Recover, and content pages do not set window titles.
 - Default to the Words share format. Recovery starts with two share fields, expands to the detected threshold, and enables Passphrase only for encrypted shares.
 - Give each recovery share field compact Paste and eraser-style Clear actions. Show readiness in the share header, put Recover Secret immediately below the share inputs, and do not show a separate metadata summary.
-- Keep per-share copy and save actions compact, accessible, and secondary to the share text.
+- Use compact icon-only actions with accessibility labels and help for share copy/save, recovered-secret copy/save, and Export All.
 - Export All may prepend a sanitized user-provided filename prefix without changing individual Save filenames.
 - Do not commit compiled libraries or Swift build output.
 - Keep `Generated/safeparts_swift.swift` byte-identical to `Sources/SafepartsKit/Generated.swift`.
