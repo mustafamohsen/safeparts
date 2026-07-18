@@ -568,9 +568,9 @@ public struct FfiConverterTypeEncodedShare: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> EncodedShare {
         return
             try EncodedShare(
-                text: FfiConverterString.read(from: &buf), 
-                index: FfiConverterUInt8.read(from: &buf), 
-                shareCount: FfiConverterUInt8.read(from: &buf), 
+                text: FfiConverterString.read(from: &buf),
+                index: FfiConverterUInt8.read(from: &buf),
+                shareCount: FfiConverterUInt8.read(from: &buf),
                 setId: FfiConverterString.read(from: &buf)
         )
     }
@@ -678,13 +678,13 @@ public struct FfiConverterTypeInspection: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Inspection {
         return
             try Inspection(
-                detectedEncoding: FfiConverterTypeShareEncoding.read(from: &buf), 
-                threshold: FfiConverterUInt8.read(from: &buf), 
-                shareCount: FfiConverterUInt8.read(from: &buf), 
-                providedCount: FfiConverterUInt32.read(from: &buf), 
-                encrypted: FfiConverterBool.read(from: &buf), 
-                indexes: FfiConverterData.read(from: &buf), 
-                consistent: FfiConverterBool.read(from: &buf), 
+                detectedEncoding: FfiConverterTypeShareEncoding.read(from: &buf),
+                threshold: FfiConverterUInt8.read(from: &buf),
+                shareCount: FfiConverterUInt8.read(from: &buf),
+                providedCount: FfiConverterUInt32.read(from: &buf),
+                encrypted: FfiConverterBool.read(from: &buf),
+                indexes: FfiConverterData.read(from: &buf),
+                consistent: FfiConverterBool.read(from: &buf),
                 ready: FfiConverterBool.read(from: &buf)
         )
     }
@@ -790,12 +790,12 @@ public struct FfiConverterTypeRecovery: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Recovery {
         return
             try Recovery(
-                bytes: FfiConverterData.read(from: &buf), 
-                detectedEncoding: FfiConverterTypeShareEncoding.read(from: &buf), 
-                threshold: FfiConverterUInt8.read(from: &buf), 
-                shareCount: FfiConverterUInt8.read(from: &buf), 
-                encrypted: FfiConverterBool.read(from: &buf), 
-                indexes: FfiConverterData.read(from: &buf), 
+                bytes: FfiConverterData.read(from: &buf),
+                detectedEncoding: FfiConverterTypeShareEncoding.read(from: &buf),
+                threshold: FfiConverterUInt8.read(from: &buf),
+                shareCount: FfiConverterUInt8.read(from: &buf),
+                encrypted: FfiConverterBool.read(from: &buf),
+                indexes: FfiConverterData.read(from: &buf),
                 setId: FfiConverterString.read(from: &buf)
         )
     }
@@ -829,8 +829,8 @@ public func FfiConverterTypeRecovery_lower(_ value: Recovery) -> RustBuffer {
 
 public enum BridgeError: Swift.Error {
 
-    
-    
+
+
     case InvalidParameters
     case InvalidEncoding
     case EmptyInput
@@ -855,9 +855,9 @@ public struct FfiConverterTypeBridgeError: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
 
-        
 
-        
+
+
         case 1: return .InvalidParameters
         case 2: return .InvalidEncoding
         case 3: return .EmptyInput
@@ -877,53 +877,53 @@ public struct FfiConverterTypeBridgeError: FfiConverterRustBuffer {
     public static func write(_ value: BridgeError, into buf: inout [UInt8]) {
         switch value {
 
-        
 
-        
-        
+
+
+
         case .InvalidParameters:
             writeInt(&buf, Int32(1))
-        
-        
+
+
         case .InvalidEncoding:
             writeInt(&buf, Int32(2))
-        
-        
+
+
         case .EmptyInput:
             writeInt(&buf, Int32(3))
-        
-        
+
+
         case .MalformedShares:
             writeInt(&buf, Int32(4))
-        
-        
+
+
         case .InsufficientShares:
             writeInt(&buf, Int32(5))
-        
-        
+
+
         case .DuplicateShares:
             writeInt(&buf, Int32(6))
-        
-        
+
+
         case .MixedShares:
             writeInt(&buf, Int32(7))
-        
-        
+
+
         case .PassphraseRequired:
             writeInt(&buf, Int32(8))
-        
-        
+
+
         case .IncorrectPassphrase:
             writeInt(&buf, Int32(9))
-        
-        
+
+
         case .IntegrityFailure:
             writeInt(&buf, Int32(10))
-        
-        
+
+
         case .Internal:
             writeInt(&buf, Int32(11))
-        
+
         }
     }
 }
@@ -962,7 +962,7 @@ extension BridgeError: Foundation.LocalizedError {
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
 public enum ShareEncoding {
-    
+
     case auto
     case base64url
     case base58check
@@ -984,44 +984,44 @@ public struct FfiConverterTypeShareEncoding: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ShareEncoding {
         let variant: Int32 = try readInt(&buf)
         switch variant {
-        
+
         case 1: return .auto
-        
+
         case 2: return .base64url
-        
+
         case 3: return .base58check
-        
+
         case 4: return .mnemoWords
-        
+
         case 5: return .mnemoBip39
-        
+
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
     public static func write(_ value: ShareEncoding, into buf: inout [UInt8]) {
         switch value {
-        
-        
+
+
         case .auto:
             writeInt(&buf, Int32(1))
-        
-        
+
+
         case .base64url:
             writeInt(&buf, Int32(2))
-        
-        
+
+
         case .base58check:
             writeInt(&buf, Int32(3))
-        
-        
+
+
         case .mnemoWords:
             writeInt(&buf, Int32(4))
-        
-        
+
+
         case .mnemoBip39:
             writeInt(&buf, Int32(5))
-        
+
         }
     }
 }

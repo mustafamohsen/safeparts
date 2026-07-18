@@ -549,25 +549,25 @@ void ffi_safeparts_swift_rust_future_complete_void(uint64_t handle, RustCallStat
 #ifndef UNIFFI_FFIDEF_UNIFFI_SAFEPARTS_SWIFT_CHECKSUM_FUNC_COMBINE_SHARE_INPUT
 #define UNIFFI_FFIDEF_UNIFFI_SAFEPARTS_SWIFT_CHECKSUM_FUNC_COMBINE_SHARE_INPUT
 uint16_t uniffi_safeparts_swift_checksum_func_combine_share_input(void
-    
+
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_SAFEPARTS_SWIFT_CHECKSUM_FUNC_INSPECT_SHARE_INPUT
 #define UNIFFI_FFIDEF_UNIFFI_SAFEPARTS_SWIFT_CHECKSUM_FUNC_INSPECT_SHARE_INPUT
 uint16_t uniffi_safeparts_swift_checksum_func_inspect_share_input(void
-    
+
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_SAFEPARTS_SWIFT_CHECKSUM_FUNC_SPLIT_SECRET
 #define UNIFFI_FFIDEF_UNIFFI_SAFEPARTS_SWIFT_CHECKSUM_FUNC_SPLIT_SECRET
 uint16_t uniffi_safeparts_swift_checksum_func_split_secret(void
-    
+
 );
 #endif
 #ifndef UNIFFI_FFIDEF_FFI_SAFEPARTS_SWIFT_UNIFFI_CONTRACT_VERSION
 #define UNIFFI_FFIDEF_FFI_SAFEPARTS_SWIFT_UNIFFI_CONTRACT_VERSION
 uint32_t ffi_safeparts_swift_uniffi_contract_version(void
-    
+
 );
 #endif
 

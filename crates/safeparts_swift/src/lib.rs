@@ -116,10 +116,10 @@ fn map_error(error: CoreError) -> BridgeError {
     }
 }
 fn parse(
-    input: &str,
+    input: String,
     selected: ShareEncoding,
 ) -> Result<(Vec<SharePacket>, Encoding), BridgeError> {
-    let guarded = Zeroizing::new(input.to_owned());
+    let guarded = Zeroizing::new(input);
     let parsed = encoding::parse_share_packets_wrapped_mnemonics(&guarded, core_encoding(selected))
         .map_err(map_error)?;
     Ok((parsed.packets, parsed.encoding))
@@ -176,7 +176,7 @@ pub fn inspect_share_input(
     input: String,
     selected: ShareEncoding,
 ) -> Result<Inspection, BridgeError> {
-    let (packets, detected) = parse(&input, selected)?;
+    let (packets, detected) = parse(input, selected)?;
     let first = packets.first().ok_or(BridgeError::EmptyInput)?;
     let consistent = consistent(&packets);
     let unique = packets.iter().map(|p| p.x).collect::<HashSet<_>>().len() == packets.len();
@@ -200,7 +200,7 @@ pub fn combine_share_input(
     selected: ShareEncoding,
     passphrase: Option<String>,
 ) -> Result<Recovery, BridgeError> {
-    let (packets, detected) = parse(&input, selected)?;
+    let (packets, detected) = parse(input, selected)?;
     let first = packets.first().ok_or(BridgeError::EmptyInput)?;
     let metadata = (
         first.k,
