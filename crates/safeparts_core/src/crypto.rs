@@ -39,7 +39,7 @@ pub fn encrypt(plaintext: &[u8], passphrase: &[u8]) -> CoreResult<(Vec<u8>, Cryp
     let params = CryptoParams::random_default();
     let key = derive_key(passphrase, &params)?;
 
-    let cipher = ChaCha20Poly1305::new(Key::from_slice(&*key));
+    let cipher = ChaCha20Poly1305::new(Key::from_slice(key.as_ref()));
     let nonce = Nonce::from_slice(&params.nonce);
 
     let ciphertext = cipher
@@ -52,7 +52,7 @@ pub fn encrypt(plaintext: &[u8], passphrase: &[u8]) -> CoreResult<(Vec<u8>, Cryp
 pub fn decrypt(ciphertext: &[u8], passphrase: &[u8], params: CryptoParams) -> CoreResult<Vec<u8>> {
     let key = derive_key(passphrase, &params)?;
 
-    let cipher = ChaCha20Poly1305::new(Key::from_slice(&*key));
+    let cipher = ChaCha20Poly1305::new(Key::from_slice(key.as_ref()));
     let nonce = Nonce::from_slice(&params.nonce);
 
     cipher
@@ -77,7 +77,7 @@ fn derive_key(passphrase: &[u8], params: &CryptoParams) -> CoreResult<Zeroizing<
 
     let mut key = Zeroizing::new([0u8; 32]);
     argon
-        .hash_password_into(passphrase, &params.salt, &mut *key)
+        .hash_password_into(passphrase, &params.salt, key.as_mut())
         .map_err(|e| CoreError::Crypto(format!("argon2: {e}")))?;
 
     Ok(key)

@@ -140,11 +140,7 @@ fn parse_share_packets_with_mnemonic_lines(
     encoding: Encoding,
     mnemonic_line_mode: MnemonicLineMode,
 ) -> CoreResult<ParsedSharePackets> {
-    let nonempty_lines: Vec<&str> = input
-        .lines()
-        .map(str::trim)
-        .filter(|line| !line.is_empty())
-        .collect();
+    let nonempty_lines = nonempty_lines(input);
 
     if nonempty_lines.is_empty() {
         return Err(CoreError::EmptyShareInput);
@@ -166,17 +162,21 @@ fn parse_share_packets_with_mnemonic_lines(
 /// Returns `Ok(None)` when the input is non-empty but does not clearly match a
 /// supported encoding.
 pub fn detect_encoding(input: &str) -> CoreResult<Option<Encoding>> {
-    let nonempty_lines: Vec<&str> = input
-        .lines()
-        .map(str::trim)
-        .filter(|line| !line.is_empty())
-        .collect();
+    let nonempty_lines = nonempty_lines(input);
 
     if nonempty_lines.is_empty() {
         return Err(CoreError::EmptyShareInput);
     }
 
     detect_encoding_from_lines(&nonempty_lines, input)
+}
+
+fn nonempty_lines(input: &str) -> Vec<&str> {
+    input
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect()
 }
 
 fn detect_encoding_from_lines(

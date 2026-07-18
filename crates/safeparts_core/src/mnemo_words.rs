@@ -98,31 +98,21 @@ fn bytes_to_words(bytes: &[u8]) -> Vec<String> {
 }
 
 fn words_to_bytes(words: &[&str]) -> CoreResult<Vec<u8>> {
-    let word_list = Language::English.word_list();
-    let mut map = HashMap::with_capacity(word_list.len());
-    for (i, w) in word_list.iter().enumerate() {
-        map.insert(*w, i as u16);
-    }
+    let word_indices: HashMap<_, _> = Language::English
+        .word_list()
+        .iter()
+        .enumerate()
+        .map(|(index, word)| (*word, index as u16))
+        .collect();
 
     let mut out = Vec::new();
     let mut acc: u32 = 0;
     let mut acc_bits: u8 = 0;
 
-    for &w in words {
-        let idx = match map.get(w) {
-            Some(idx) => *idx,
-            None => {
-                if w.bytes().any(|b| b.is_ascii_uppercase()) {
-                    let lowered = w.to_ascii_lowercase();
-                    *map.get(lowered.as_str())
-                        .ok_or_else(|| CoreError::Encoding(format!("unknown word: {w}")))?
-                } else {
-                    return Err(CoreError::Encoding(format!("unknown word: {w}")));
-                }
-            }
-        };
+    for &word in words {
+        let index = word_index(word, &word_indices)?;
 
-        acc = (acc << 11) | u32::from(idx);
+        acc = (acc << 11) | u32::from(index);
         acc_bits += 11;
 
         while acc_bits >= 8 {
@@ -143,6 +133,21 @@ fn words_to_bytes(words: &[&str]) -> CoreResult<Vec<u8>> {
     }
 
     Ok(out)
+}
+
+fn word_index(word: &str, indices: &HashMap<&str, u16>) -> CoreResult<u16> {
+    if let Some(&index) = indices.get(word) {
+        return Ok(index);
+    }
+
+    if word.bytes().any(|byte| byte.is_ascii_uppercase()) {
+        let lowercase = word.to_ascii_lowercase();
+        if let Some(&index) = indices.get(lowercase.as_str()) {
+            return Ok(index);
+        }
+    }
+
+    Err(CoreError::Encoding(format!("unknown word: {word}")))
 }
 
 fn crc16_ccitt_false(bytes: &[u8]) -> u16 {

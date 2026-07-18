@@ -93,34 +93,42 @@ pub fn combine(shares: &[RawShare]) -> CoreResult<Vec<u8>> {
         seen[s.x as usize] = true;
     }
 
-    let x_vals: Vec<Gf256> = shares.iter().map(|s| Gf256(s.x)).collect();
-    let mut out = vec![0u8; y_len];
+    let x_values: Vec<Gf256> = shares.iter().map(|share| Gf256(share.x)).collect();
+    let weights = interpolation_weights_at_zero(&x_values)?;
+    let mut secret = vec![0u8; y_len];
 
-    for (byte_idx, out_byte) in out.iter_mut().enumerate() {
-        let mut acc = Gf256(0);
-
-        for (j, share) in shares.iter().enumerate() {
-            let x_j = x_vals[j];
-
-            let mut num = Gf256(1);
-            let mut den = Gf256(1);
-
-            for (m, x_m) in x_vals.iter().enumerate() {
-                if m == j {
-                    continue;
-                }
-                num = num * *x_m;
-                den = den * (x_j - *x_m);
-            }
-
-            let lambda = num.checked_div(den)?;
-            acc = acc + (Gf256(share.y[byte_idx]) * lambda);
-        }
-
-        *out_byte = acc.0;
+    for (byte_index, secret_byte) in secret.iter_mut().enumerate() {
+        let value = shares
+            .iter()
+            .zip(&weights)
+            .fold(Gf256(0), |value, (share, weight)| {
+                value + Gf256(share.y[byte_index]) * *weight
+            });
+        *secret_byte = value.0;
     }
 
-    Ok(out)
+    Ok(secret)
+}
+
+fn interpolation_weights_at_zero(x_values: &[Gf256]) -> CoreResult<Vec<Gf256>> {
+    x_values
+        .iter()
+        .enumerate()
+        .map(|(share_index, &x)| {
+            let (numerator, denominator) = x_values
+                .iter()
+                .enumerate()
+                .filter(|(index, _)| *index != share_index)
+                .fold(
+                    (Gf256(1), Gf256(1)),
+                    |(numerator, denominator), (_, &other_x)| {
+                        (numerator * other_x, denominator * (x - other_x))
+                    },
+                );
+
+            numerator.checked_div(denominator)
+        })
+        .collect()
 }
 
 #[cfg(test)]
