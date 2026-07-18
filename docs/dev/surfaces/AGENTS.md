@@ -15,6 +15,7 @@ Owns focused contributor guides for each Safeparts surface.
 - `help-docs.md`: Astro/Starlight help-site contributor notes.
 - `release.md`: release packaging and workflow notes.
 - `mobile.md`: dormant mobile prototype expectations.
+- `macos.md`: native SwiftUI app and UniFFI bridge workflow.
 
 ## Local Contracts
 

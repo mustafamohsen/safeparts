@@ -1,0 +1,8 @@
+import Foundation
+import Testing
+@testable import SafepartsKit
+
+@MainActor @Test func thresholdClampingAndClear() { let model=AppModel(); model.threshold=9; model.shareCount=3; model.normalizeThreshold(); #expect(model.threshold == 3); model.secretText="sensitive"; model.shareInput="share"; model.passphrase="pass"; model.clear(); #expect(model.secretText.isEmpty && model.shareInput.isEmpty && model.passphrase.isEmpty) }
+@MainActor @Test func textAndBinaryPresentation() { let model=AppModel(); model.secretText="hello"; model.split(); model.shareInput=model.shares.prefix(2).map(\.text).joined(separator:"\n\n"); model.recover(); #expect(model.recoveredText == "hello"); model.split(Data([0xff,0xfe])); model.shareInput=model.shares.prefix(2).map(\.text).joined(separator:"\n\n"); model.recover(); #expect(model.recoveredText == nil); #expect(model.recovery?.bytes == Data([0xff,0xfe])) }
+@MainActor @Test func bridgeEncodingsPassphraseAndErrors() throws { for encoding in [ShareEncoding.base64url,.base58check,.mnemoWords,.mnemoBip39] { let shares=try splitSecret(secret:Data([0,255,3]),threshold:2,shareCount:3,selected:encoding,passphrase:"correct"); let input=shares.prefix(2).map(\.text).joined(separator:"\n\n"); #expect(throws: BridgeError.self) { try combineShareInput(input:input,selected:.auto,passphrase:nil) }; let recovered=try combineShareInput(input:input,selected:.auto,passphrase:"correct"); #expect(recovered.bytes == Data([0,255,3])) }; #expect(throws: BridgeError.self) { try combineShareInput(input:"malformed",selected:.auto,passphrase:nil) } }
+@MainActor @Test func fileNaming() { let share=EncodedShare(text:"x",index:2,shareCount:3,setId:"abc"); #expect(AppModel.fileName(share) == "safeparts-abc-share-2-of-3.txt") }

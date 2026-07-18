@@ -91,6 +91,14 @@ description = "Build the help docs."
 dir = "web/help"
 run = "bun run build"
 
+[tasks."macos:prepare"]
+description = "Build and regenerate the native macOS UniFFI bridge."
+run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/prepare.sh; else echo 'macos:prepare requires macOS' >&2; exit 1; fi"
+
+[tasks."macos:check"]
+description = "Build and test the native macOS app."
+run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/prepare.sh && swift build --package-path macos && swift test --package-path macos; else echo 'macos:check skipped: requires macOS'; fi"
+
 [tasks."desktop:dev"]
 description = "Start the desktop app."
 dir = "desktop"

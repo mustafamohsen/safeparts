@@ -12,25 +12,26 @@ Status keys:
 
 ## Current coverage
 
-| Feature | Core | CLI | TUI | WASM | Web | Desktop | Help docs | Tests | Update when changed |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Split/combine bytes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Rust, CLI e2e, web smoke, desktop command tests | All surface guides |
-| Threshold range `1 <= k <= n <= 255` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core negative tests | Core, CLI, TUI, WASM, web, desktop |
-| BLAKE3 integrity tag | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core corruption tests | Core and technical docs |
-| Passphrase protection | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, CLI e2e, web smoke, desktop command tests | Security docs and every exposed UI |
-| `base64url` share encoding | Yes | Yes, alias `base64` | Yes | Yes | Yes | Yes | Yes | Core, CLI e2e, desktop command tests | Encoding lists and UI choices |
-| `base58check` share encoding | Yes | Yes, alias `base58` | Yes | Yes | Core | Core | Yes | Core, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
-| `mnemo-words` share encoding | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, CLI e2e, web smoke, desktop command tests | Encoding docs and UI choices |
-| `mnemo-bip39` share encoding | Yes | Yes | Yes | Yes | Core | Core | Yes | Core, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
-| Auto encoding parse | Yes | Yes for combine | Yes for combine | Yes | Yes for combine | Yes for combine | Yes | Core, CLI e2e, web smoke, desktop command tests | Encoding parser docs and UI guidance |
-| Web local-only workflow | N/A | N/A | N/A | Yes | Yes | N/A | Yes | Web build and smoke tests | Web surface guide |
-| Desktop local-only Tauri workflow | N/A | N/A | N/A | N/A | Mirrored UI source | Yes | Yes | Desktop build, Tauri command tests | Desktop surface guide |
-| English + Arabic user docs | N/A | N/A | N/A | N/A | Links to help | N/A | Yes | Docs build, docs a11y route parity | Help docs guide |
-| Release CLI/TUI archives | N/A | Yes | Yes | N/A | N/A | N/A | Yes | Release workflow, package script | Release guide |
-| Desktop installers | N/A | N/A | N/A | N/A | N/A | Yes | Yes | Release workflow | Release guide and desktop guide |
-| QR export | No | No | No | No | Planned | Planned | Planned | None yet | Add proposal, UI tests, docs |
-| Web `base58check` and `mnemo-bip39` exposure | Core | Yes | Yes | Yes | Planned | Planned after web | Planned | Add web and desktop parity tests | Web, desktop, help docs |
-| Compatibility import/export | Planned | Planned | Planned | Planned | Planned | Planned | Planned | None yet | Add spec and migration notes |
+| Feature | Core | CLI | TUI | WASM | Web | Desktop | Native macOS | Help docs | Tests | Update when changed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Split/combine bytes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Rust, CLI e2e, web smoke, desktop command tests | All surface guides |
+| Threshold range `1 <= k <= n <= 255` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core negative tests | Core, CLI, TUI, WASM, web, desktop |
+| BLAKE3 integrity tag | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core corruption tests | Core and technical docs |
+| Passphrase protection | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, CLI e2e, web smoke, desktop command tests | Security docs and every exposed UI |
+| `base64url` share encoding | Yes | Yes, alias `base64` | Yes | Yes | Yes | Yes | Yes | Yes | Core, CLI e2e, desktop command tests | Encoding lists and UI choices |
+| `base58check` share encoding | Yes | Yes, alias `base58` | Yes | Yes | Core | Core | Yes | Yes | Core, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
+| `mnemo-words` share encoding | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, CLI e2e, web smoke, desktop command tests | Encoding docs and UI choices |
+| `mnemo-bip39` share encoding | Yes | Yes | Yes | Yes | Core | Core | Yes | Yes | Core, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
+| Auto encoding parse | Yes | Yes for combine | Yes for combine | Yes | Yes for combine | Yes for combine | Yes | Yes | Core, CLI e2e, web smoke, desktop command tests | Encoding parser docs and UI guidance |
+| Web local-only workflow | N/A | N/A | N/A | Yes | Yes | N/A | N/A | Yes | Web build and smoke tests | Web surface guide |
+| Desktop local-only Tauri workflow | N/A | N/A | N/A | N/A | Mirrored UI source | Yes | N/A | Yes | Desktop build, Tauri command tests | Desktop surface guide |
+| Native macOS local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Rust bridge and Swift model tests | Native macOS surface guide |
+| English + Arabic user docs | N/A | N/A | N/A | N/A | Links to help | N/A | N/A | Yes | Docs build, docs a11y route parity | Help docs guide |
+| Release CLI/TUI archives | N/A | Yes | Yes | N/A | N/A | N/A | N/A | Yes | Release workflow, package script | Release guide |
+| Desktop installers | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Yes | Release workflow | Release guide and desktop guide |
+| QR export | No | No | No | No | Planned | Planned | N/A | Planned | None yet | Add proposal, UI tests, docs |
+| Web `base58check` and `mnemo-bip39` exposure | Core | Yes | Yes | Yes | Planned | Planned after web | N/A | Planned | Add web and desktop parity tests | Web, desktop, help docs |
+| Compatibility import/export | Planned | Planned | Planned | Planned | Planned | Planned | N/A | Planned | None yet | Add spec and migration notes |
 
 ## Required update checklist
 

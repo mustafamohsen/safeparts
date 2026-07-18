@@ -78,6 +78,7 @@ Safeparts ships as a few different front-ends over the same core:
 
 - **Web UI** (WASM, runs entirely in your browser; no backend): easiest for one-off workflows.
 - **Desktop app** (Tauri, local webview): installed split/combine workbench for macOS, Linux, and Windows packaging.
+- **Native macOS app** (SwiftUI, macOS 14+): a separate local workbench built from `macos/`; signing and installer packaging are not yet available.
 - **CLI** (`safeparts`): script-friendly; good for runbooks and automation.
 - **TUI** (`safeparts-tui` or `safeparts tui`): interactive terminal workflow; nice for offline machines.
 - **Rust crate** (`safeparts_core`): core algorithms and packet formats.
