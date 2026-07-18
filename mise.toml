@@ -99,6 +99,10 @@ run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/prepare.sh; else echo
 description = "Build and test the native macOS app."
 run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/prepare.sh && swift build --package-path macos && macos/scripts/verify-binary.sh && swift test --package-path macos; else echo 'macos:check skipped: requires macOS'; fi"
 
+[tasks."macos:package"]
+description = "Build the unsigned universal native macOS DMG."
+run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/package-release.sh \"${RELEASE_VERSION:?set RELEASE_VERSION, for example v0.2.0}\"; else echo 'macos:package requires macOS' >&2; exit 1; fi"
+
 [tasks."desktop:dev"]
 description = "Start the desktop app."
 dir = "desktop"

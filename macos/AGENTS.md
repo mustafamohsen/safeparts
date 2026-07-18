@@ -9,7 +9,9 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 - `Sources/`: app UI, in-memory state, bundled brand resources, native file/clipboard integration, and the compiled copy of the generated Swift binding.
 - `Tests/`: view-model, file-behavior, and real bridge integration tests.
 - `Generated/`: canonical reproducible UniFFI Swift, header, and module map outputs.
+- `Release/`: checked-in native app bundle metadata templates.
 - `scripts/prepare.sh`: builds the host Rust bridge, normalizes generated text, and refreshes both binding locations.
+- `scripts/package-release.sh` and `scripts/validate-release.sh`: build and validate the unsigned universal native DMG.
 
 ## Local Contracts
 
@@ -23,7 +25,8 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 - Give recovered text a subtle highlight so it stands apart from the input controls.
 - Use compact icon-only actions with accessibility labels and help for share copy/save, recovered-secret copy/save, and Export All.
 - Export All may prepend a sanitized user-provided filename prefix without changing individual Save filenames.
-- Do not commit compiled libraries or Swift build output.
+- Release packaging must contain arm64 and x86_64 slices, target macOS 14.0, keep the Rust bridge static, preserve SwiftPM resources, and remain explicitly unsigned/unnotarized.
+- Do not commit compiled libraries, Swift build output, app bundles, or DMGs.
 - Keep `Generated/safeparts_swift.swift` byte-identical to `Sources/SafepartsKit/Generated.swift`.
 
 ## Work Guidance
@@ -38,6 +41,7 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 - `swift build`
 - `./scripts/verify-binary.sh`
 - `swift test`
+- `RELEASE_VERSION=v0.2.0 mise run macos:package`
 
 ## Child DOX Index
 
