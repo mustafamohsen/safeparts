@@ -185,6 +185,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Select Xcode with Swift 6
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Verify Swift toolchain
+        run: swift --version | grep -E 'Apple Swift version (6|[7-9]|[1-9][0-9])'
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
