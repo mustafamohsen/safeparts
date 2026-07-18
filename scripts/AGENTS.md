@@ -7,12 +7,12 @@ Owns repository automation scripts.
 ## Ownership
 
 - `dev/`: local developer diagnostics and DX verification helpers.
-- `release/`: local release-style archive packaging.
+- `release/`: local CLI/TUI archive packaging and documentation of platform release ownership.
 
 ## Local Contracts
 
 - Scripts must be deterministic, explicit about inputs/outputs, and avoid embedding secrets.
-- Release packaging behavior should stay aligned with `scripts/release/README.md`.
+- Release packaging behavior should stay aligned with `scripts/release/README.md`, including native macOS packaging owned by `macos/scripts/`.
 
 ## Work Guidance
 

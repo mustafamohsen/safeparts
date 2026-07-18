@@ -13,11 +13,11 @@ Download release artifacts from GitHub:
 
 - https://github.com/mustafamohsen/safeparts/releases
 
-Release packaging includes CLI and TUI archives for supported platforms. The release workflow also builds desktop bundles:
+Release packaging includes CLI and TUI archives for supported platforms. It also includes desktop apps:
 
-- Linux: AppImage, `.deb`, and `.rpm`
-- Windows: NSIS `.exe` and MSI
-- macOS: `.dmg`
+- Linux: Tauri AppImage, `.deb`, and `.rpm`
+- Windows: Tauri NSIS `.exe` and MSI
+- macOS 14+: unsigned universal native SwiftUI `.dmg`
 
 Quick check after installing CLI/TUI binaries:
 
@@ -35,12 +35,13 @@ If macOS quarantines a downloaded binary and you trust the release artifact, rem
 xattr -dr com.apple.quarantine /path/to/safeparts-release/
 ```
 
-Or remove it per binary:
+Or remove it from the native app after copying it to Applications:
 
 ```bash
-xattr -d com.apple.quarantine /path/to/safeparts
-xattr -d com.apple.quarantine /path/to/safeparts-tui
+xattr -dr com.apple.quarantine /Applications/Safeparts.app
 ```
+
+The native DMG is unsigned and unnotarized. Only override Gatekeeper when you downloaded the artifact from the project release and verified its checksum.
 
 ## Build Rust binaries from source
 
@@ -85,9 +86,9 @@ bun run dev
 
 Open [http://localhost:5173](http://localhost:5173).
 
-## Desktop app
+## Tauri desktop app
 
-The desktop app lives in <span class="token token--mono">desktop/</span>.
+The Tauri app used for Linux and Windows releases lives in <span class="token token--mono">desktop/</span>.
 
 ```bash
 cd desktop
@@ -101,10 +102,25 @@ Build the frontend:
 bun run build
 ```
 
-Build a native bundle for your host platform:
+Build a Tauri bundle for your host platform:
 
 ```bash
 bun run tauri:build
+```
+
+## Native macOS app
+
+On macOS with Xcode, Swift 6, and Rust:
+
+```bash
+mise run macos:check
+swift run --package-path macos SafepartsMac
+```
+
+Build the unsigned universal release DMG:
+
+```bash
+RELEASE_VERSION=v0.2.0 mise run macos:package
 ```
 
 ## Web app and docs with Docker

@@ -110,7 +110,7 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
   - `crates/safeparts_wasm/` (wasm-bindgen exports for the web UI)
   - `crates/safeparts_swift/` (UniFFI exports for the native macOS app)
 - Web app: `web/` (Vite + React) which expects a WASM build step.
-- Desktop app: `desktop/` (Tauri + React) with Rust commands over `safeparts_core`.
+- Desktop app: `desktop/` (Tauri + React) with Rust commands over `safeparts_core`; release CI packages it for Linux and Windows.
 - Help/docs: `web/help/` (Astro + Starlight), deployed under `/help/`.
 
 ## Context
@@ -149,7 +149,9 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
 
 ## Release packaging
 
-- Local release-style archives: `scripts/release/README.md`
+- Local release-style archives and platform ownership: `scripts/release/README.md`
+- Release CI packages Tauri for Linux and Windows and the native SwiftUI app as the macOS 14+ universal DMG.
+- The native macOS DMG is unsigned and unnotarized until Apple release credentials are configured.
 
 ## OpenSpec tooling
 

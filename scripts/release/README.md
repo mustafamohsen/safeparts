@@ -1,53 +1,45 @@
-# Release Builds
+# Release builds
 
-This folder contains helper tooling for producing release-style archives for the
-Safeparts binaries.
+Safeparts publishes command-line archives and desktop installers from the tag-triggered release workflow.
 
-The release artifacts include:
+Release artifacts include:
 
-- `safeparts` (CLI)
-- `safeparts-tui` (TUI)
-- Safeparts Desktop bundles from the release workflow:
-  - Linux: AppImage, `.deb`, and `.rpm`
-  - Windows: NSIS `.exe` and MSI
-  - macOS: universal `.dmg` for Intel and Apple Silicon Macs
+- `safeparts` and `safeparts-tui` archives for Linux, Windows, Intel macOS, and Apple Silicon macOS
+- Tauri desktop installers for Linux: AppImage, `.deb`, and `.rpm`
+- Tauri desktop installers for Windows: NSIS `.exe` and MSI
+- the native SwiftUI app for macOS 14+ as an unsigned universal `.dmg`
 
-The web UI is intentionally not packaged as a separate release artifact.
+The web UI is deployed separately and is not included as a release archive.
 
-## Build (host OS)
+## CLI and TUI archives
 
-From the repo root:
+From the repository root:
 
 ```bash
+python3 scripts/release/check-version.py v0.2.0
 cargo test --all-features
 cargo build --release -p safeparts -p safeparts_tui
+python3 scripts/release/package.py --version 0.2.0
 ```
 
-On Windows (PowerShell):
+On Windows, run the packaging command with `py -3` instead of `python3`.
 
-```powershell
-cargo test --all-features
-cargo build --release -p safeparts -p safeparts_tui
-```
+`--version` controls the archive name. Release manifests and binaries must already carry the matching project version.
 
-## Package (host OS)
+## Native macOS DMG
 
-The packaging script creates an archive under `dist/release/` for the current OS
-and a `SHA256SUMS.txt` for local verification.
-
-Linux/macOS:
+On macOS with Xcode, Swift 6, Rust, and both Apple Rust targets available:
 
 ```bash
-python3 scripts/release/package.py --version 0.1.0
+RELEASE_VERSION=v0.2.0 mise run macos:package
 ```
 
-Windows:
+The command builds the Rust UniFFI bridge and Swift executable for arm64 and x86_64, assembles `Safeparts.app`, validates both slices, and writes:
 
-```powershell
-py -3 scripts\release\package.py --version 0.1.0
+```text
+dist/release/safeparts-native-macos-universal-0.2.0.dmg
 ```
 
-Notes:
+The validator checks the macOS 14.0 deployment target, static Rust linkage, bundle metadata, resource layout, and both architectures. It mounts the completed DMG and validates the packaged copy again.
 
-- `--version` is used only for naming (it does not change Cargo versions).
-- The script expects the binaries to exist under `target/release/`.
+The DMG is unsigned and unnotarized. Downloaded copies may require an explicit Gatekeeper override. Do not describe this artifact as signed or notarized until Apple release credentials and CI checks are added.

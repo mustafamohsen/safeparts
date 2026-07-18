@@ -47,6 +47,7 @@ share text
 - The CLI, TUI, WASM, web app, Tauri desktop app, and native macOS app adapt IO and presentation. They should not fork the secret-sharing rules.
 - The web UI is the source of truth for the Tauri desktop UI shape. Tauri may use commands behind the same interface, but it should not expose desktop-only product features unless web exposes them first.
 - The native macOS app is a separate SwiftUI surface. It uses `crates/safeparts_swift/` to call the Rust core and may expose native file and clipboard workflows.
+- Release CI packages Tauri for Linux and Windows. The native SwiftUI app owns the macOS 14+ universal DMG.
 - The help site is user-facing documentation. Developer workflow docs live under `docs/dev/`.
 
 ## Boundary rules

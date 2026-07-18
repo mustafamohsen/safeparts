@@ -87,6 +87,14 @@ swift test --package-path macos
 
 `mise run macos:check` runs these steps and then inspects the executable. It checks the macOS 14.0 deployment target and confirms that the Rust bridge is statically linked. The preparation script rejects deployment targets older than 14.0 and verifies that the compiled generated Swift binding matches the canonical copy.
 
+Build and validate the universal release DMG with:
+
+```bash
+RELEASE_VERSION=v0.2.0 mise run macos:package
+```
+
+This checks both executable slices, bundle metadata and resources, static linkage, and the mounted DMG. The output is unsigned and unnotarized.
+
 ## Release packaging
 
 From the repo root:
@@ -94,10 +102,11 @@ From the repo root:
 ```bash
 cargo test --all-features
 cargo build --release -p safeparts -p safeparts_tui
-python3 scripts/release/package.py --version 0.1.0
+python3 scripts/release/package.py --version 0.2.0
+RELEASE_VERSION=v0.2.0 mise run macos:package
 ```
 
-Release CI owns signed or bundled platform artifacts.
+Release CI owns Tauri installers for Linux and Windows and the unsigned universal native DMG for macOS. The publish job generates one checksum manifest after downloading every platform artifact.
 
 ## DX checks
 

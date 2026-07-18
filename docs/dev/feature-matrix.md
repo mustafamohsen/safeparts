@@ -30,7 +30,8 @@ Status keys:
 | Native batch-export filename prefix | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Swift filename tests | Native macOS model and UI |
 | English + Arabic user docs | N/A | N/A | N/A | N/A | Links to help | N/A | N/A | Yes | Docs build, docs a11y route parity | Help docs guide |
 | Release CLI/TUI archives | N/A | Yes | Yes | N/A | N/A | N/A | N/A | Yes | Release workflow, package script | Release guide |
-| Desktop installers | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Yes | Release workflow | Release guide and desktop guide |
+| Tauri desktop installers | N/A | N/A | N/A | N/A | N/A | Yes, Linux and Windows | N/A | Yes | Release workflow | Release guide and desktop guide |
+| Native macOS universal DMG | N/A | N/A | N/A | N/A | N/A | N/A | Yes, unsigned | Yes | macOS CI, package validator | Release guide and native macOS guide |
 | QR export | No | No | No | No | Planned | Planned | N/A | Planned | None yet | Add proposal, UI tests, docs |
 | Web `base58check` and `mnemo-bip39` exposure | Core | Yes | Yes | Yes | Planned | Planned after web | N/A | Planned | Add web and desktop parity tests | Web, desktop, help docs |
 | Compatibility import/export | Planned | Planned | Planned | Planned | Planned | Planned | N/A | Planned | None yet | Add spec and migration notes |

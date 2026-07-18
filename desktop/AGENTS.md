@@ -17,6 +17,7 @@ Owns the standalone Tauri desktop application that runs the existing Safeparts w
 - Do not add a backend, telemetry, CLI sidecar, node runtime sidecar, or external service requirement.
 - Do not persist secrets, recovery shares, reconstructed bytes, or passphrases in local storage.
 - Treat recovery shares, passphrases, and reconstructed secrets as sensitive; do not log them.
+- Release CI packages this Tauri app for Linux and Windows. The SwiftUI app under `macos/` owns the downloadable macOS release.
 
 ## Work Guidance
 

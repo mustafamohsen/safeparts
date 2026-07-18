@@ -49,6 +49,7 @@ Start here when you work on Safeparts as a contributor or maintainer.
 - [WASM bindings](surfaces/wasm.md)
 - [Web app](surfaces/web.md)
 - [Desktop app](surfaces/desktop.md)
+- [Native macOS app](surfaces/macos.md)
 - [Help docs](surfaces/help-docs.md)
 - [Release packaging](surfaces/release.md)
 - [Mobile prototype](surfaces/mobile.md)

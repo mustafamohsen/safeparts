@@ -5,7 +5,7 @@ Nearest contracts: [`desktop/AGENTS.md`](../../../desktop/AGENTS.md), [`desktop/
 
 ## What belongs here
 
-The desktop app is a Tauri + React local app. It mirrors the web UI and calls `safeparts_core` through Tauri commands.
+The desktop app is a Tauri + React local app. It mirrors the web UI and calls `safeparts_core` through Tauri commands. Release CI packages it for Linux and Windows; the SwiftUI app owns macOS releases.
 
 It owns:
 

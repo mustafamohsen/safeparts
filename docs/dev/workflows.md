@@ -75,6 +75,15 @@ Use these checklists to keep future changes predictable.
 5. Add Rust bridge tests and Swift model tests for success and failure paths.
 6. Run `mise run macos:check` on macOS.
 
+## Change release packaging
+
+1. Keep Tauri installer changes scoped to Linux and Windows unless platform ownership changes explicitly.
+2. Build the native macOS artifact with `RELEASE_VERSION=v0.2.0 mise run macos:package`.
+3. Verify both architectures, macOS 14 deployment, bundle resources, static Rust linkage, and the mounted DMG.
+4. Run the CLI/TUI archive command and retained Tauri checks.
+5. Update the release workflow, release guide, feature matrix, and public download guidance together.
+6. Treat the native DMG as unsigned and unnotarized until Apple credential checks are implemented.
+
 ## Change developer tooling
 
 1. Keep scripts small and explicit about inputs and outputs.

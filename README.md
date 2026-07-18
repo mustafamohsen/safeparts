@@ -77,8 +77,8 @@ If you take one thing from this section: **shares are as sensitive as the secret
 Safeparts ships as a few different front-ends over the same core:
 
 - **Web UI** (WASM, runs entirely in your browser; no backend): easiest for one-off workflows.
-- **Desktop app** (Tauri, local webview): installed split/combine workbench for macOS, Linux, and Windows packaging.
-- **Native macOS app** (SwiftUI, macOS 14+): a separate local workbench built from `macos/`; signing and installer packaging are not yet available.
+- **Desktop app** (Tauri, local webview): installed split/combine workbench released for Linux and Windows.
+- **Native macOS app** (SwiftUI, macOS 14+): the downloadable macOS workbench, shipped as an unsigned universal DMG.
 - **CLI** (`safeparts`): script-friendly; good for runbooks and automation.
 - **TUI** (`safeparts-tui` or `safeparts tui`): interactive terminal workflow; nice for offline machines.
 - **Rust crate** (`safeparts_core`): core algorithms and packet formats.
@@ -106,6 +106,8 @@ Download a release archive from GitHub Releases. Each release includes:
 
 - `safeparts` (CLI)
 - `safeparts-tui` (terminal UI)
+- Tauri desktop installers for Linux and Windows
+- an unsigned universal native DMG for macOS 14+
 
 Platform-specific steps (and build-from-source notes) live in the docs:
 
@@ -164,7 +166,7 @@ For shortcuts and an offline workflow, see: https://safeparts.netlify.app/help/t
 
 ## Desktop app (local)
 
-The desktop app is a Tauri + React version of the web UI that runs locally. It calls `safeparts_core` from the Tauri command layer and does not require a Safeparts server, CLI sidecar, or node process at runtime.
+The desktop app is a Tauri + React version of the web UI that runs locally. It calls `safeparts_core` from the Tauri command layer and does not require a Safeparts server, CLI sidecar, or node process at runtime. Release CI packages this app for Linux and Windows; macOS releases use the native SwiftUI app below.
 
 ```bash
 cd desktop
@@ -189,7 +191,13 @@ mise run macos:check
 swift run --package-path macos SafepartsMac
 ```
 
-This command builds for the current Mac. Signing, notarization, universal binaries, and installer packaging are not available yet.
+Build the same unsigned universal DMG used by release CI:
+
+```bash
+RELEASE_VERSION=v0.2.0 mise run macos:package
+```
+
+The DMG supports Intel and Apple Silicon Macs. It is not signed or notarized, so downloaded copies may trigger a Gatekeeper warning.
 
 ## Web UI (local)
 

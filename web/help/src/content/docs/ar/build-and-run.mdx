@@ -13,11 +13,11 @@ import { Steps } from '@astrojs/starlight/components';
 
 - https://github.com/mustafamohsen/safeparts/releases
 
-تتضمن حزم الإصدار أرشيفات CLI وTUI للمنصات المدعومة. يبني workflow الإصدار أيضاً حزم سطح المكتب:
+تتضمن حزم الإصدار أرشيفات CLI وTUI للمنصات المدعومة، إضافة إلى تطبيقات سطح المكتب:
 
-- Linux: AppImage و`.deb` و`.rpm`
-- Windows: NSIS `.exe` وMSI
-- macOS: `.dmg`
+- Linux: حزم Tauri بصيغ AppImage و`.deb` و`.rpm`
+- Windows: حزم Tauri بصيغ NSIS `.exe` وMSI
+- macOS 14 أو أحدث: ملف `.dmg` عام لتطبيق SwiftUI الأصلي، من دون توقيع
 
 فحص سريع بعد تثبيت binaries الخاصة بـ CLI/TUI:
 
@@ -35,12 +35,13 @@ import { Steps } from '@astrojs/starlight/components';
 xattr -dr com.apple.quarantine /path/to/safeparts-release/
 ```
 
-أو أزلها لكل binary:
+أو أزلها من التطبيق الأصلي بعد نسخه إلى Applications:
 
 ```bash
-xattr -d com.apple.quarantine /path/to/safeparts
-xattr -d com.apple.quarantine /path/to/safeparts-tui
+xattr -dr com.apple.quarantine /Applications/Safeparts.app
 ```
+
+ملف DMG الأصلي غير موقّع وغير موثّق لدى Apple. لا تتجاوز Gatekeeper إلا إذا نزّلت الملف من إصدار المشروع وتحققت من checksum.
 
 ## بناء binaries من المصدر
 
@@ -85,9 +86,9 @@ bun run dev
 
 افتح [http://localhost:5173](http://localhost:5173).
 
-## تطبيق سطح المكتب
+## تطبيق Tauri لسطح المكتب
 
-يوجد تطبيق سطح المكتب في <span class="token token--mono" dir="ltr">desktop/</span>.
+يوجد تطبيق Tauri المستخدم في إصدارات Linux وWindows في <span class="token token--mono" dir="ltr">desktop/</span>.
 
 ```bash
 cd desktop
@@ -101,10 +102,25 @@ bun run tauri:dev
 bun run build
 ```
 
-لبناء حزمة native لمنصتك:
+لبناء حزمة Tauri لمنصتك:
 
 ```bash
 bun run tauri:build
+```
+
+## تطبيق macOS الأصلي
+
+على macOS مع Xcode وSwift 6 وRust:
+
+```bash
+mise run macos:check
+swift run --package-path macos SafepartsMac
+```
+
+لبناء ملف DMG العام وغير الموقّع:
+
+```bash
+RELEASE_VERSION=v0.2.0 mise run macos:package
 ```
 
 ## تطبيق الويب والوثائق عبر Docker

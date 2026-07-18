@@ -1,11 +1,11 @@
 ---
 title: تطبيق سطح المكتب
-description: استخدم تطبيق Tauri المحلي لسير التقسيم والاسترداد دون نشر ويب.
+description: استخدم تطبيق Tauri المحلي المتاح لـ Linux وWindows دون نشر ويب.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-تطبيق سطح المكتب هو نسخة Tauri من واجهة Safeparts. يعمل محلياً ويستدعي `safeparts_core` عبر أوامر Tauri. لا يحتاج إلى خادم Safeparts أو CLI sidecar أو عملية node أو telemetry أو خدمة خارجية أثناء التشغيل.
+تطبيق سطح المكتب هو نسخة Tauri من واجهة Safeparts تصدر لـ Linux وWindows. يعمل محلياً ويستدعي `safeparts_core` عبر أوامر Tauri. لا يحتاج إلى خادم Safeparts أو CLI sidecar أو عملية node أو telemetry أو خدمة خارجية أثناء التشغيل. على macOS، نزّل ملف DMG الخاص بتطبيق SwiftUI الأصلي.
 
 ## متى تستخدمه
 
@@ -13,7 +13,7 @@ import { Steps } from '@astrojs/starlight/components';
 
 - مساحة عمل محلية مثبتة للتقسيم والاسترداد؛
 - واجهة مشابهة لتطبيق الويب؛
-- حزم native لـ macOS وLinux وWindows؛
+- حزم native لـ Linux وWindows؛
 - تنفيذ أوامر محلية دون نشر متصفح.
 
 استخدم CLI أو TUI عندما تحتاج إلى سير عمل ثنائي موجه للملفات، أو كل الترميزات الأربعة، أو عمل كامل من الطرفية.

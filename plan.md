@@ -4,7 +4,7 @@
 
 Add a first-class macOS 14+ application with a native SwiftUI interface while keeping `safeparts_core` as the source of truth for secret sharing, packet parsing, encodings, integrity checks, and passphrase protection.
 
-The native app will live alongside the existing Tauri desktop app. It will not replace the Windows, Linux, or macOS Tauri builds in this change.
+The native app lives alongside the Tauri desktop source. Release v0.2.0 replaces the Tauri macOS download with the native SwiftUI app while retaining Tauri installers for Linux and Windows.
 
 ## Scope
 
@@ -21,10 +21,10 @@ The native app will live alongside the existing Tauri desktop app. It will not r
 
 ### Out of scope
 
-- Replacing or reducing support for the Tauri desktop app.
+- Replacing or reducing support for the Tauri Linux and Windows desktop releases.
 - Changing the secret-sharing algorithm, packet format, encodings, or passphrase cryptography.
 - Adding a server, synchronization, persistence, telemetry, or analytics.
-- Signed releases, notarization, universal binaries, installers, or App Store distribution.
+- Signed releases, notarization, or App Store distribution.
 - QR codes, third-party share formats, mobile parity, or new recovery protocols.
 
 ## Features
@@ -69,7 +69,7 @@ The default policy is 2-of-3. The valid core range remains `1 <= k <= n <= 255`.
 | `SafepartsKit` | In-memory workflow state, async coordination, file IO, clipboard actions, app-facing error copy | Cryptographic or packet-format implementation |
 | `SafepartsMac` | SwiftUI views, native controls, menus, toolbar, focus, accessibility presentation | Direct core calls, storage, sensitive logging |
 | macOS system APIs | Open/save panels, pasteboard, window and accessibility behavior | Automatic secret persistence or network transfer |
-| Build and release tooling | Host bridge generation, SwiftPM build/test, generated-file policy | Signing, notarization, universal packaging in this change |
+| Build and release tooling | Host bridge generation, SwiftPM build/test, generated-file policy, unsigned universal DMG packaging | Signing and notarization |
 
 Data crosses the Rust/Swift boundary as owned bytes, encoded recovery-share strings, small metadata records, and stable error categories. Rust-native collections, `CoreError`, and `SharePacket` do not cross directly.
 
@@ -246,20 +246,20 @@ Generated source files are tracked. Compiled libraries and SwiftPM build output 
 - Generated bindings reproduce without drift, and compiled artifacts remain untracked.
 - Rust bridge tests and Swift integration/model tests cover the test matrix in this plan.
 - `cargo fmt`, strict Clippy, `cargo test --all-features`, Swift build/tests, web build, Tauri desktop checks, docs build, and DX verification pass.
-- Signing, notarization, universal binaries, and installer packaging are documented as future work rather than completed features.
+- The unsigned universal DMG is built and validated in CI; signing and notarization remain future work.
 
 ## Non-goals
 
-- Replacing the existing Tauri desktop application.
+- Replacing the existing Tauri desktop application on Linux or Windows.
 - Reimplementing Shamir sharing, packet formats, encodings, or passphrase protection in Swift.
 - Adding a backend, telemetry, synchronization, persistence, or cloud storage.
 - Adding QR export or third-party share-format compatibility.
-- Shipping a signed, notarized, universal, App Store, or installer artifact in this change.
+- Shipping a signed, notarized, or App Store artifact.
 
 ## Risks and follow-up work
 
 - Swift, Foundation, UniFFI, and clipboard APIs can create copies that cannot be guaranteed to be erased.
-- The local preparation workflow builds only the current host architecture.
+- The local development preparation workflow builds only the current host architecture; release packaging builds arm64 and x86_64 separately.
 - macOS 14 runtime behavior still needs testing on an actual macOS 14 machine.
-- Signing, notarization, universal packaging, and release CI need a separate approved plan.
+- The v0.2.0 release profile adds unsigned universal packaging and release CI. Signing and notarization still require Apple release credentials.
 - VoiceOver, keyboard focus, long-content layout, and file-panel behavior require a manual UI pass before release.
