@@ -280,10 +280,22 @@ mod tests {
                 .unwrap()
                 .ready
         );
+        assert!(matches!(
+            combine_share_input(one.clone(), ShareEncoding::Auto, None),
+            Err(BridgeError::InsufficientShares)
+        ));
         let duplicate = format!("{one}\n{one}");
         assert!(matches!(
             combine_share_input(duplicate, ShareEncoding::Auto, None),
             Err(BridgeError::DuplicateShares)
+        ));
+        let other = split_secret(vec![2], 2, 3, ShareEncoding::Base64url, None).unwrap();
+        let mixed = format!("{one}\n{}", other[0].text);
+        let inspection = inspect_share_input(mixed.clone(), ShareEncoding::Auto).unwrap();
+        assert!(!inspection.consistent && !inspection.ready);
+        assert!(matches!(
+            combine_share_input(mixed, ShareEncoding::Auto, None),
+            Err(BridgeError::MixedShares)
         ));
         let sensitive = "SECRET-SHARE-TEXT";
         let err = inspect_share_input(sensitive.into(), ShareEncoding::Auto)
