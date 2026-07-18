@@ -18,6 +18,8 @@ It owns:
 
 - Do not add a backend, telemetry, CLI sidecar, node sidecar, or external service requirement.
 - Do not persist shares, passphrases, or recovered secrets.
+- Wrap secret bytes and passphrase byte buffers in zeroizing storage before calling core.
+- Keep Tauri request and response types explicit in `commands.ts`. Keep `wasm.ts` as the typed adapter that matches the browser WASM call shape.
 - Do not expose desktop-only product features unless the web UI exposes them first.
 - Keep command errors useful without echoing share input.
 - Run parity checks when copied UI files change.

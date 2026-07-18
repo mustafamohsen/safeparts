@@ -44,6 +44,9 @@ Source of truth:
 - Single test with output: `cargo test <pattern> -- --nocapture`
 - Single crate (workspace): `cargo test -p safeparts_core <pattern>`
 - Single file/module (common approach): `cargo test -p safeparts_core gf256::`
+- Explicit CLI stdin/stdout paths: `cargo test -p safeparts --test e2e explicit_dash_paths_use_stdin_and_stdout`
+- TUI app state: `cargo test -p safeparts_tui app::tests`
+- WASM boundary: `cargo test -p safeparts_wasm`
 - Single e2e test (CLI): `cargo test -p safeparts --test e2e <pattern>`
 
 **Benchmarks (only if added)**

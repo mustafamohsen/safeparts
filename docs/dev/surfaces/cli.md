@@ -20,6 +20,7 @@ Keep it:
 - Map core errors to actionable CLI messages without echoing sensitive input.
 - Prefer `--passphrase-file` examples over command-line passphrases in docs.
 - Add or update black-box tests in `crates/safeparts/tests/e2e.rs` for user-visible behavior.
+- Keep explicit `-i -` and `-o -` coverage for both split and combine so stdin/stdout routing remains script-safe.
 - Update the CLI automation manual when flags, stdin/stdout behavior, exit behavior, or automation guidance changes.
 
 ## Useful checks

@@ -20,7 +20,8 @@ It owns:
 - Keep keyboard operation reliable before adding mouse-only affordances.
 - Treat clipboard contents as sensitive.
 - Avoid writing share text or recovered secrets to logs.
-- Add domain-level tests when changing state transitions or parsing behavior.
+- Add app-state tests for focus wrapping, modal and status transitions, keyboard shortcuts, and cyclic settings.
+- Use manual terminal smoke tests for rendering, clipboard integration, and other host behavior.
 
 ## Useful checks
 

@@ -16,6 +16,7 @@ Front-ends should call core APIs instead of reimplementing rules. For external R
 ## Change rules
 
 - Keep security-sensitive logic clear and tested.
+- During byte-wise Shamir reconstruction, compute interpolation weights once for the selected share coordinates and reuse them for every payload byte. Keep field division fallible.
 - Add deterministic round-trip tests and negative tests for threshold, packet, encoding, crypto, and integrity behavior.
 - Avoid logging or formatting share text, passphrases, or recovered secrets.
 - Keep public API changes explicit in docs and downstream surfaces.

@@ -79,6 +79,12 @@ The sections below are the established repo standards and conventions for agenti
 
 - Prefer `unknown` over `any`.
 - Narrow types via guards; keep runtime validation near boundary parsing.
+- Do not use file-wide type-check suppressions or `as any` to cross application boundaries. Type generated modules, adapters, and command payloads explicitly.
+
+**Rendering and state**
+
+- Compute cheap, pure derived values during render.
+- Use `useMemo` only when a calculation is expensive or a consumer requires stable reference identity.
 
 **Naming**
 

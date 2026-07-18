@@ -11,8 +11,10 @@ It should:
 
 - delegate split/combine, packet parsing, and encoding behavior to `safeparts_core`
 - return browser-friendly values
+- route Rust failures through one shared `Display` to `JsValue` conversion so exports use the same string mapping
 - keep error messages useful without including share text or secrets
 - preserve the API shape consumed by `web/src/wasm.ts`
+- type the browser loader with `typeof import(...)` from the generated module, then cache that typed module
 
 ## Generated package
 

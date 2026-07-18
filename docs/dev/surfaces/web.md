@@ -20,6 +20,8 @@ It owns:
 - Run `bun run build:wasm` before expecting split/combine to work locally.
 - Keep share and secret handling in memory. Do not add server calls for split/combine.
 - Preserve keyboard access, live-region feedback, and labels when changing forms.
+- Derive cheap values during render. Use memoization only when computation cost or reference identity requires it.
+- Keep generated modules and application boundaries typed instead of using file-wide type-check suppressions or `any` casts.
 - Use local browser automation through the project browser tooling for manual checks. Playwright remains the CI runner.
 - If a product UI change should exist in desktop, update desktop parity or record why not.
 

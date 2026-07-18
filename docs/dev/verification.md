@@ -30,7 +30,9 @@ Targeted examples:
 
 ```bash
 cargo test -p safeparts_core encoding::
-cargo test -p safeparts --test e2e round_trip
+cargo test -p safeparts --test e2e explicit_dash_paths_use_stdin_and_stdout
+cargo test -p safeparts_tui app::tests
+cargo test -p safeparts_wasm
 cargo test -p safeparts_desktop --lib
 ```
 
