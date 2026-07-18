@@ -34,4 +34,4 @@ Owns focused contributor guides for each Safeparts surface.
 
 ## Child DOX Index
 
-- No child AGENTS.md files yet.
+- No child AGENTS.md boundaries. The surface guides listed under Ownership remain directly owned here.

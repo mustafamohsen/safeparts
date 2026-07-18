@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Owns Rust workspace members for the core library, CLI, TUI, and WASM bindings.
+Owns Rust workspace members for the core library, CLI, TUI, WASM bindings, and native Swift bridge.
 
 ## Ownership
 

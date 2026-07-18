@@ -6,10 +6,10 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 
 ## Ownership
 
-- `Sources/`: app UI, in-memory state, and native file/clipboard integration.
-- `Tests/`: view-model and real bridge integration tests.
-- `Generated/`: reproducible UniFFI Swift, header, and module map outputs only.
-- `scripts/prepare.sh`: builds the host Rust bridge and regenerates bindings.
+- `Sources/`: app UI, in-memory state, native file/clipboard integration, and the compiled copy of the generated Swift binding.
+- `Tests/`: view-model, file-behavior, and real bridge integration tests.
+- `Generated/`: canonical reproducible UniFFI Swift, header, and module map outputs.
+- `scripts/prepare.sh`: builds the host Rust bridge, normalizes generated text, and refreshes both binding locations.
 
 ## Local Contracts
 
@@ -17,6 +17,13 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 - Never log or persist secrets, passphrases, or recovery shares.
 - Use byte-accurate file IO and explicit clipboard actions.
 - Do not commit compiled libraries or Swift build output.
+- Keep `Generated/safeparts_swift.swift` byte-identical to `Sources/SafepartsKit/Generated.swift`.
+
+## Work Guidance
+
+- Run `scripts/prepare.sh` before Swift builds after changing the bridge.
+- Keep long-running Rust operations off the main actor and discard stale results after Clear.
+- Report file failures without including secret or recovery-share contents.
 
 ## Verification
 

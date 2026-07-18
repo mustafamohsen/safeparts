@@ -1,4 +1,4 @@
-# Dev toolchain for the Rust, WASM, web, docs, and desktop apps.
+# Dev toolchain for the Rust, WASM, web, docs, desktop, and native macOS apps.
 [tools]
 # Rust 2024 workspace; include the browser WASM target.
 rust = { version = "1.93.0", targets = "wasm32-unknown-unknown", components = "rustfmt,clippy" }
@@ -51,7 +51,7 @@ depends = ["verify:rust"]
 
 [tasks.verify]
 description = "Run the full local verification gate."
-depends = ["verify:rust", "web:build", "docs:build", "desktop:check", "dx:verify"]
+depends = ["verify:rust", "web:build", "docs:build", "desktop:check", "macos:check", "dx:verify"]
 
 [tasks."verify:rust"]
 description = "Run Rust format, lint, and tests."
