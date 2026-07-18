@@ -68,15 +68,10 @@ struct ContentView: View {
                     .help("Safeparts")
             }
 
-            ToolbarItemGroup {
+            ToolbarItem {
                 Label("Local only", systemImage: "lock.shield")
                     .foregroundStyle(.secondary)
                     .help("Cryptographic operations run on this Mac.")
-
-                Button("Clear", systemImage: "trash") {
-                    model.clearCurrentTask()
-                }
-                .help("Clear the current task (Command-Shift-Delete)")
             }
         }
     }
@@ -313,6 +308,21 @@ struct RecoverView: View {
                 subtitle: "Add enough recovery shares from the same set."
             )
 
+            Section("Recovery options") {
+                ShareEncodingSelector(selection: encodingBinding)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Passphrase")
+                        .font(.subheadline.weight(.medium))
+                    SecureField("", text: $model.recoveryPassphrase)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(maxWidth: .infinity)
+                        .accessibilityLabel("Passphrase")
+                        .disabled(!model.recoveryPassphraseEnabled)
+                        .onChange(of: model.recoveryPassphrase) { _, _ in model.invalidateRecoveryResult() }
+                }
+            }
+
             Section {
                 ForEach(model.recoveryShareInputs.indices, id: \.self) { index in
                     VStack(alignment: .leading, spacing: 6) {
@@ -339,14 +349,14 @@ struct RecoverView: View {
                             Button {
                                 model.clearRecoveryShare(at: index)
                             } label: {
-                                Image(systemName: "xmark.circle.fill")
+                                Image(systemName: "eraser")
                                     .frame(width: 22, height: 20)
                             }
                             .buttonStyle(.borderless)
                             .foregroundStyle(.secondary)
                             .disabled(model.recoveryShareInputs[index].isEmpty)
-                            .accessibilityLabel("Clear share \(index + 1)")
-                            .help("Clear")
+                            .accessibilityLabel("Clear text in share \(index + 1)")
+                            .help("Clear text")
                         }
                         .controlSize(.small)
 
@@ -389,42 +399,6 @@ struct RecoverView: View {
                 }
             }
 
-            if let recovery = model.recovery {
-                Section("Recovered secret") {
-                    if let text = model.recoveredText {
-                        Text(text)
-                            .font(.body.monospaced())
-                            .textSelection(.enabled)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Button("Copy Text", systemImage: "doc.on.doc") {
-                            model.copy(text)
-                        }
-                    } else {
-                        Label("Binary data (\(recovery.bytes.count.formatted()) bytes)", systemImage: "doc")
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Button("Save Recovered Secret…", systemImage: "square.and.arrow.down") {
-                        model.saveRecovery()
-                    }
-                }
-            }
-
-            Section("Recovery options") {
-                ShareEncodingSelector(selection: encodingBinding)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Passphrase")
-                        .font(.subheadline.weight(.medium))
-                    SecureField("", text: $model.recoveryPassphrase)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: .infinity)
-                        .accessibilityLabel("Passphrase")
-                        .disabled(!model.recoveryPassphraseEnabled)
-                        .onChange(of: model.recoveryPassphrase) { _, _ in model.invalidateRecoveryResult() }
-                }
-            }
-
             Section {
                 HStack {
                     Button {
@@ -451,19 +425,23 @@ struct RecoverView: View {
                 }
             }
 
-            if let inspection = model.inspection {
-                Section("Share summary") {
-                    LabeledContent("Detected format", value: inspection.detectedEncoding.friendlyName)
-                    LabeledContent("Recovery threshold", value: "\(inspection.threshold) of \(inspection.shareCount)")
-                    LabeledContent("Shares provided", value: "\(inspection.providedCount)")
-                    LabeledContent("Passphrase protected", value: inspection.encrypted ? "Yes" : "No")
-                    LabeledContent("Consistent") {
-                        if inspection.consistent {
-                            Text("Yes")
-                        } else {
-                            Text("No")
-                                .foregroundStyle(.orange)
+            if let recovery = model.recovery {
+                Section("Recovered secret") {
+                    if let text = model.recoveredText {
+                        Text(text)
+                            .font(.body.monospaced())
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Button("Copy Text", systemImage: "doc.on.doc") {
+                            model.copy(text)
                         }
+                    } else {
+                        Label("Binary data (\(recovery.bytes.count.formatted()) bytes)", systemImage: "doc")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button("Save Recovered Secret…", systemImage: "square.and.arrow.down") {
+                        model.saveRecovery()
                     }
                 }
             }
