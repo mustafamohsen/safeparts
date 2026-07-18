@@ -19,7 +19,7 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 - Put the Safeparts title and logo in the system title bar. The segmented task switcher contains only Split and Recover, and content pages do not set window titles.
 - Default to the Words share format. Recovery starts with two share fields, expands to the detected threshold, and enables Passphrase only for encrypted shares.
 - Label the primary split action "Split" and keep Command-Return as an unlabelled keyboard shortcut.
-- Give each recovery share field compact Paste and eraser-style Clear actions. Allow fields above the two-field minimum to be removed without automatically adding them back. Show readiness in the share header, put Recover Secret immediately below the share inputs without a feedback label, present failures in a native alert, and do not show a separate metadata summary.
+- Give each recovery share field compact Paste and eraser-style Clear actions. Identify fields with stable IDs so removal cannot leave stale index bindings. Allow fields above the two-field minimum to be removed without automatically adding them back. Show readiness in the share header, put Recover Secret immediately below the share inputs without a feedback label, present failures in a native alert, and do not show a separate metadata summary.
 - Give recovered text a subtle highlight so it stands apart from the input controls.
 - Use compact icon-only actions with accessibility labels and help for share copy/save, recovered-secret copy/save, and Export All.
 - Export All may prepend a sanitized user-provided filename prefix without changing individual Save filenames.

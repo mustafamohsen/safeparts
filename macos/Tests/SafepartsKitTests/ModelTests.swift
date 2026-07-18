@@ -78,16 +78,24 @@ func recoveryShareRemovalMatchesWebMinimumAndStaysRemoved() async throws {
     model.updateShareInput(shares[0].text)
     #expect(await waitUntil { model.recoveryShareInputs.count == 4 })
 
-    model.removeRecoveryShare(at: 3)
+    let originalIDs = model.recoveryShareInputIDs
+    let removedID = originalIDs[1]
+    model.removeRecoveryShare(id: removedID)
+    #expect(await waitUntil { model.inspection?.threshold == 4 })
+    #expect(model.recoveryShareInputs.count == 3)
+    #expect(model.recoveryShareInputIDs == [originalIDs[0], originalIDs[2], originalIDs[3]])
+    #expect(model.recoveryShareInput(id: removedID) == nil)
+
+    let remainingValues = model.recoveryShareInputs
+    model.updateRecoveryShare(id: removedID, with: "stale")
+    #expect(model.recoveryShareInputs == remainingValues)
+
+    model.updateRecoveryShare(id: originalIDs[0], with: shares[0].text)
     #expect(await waitUntil { model.inspection?.threshold == 4 })
     #expect(model.recoveryShareInputs.count == 3)
 
-    model.updateRecoveryShare(at: 0, with: shares[0].text)
-    #expect(await waitUntil { model.inspection?.threshold == 4 })
-    #expect(model.recoveryShareInputs.count == 3)
-
-    model.removeRecoveryShare(at: 2)
-    model.removeRecoveryShare(at: 1)
+    model.removeRecoveryShare(id: originalIDs[3])
+    model.removeRecoveryShare(id: originalIDs[2])
     #expect(model.recoveryShareInputs.count == 2)
 }
 

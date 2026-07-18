@@ -25,6 +25,16 @@ public struct AppStatus: Equatable, Sendable {
     }
 }
 
+private struct RecoveryShareField: Identifiable, Equatable {
+    let id: UUID
+    var text: String
+
+    init(id: UUID = UUID(), text: String) {
+        self.id = id
+        self.text = text
+    }
+}
+
 public struct ImportedSecret: Equatable, Sendable {
     public let name: String
     public let bytes: Data
@@ -111,7 +121,10 @@ public final class AppModel: ObservableObject {
     @Published public private(set) var splitStatus: AppStatus?
     @Published public private(set) var isSplitting = false
 
-    @Published public private(set) var recoveryShareInputs = ["", ""]
+    @Published private var recoveryShareFields = [
+        RecoveryShareField(text: ""),
+        RecoveryShareField(text: ""),
+    ]
     @Published public var recoveryPassphrase = ""
     @Published public var recoveryEncoding: ShareEncoding = .mnemoWords
     @Published public private(set) var inspection: Inspection?
@@ -136,9 +149,17 @@ public final class AppModel: ObservableObject {
         !currentSecretData.isEmpty && !isSplitting && encoding != .auto
     }
 
+    public var recoveryShareInputs: [String] {
+        recoveryShareFields.map(\.text)
+    }
+
+    public var recoveryShareInputIDs: [UUID] {
+        recoveryShareFields.map(\.id)
+    }
+
     public var shareInput: String {
-        recoveryShareInputs
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        recoveryShareFields
+            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
             .joined(separator: "\n\n")
     }
@@ -210,28 +231,47 @@ public final class AppModel: ObservableObject {
             .components(separatedBy: "\n\n")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
-        recoveryShareInputs = values + Array(repeating: "", count: max(0, 2 - values.count))
+        let paddedValues = values + Array(repeating: "", count: max(0, 2 - values.count))
+        recoveryShareFields = paddedValues.map { RecoveryShareField(text: $0) }
         refreshRecoveryInput()
     }
 
+    public func recoveryShareInput(id: UUID) -> String? {
+        recoveryShareFields.first(where: { $0.id == id })?.text
+    }
+
+    public func updateRecoveryShare(id: UUID, with value: String) {
+        guard let index = recoveryShareFields.firstIndex(where: { $0.id == id }) else { return }
+        updateRecoveryShare(at: index, with: value)
+    }
+
     public func updateRecoveryShare(at index: Int, with value: String) {
-        guard recoveryShareInputs.indices.contains(index) else { return }
-        recoveryShareInputs[index] = value
+        guard recoveryShareFields.indices.contains(index) else { return }
+        recoveryShareFields[index].text = value
         refreshRecoveryInput()
     }
 
     public func addRecoveryShareInput() {
-        recoveryShareInputs.append("")
+        recoveryShareFields.append(RecoveryShareField(text: ""))
+    }
+
+    public func clearRecoveryShare(id: UUID) {
+        updateRecoveryShare(id: id, with: "")
     }
 
     public func clearRecoveryShare(at index: Int) {
         updateRecoveryShare(at: index, with: "")
     }
 
+    public func removeRecoveryShare(id: UUID) {
+        guard let index = recoveryShareFields.firstIndex(where: { $0.id == id }) else { return }
+        removeRecoveryShare(at: index)
+    }
+
     public func removeRecoveryShare(at index: Int) {
-        guard recoveryShareInputs.count > 2, recoveryShareInputs.indices.contains(index) else { return }
+        guard recoveryShareFields.count > 2, recoveryShareFields.indices.contains(index) else { return }
         automaticallyExpandRecoveryShareInputs = false
-        recoveryShareInputs.remove(at: index)
+        recoveryShareFields.remove(at: index)
         refreshRecoveryInput()
     }
 
@@ -262,7 +302,10 @@ public final class AppModel: ObservableObject {
         recoveryToken = UUID()
         inspectionToken = UUID()
         inspectionTask?.cancel()
-        recoveryShareInputs = ["", ""]
+        recoveryShareFields = [
+            RecoveryShareField(text: ""),
+            RecoveryShareField(text: ""),
+        ]
         recoveryPassphrase = ""
         recoveryEncoding = .mnemoWords
         recoveryEncodingWasManuallySelected = false
@@ -480,6 +523,11 @@ public final class AppModel: ObservableObject {
         recoveryStatus = .init(.warning, "Pasted from the clipboard.")
     }
 
+    public func pasteRecoveryShare(id: UUID) {
+        guard let index = recoveryShareFields.firstIndex(where: { $0.id == id }) else { return }
+        pasteRecoveryShare(at: index)
+    }
+
     public func pasteRecoveryShare(at index: Int) {
         guard let text = NSPasteboard.general.string(forType: .string) else {
             recoveryStatus = .init(.failure, "The clipboard does not contain text.")
@@ -618,8 +666,8 @@ public final class AppModel: ObservableObject {
     }
 
     private func ensureRecoveryShareInputCount(_ requiredCount: Int) {
-        let missingCount = max(0, max(2, requiredCount) - recoveryShareInputs.count)
-        recoveryShareInputs.append(contentsOf: Array(repeating: "", count: missingCount))
+        let missingCount = max(0, max(2, requiredCount) - recoveryShareFields.count)
+        recoveryShareFields.append(contentsOf: (0 ..< missingCount).map { _ in RecoveryShareField(text: "") })
     }
 
     private func write(_ data: Data, to url: URL, success: String, task: WorkbenchTask) {

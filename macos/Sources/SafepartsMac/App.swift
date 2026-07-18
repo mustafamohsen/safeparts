@@ -1,3 +1,4 @@
+import Foundation
 import SafepartsKit
 import SwiftUI
 
@@ -308,10 +309,10 @@ struct RecoverView: View {
         )
     }
 
-    private func shareBinding(at index: Int) -> Binding<String> {
+    private func shareBinding(id: UUID) -> Binding<String> {
         Binding(
-            get: { model.recoveryShareInputs[index] },
-            set: { model.updateRecoveryShare(at: index, with: $0) }
+            get: { model.recoveryShareInput(id: id) ?? "" },
+            set: { model.updateRecoveryShare(id: id, with: $0) }
         )
     }
 
@@ -338,7 +339,7 @@ struct RecoverView: View {
             }
 
             Section {
-                ForEach(model.recoveryShareInputs.indices, id: \.self) { index in
+                ForEach(Array(model.recoveryShareInputIDs.enumerated()), id: \.element) { index, id in
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(spacing: 8) {
                             Text("Share \(index + 1)")
@@ -351,7 +352,7 @@ struct RecoverView: View {
                             Spacer()
 
                             Button {
-                                model.pasteRecoveryShare(at: index)
+                                model.pasteRecoveryShare(id: id)
                             } label: {
                                 Image(systemName: "doc.on.clipboard")
                                     .frame(width: 22, height: 20)
@@ -361,20 +362,20 @@ struct RecoverView: View {
                             .help("Paste")
 
                             Button {
-                                model.clearRecoveryShare(at: index)
+                                model.clearRecoveryShare(id: id)
                             } label: {
                                 Image(systemName: "eraser")
                                     .frame(width: 22, height: 20)
                             }
                             .buttonStyle(.borderless)
                             .foregroundStyle(.secondary)
-                            .disabled(model.recoveryShareInputs[index].isEmpty)
+                            .disabled(model.recoveryShareInput(id: id)?.isEmpty != false)
                             .accessibilityLabel("Clear text in share \(index + 1)")
                             .help("Clear text")
 
                             if model.recoveryShareInputs.count > 2 {
                                 Button {
-                                    model.removeRecoveryShare(at: index)
+                                    model.removeRecoveryShare(id: id)
                                 } label: {
                                     Image(systemName: "minus.circle")
                                         .frame(width: 22, height: 20)
@@ -387,7 +388,7 @@ struct RecoverView: View {
                         }
                         .controlSize(.small)
 
-                        TextEditor(text: shareBinding(at: index))
+                        TextEditor(text: shareBinding(id: id))
                             .font(.caption.monospaced())
                             .frame(minHeight: 72, maxHeight: 112)
                             .accessibilityLabel("Recovery share \(index + 1)")
