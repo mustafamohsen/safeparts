@@ -34,6 +34,7 @@ cargo test -p safeparts --test e2e explicit_dash_paths_use_stdin_and_stdout
 cargo test -p safeparts_tui app::tests
 cargo test -p safeparts_wasm
 cargo test -p safeparts_desktop --lib
+cargo test -p safeparts_swift
 ```
 
 ## Web app
@@ -73,6 +74,18 @@ bun run tauri:build -- --no-bundle
 ```
 
 Use `mise run desktop:check` for the common local gate.
+
+## Native macOS app
+
+On macOS:
+
+```bash
+mise run macos:prepare
+swift build --package-path macos
+swift test --package-path macos
+```
+
+`mise run macos:check` runs all three steps. The preparation script sets the Rust deployment target to macOS 14 and verifies that the compiled generated Swift binding matches the canonical copy.
 
 ## Release packaging
 

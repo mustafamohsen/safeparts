@@ -14,7 +14,7 @@ The `AGENTS.md` files are the working contracts for this repo. If you add a dura
 
 ## 2. Install tools
 
-Safeparts uses Rust, Bun, wasm-pack, wasm-bindgen, and Tauri tooling. The repo includes [`mise.toml`](../../mise.toml) with pinned local tool versions and shortcuts.
+Safeparts uses Rust, Bun, wasm-pack, wasm-bindgen, and Tauri tooling. Native macOS work also needs Xcode with Swift 6. The repo includes [`mise.toml`](../../mise.toml) with pinned local tool versions and shortcuts.
 
 ```bash
 mise install
@@ -39,11 +39,18 @@ mise run web:build
 mise run web:dev
 ```
 
-Desktop app:
+Tauri desktop app:
 
 ```bash
 mise run desktop:build
 mise run desktop:dev
+```
+
+Native macOS app (on macOS):
+
+```bash
+mise run macos:check
+swift run --package-path macos SafepartsMac
 ```
 
 Help docs:
@@ -61,6 +68,7 @@ mise run docs:dev
 - Browser bindings: [WASM bindings](surfaces/wasm.md)
 - React browser UI: [Web app](surfaces/web.md)
 - Tauri app: [Desktop app](surfaces/desktop.md)
+- Native SwiftUI app: [Native macOS app](surfaces/macos.md)
 - Help-site content: [Help docs](surfaces/help-docs.md)
 - Release archives or GitHub release assets: [Release packaging](surfaces/release.md)
 

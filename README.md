@@ -172,13 +172,24 @@ bun install
 bun run tauri:dev
 ```
 
-Build the frontend or package the native app:
+Build the frontend or package the Tauri app:
 
 ```bash
 cd desktop
 bun run build
 bun run tauri:build
 ```
+
+## Native macOS app (local)
+
+The SwiftUI app is a separate macOS 14+ interface with native file panels, menu commands, and clipboard controls. It calls `safeparts_core` through the Rust UniFFI bridge.
+
+```bash
+mise run macos:check
+swift run --package-path macos SafepartsMac
+```
+
+This command builds for the current Mac. Signing, notarization, universal binaries, and installer packaging are not available yet.
 
 ## Web UI (local)
 
@@ -243,9 +254,11 @@ bun run test:a11y
 - `crates/safeparts/`: CLI wrapper (binary: `safeparts`)
 - `crates/safeparts_tui/`: terminal UI (binary: `safeparts-tui`)
 - `crates/safeparts_wasm/`: wasm-bindgen exports used by the web UI
+- `crates/safeparts_swift/`: UniFFI bridge used by the native macOS app
 - `web/`: Vite + React app
 - `web/help/`: Astro + Starlight docs
 - `desktop/`: Tauri + React desktop app
+- `macos/`: native SwiftUI macOS app
 
 ## Contributing
 

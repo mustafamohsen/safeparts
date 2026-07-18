@@ -9,7 +9,7 @@ Use these checklists to keep future changes predictable.
 3. For multi-surface work, copy [change-checklist.md](change-checklist.md) into your issue, PR, or task notes.
 4. Update [feature-matrix.md](feature-matrix.md) with intended surface coverage.
 5. Add the lowest-level tests first.
-6. Update each exposed boundary: CLI, TUI, WASM, web, desktop, docs, release packaging.
+6. Update each exposed boundary: CLI, TUI, WASM, web, Tauri desktop, native macOS, docs, and release packaging.
 7. Update the nearest `AGENTS.md` if contracts changed.
 8. Update developer docs under `docs/dev/`.
 9. Update user docs only when the change is user-visible and the task includes that scope.
@@ -65,6 +65,15 @@ Use these checklists to keep future changes predictable.
 3. Keep secrets in memory only. Do not add a backend, telemetry, sidecar, or persistence for shares.
 4. Add or update Tauri command tests when the command boundary changes.
 5. Run the desktop parity check and desktop build.
+
+## Change native macOS behavior
+
+1. Read `macos/AGENTS.md`, `crates/AGENTS.md`, and `docs/dev/surfaces/macos.md`.
+2. Keep cryptography and share parsing in `safeparts_core`; expose only a narrow, sanitized UniFFI API.
+3. Run `mise run macos:prepare` after bridge changes and review every tracked generated diff.
+4. Use byte-accurate file IO and explicit clipboard actions. Keep Rust work off the main actor.
+5. Add Rust bridge tests and Swift model tests for success and failure paths.
+6. Run `mise run macos:check` on macOS.
 
 ## Change developer tooling
 
