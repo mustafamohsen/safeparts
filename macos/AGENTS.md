@@ -16,9 +16,11 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 - Keep cryptography in `safeparts_core`; Swift calls `safeparts_swift` only.
 - Never log or persist secrets, passphrases, or recovery shares.
 - Use byte-accurate file IO and explicit clipboard actions.
-- Use the top segmented Split/Recover switcher; do not add a navigation sidebar.
+- Put the Safeparts title and logo in the system title bar. The segmented task switcher contains only Split and Recover, and content pages do not set window titles.
 - Default to the Words share format. Recovery starts with two share fields, expands to the detected threshold, and enables Passphrase only for encrypted shares.
+- Give each recovery share field compact Paste and Clear actions. Show readiness in the share header, place recovered output directly below the inputs, and keep the metadata summary last without a status row.
 - Keep per-share copy and save actions compact, accessible, and secondary to the share text.
+- Export All may prepend a sanitized user-provided filename prefix without changing individual Save filenames.
 - Do not commit compiled libraries or Swift build output.
 - Keep `Generated/safeparts_swift.swift` byte-identical to `Sources/SafepartsKit/Generated.swift`.
 

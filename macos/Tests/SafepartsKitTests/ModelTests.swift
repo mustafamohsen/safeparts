@@ -23,12 +23,14 @@ func thresholdClampingAndTaskScopedClear() async {
     model.secretText = "sensitive"
     model.updateShareInput("share")
     model.splitPassphrase = "split pass"
+    model.exportPrefix = "project"
     model.recoveryPassphrase = "recover pass"
     model.task = .split
     model.clearCurrentTask()
 
     #expect(model.secretText.isEmpty)
     #expect(model.splitPassphrase.isEmpty)
+    #expect(model.exportPrefix.isEmpty)
     #expect(model.shareInput == "share")
     #expect(model.recoveryPassphrase == "recover pass")
 
@@ -36,6 +38,17 @@ func thresholdClampingAndTaskScopedClear() async {
     #expect(model.shareInput.isEmpty)
     #expect(model.recoveryShareInputs == ["", ""])
     #expect(model.recoveryPassphrase.isEmpty)
+}
+
+@MainActor
+@Test
+func individualRecoveryShareCanBeCleared() {
+    let model = AppModel()
+    model.updateShareInput("first\n\nsecond")
+    model.clearRecoveryShare(at: 0)
+
+    #expect(model.recoveryShareInputs == ["", "second"])
+    #expect(model.shareInput == "second")
 }
 
 @MainActor
@@ -220,4 +233,18 @@ func shareFileImportIsAllOrNothingAndWritesReportFailures() throws {
 func fileNaming() {
     let share = EncodedShare(text: "x", index: 2, shareCount: 3, setId: "abc")
     #expect(AppModel.fileName(share) == "safeparts-abc-share-2-of-3.txt")
+    #expect(
+        AppModel.exportFileName(share, prefix: "Project Alpha")
+            == "Project Alpha-safeparts-abc-share-2-of-3.txt"
+    )
+    #expect(
+        AppModel.exportFileName(share, prefix: " client:/backup ")
+            == "client-backup-safeparts-abc-share-2-of-3.txt"
+    )
+    let unicodeName = AppModel.exportFileName(
+        share,
+        prefix: String(repeating: "🔐", count: 100)
+    )
+    #expect(unicodeName.utf8.count <= 255)
+    #expect(unicodeName.hasSuffix("-safeparts-abc-share-2-of-3.txt"))
 }

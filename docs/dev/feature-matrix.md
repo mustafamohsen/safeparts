@@ -27,6 +27,7 @@ Status keys:
 | Desktop local-only Tauri workflow | N/A | N/A | N/A | N/A | Mirrored UI source | Yes | N/A | Yes | Desktop build, Tauri command tests | Desktop surface guide |
 | Native macOS local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Rust bridge and Swift model tests | Native macOS surface guide |
 | Metadata-guided native recovery inputs | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Swift metadata, passphrase, and recovery tests | Native macOS model and UI |
+| Native batch-export filename prefix | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Swift filename tests | Native macOS model and UI |
 | English + Arabic user docs | N/A | N/A | N/A | N/A | Links to help | N/A | N/A | Yes | Docs build, docs a11y route parity | Help docs guide |
 | Release CLI/TUI archives | N/A | Yes | Yes | N/A | N/A | N/A | N/A | Yes | Release workflow, package script | Release guide |
 | Desktop installers | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Yes | Release workflow | Release guide and desktop guide |

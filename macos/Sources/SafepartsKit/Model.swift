@@ -106,6 +106,7 @@ public final class AppModel: ObservableObject {
     @Published public var threshold = 2
     @Published public var shareCount = 3
     @Published public var encoding: ShareEncoding = .mnemoWords
+    @Published public var exportPrefix = ""
     @Published public private(set) var shares: [EncodedShare] = []
     @Published public private(set) var splitStatus: AppStatus?
     @Published public private(set) var isSplitting = false
@@ -221,6 +222,10 @@ public final class AppModel: ObservableObject {
         recoveryShareInputs.append("")
     }
 
+    public func clearRecoveryShare(at index: Int) {
+        updateRecoveryShare(at: index, with: "")
+    }
+
     public func setRecoveryEncoding(_ selected: ShareEncoding) {
         recoveryEncodingWasManuallySelected = true
         recoveryEncoding = selected
@@ -232,6 +237,7 @@ public final class AppModel: ObservableObject {
         secretText = ""
         importedSecret = nil
         splitPassphrase = ""
+        exportPrefix = ""
         shares = []
         splitStatus = nil
         isSplitting = false
@@ -379,6 +385,24 @@ public final class AppModel: ObservableObject {
         "safeparts-\(share.setId)-share-\(share.index)-of-\(share.shareCount).txt"
     }
 
+    public nonisolated static func exportFileName(_ share: EncodedShare, prefix: String) -> String {
+        let baseName = fileName(share)
+        let forbidden = CharacterSet(charactersIn: "/:").union(.controlCharacters)
+        let cleaned = prefix
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: forbidden)
+            .filter { !$0.isEmpty }
+            .joined(separator: "-")
+        let byteLimit = max(0, 255 - baseName.utf8.count - 1)
+        var safePrefix = ""
+        for character in cleaned {
+            guard safePrefix.utf8.count + String(character).utf8.count <= byteLimit else { break }
+            safePrefix.append(character)
+        }
+        guard !safePrefix.isEmpty else { return baseName }
+        return "\(safePrefix)-\(baseName)"
+    }
+
     public nonisolated static func message(for error: Error) -> String {
         guard let error = error as? BridgeError else {
             return "Safeparts couldn’t complete the operation."
@@ -436,6 +460,15 @@ public final class AppModel: ObservableObject {
         }
         updateShareInput(text)
         recoveryStatus = .init(.warning, "Pasted from the clipboard.")
+    }
+
+    public func pasteRecoveryShare(at index: Int) {
+        guard let text = NSPasteboard.general.string(forType: .string) else {
+            recoveryStatus = .init(.failure, "The clipboard does not contain text.")
+            return
+        }
+        updateRecoveryShare(at: index, with: text)
+        recoveryStatus = .init(.warning, "Pasted share \(index + 1) from the clipboard.")
     }
 
     public func importForCurrentTask() {
@@ -526,7 +559,8 @@ public final class AppModel: ObservableObject {
         panel.canCreateDirectories = true
         panel.prompt = "Export"
         guard panel.runModal() == .OK, let directory = panel.url else { return }
-        let output = shares.map { (Self.fileName($0), Data($0.text.utf8)) }
+        let prefix = exportPrefix
+        let output = shares.map { (Self.exportFileName($0, prefix: prefix), Data($0.text.utf8)) }
         let token = splitToken
         splitStatus = .init(.working, "Exporting \(output.count) recovery shares…")
         Task {

@@ -6,7 +6,7 @@ struct SafepartsApp: App {
     @StateObject private var model = AppModel()
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("Safeparts") {
             ContentView()
                 .environmentObject(model)
                 .frame(minWidth: 860, minHeight: 640)
@@ -58,6 +58,16 @@ struct ContentView: View {
             }
         }
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                Image("safeparts-logo", bundle: .module)
+                    .resizable()
+                    .renderingMode(.original)
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .accessibilityLabel("Safeparts logo")
+                    .help("Safeparts")
+            }
+
             ToolbarItemGroup {
                 Label("Local only", systemImage: "lock.shield")
                     .foregroundStyle(.secondary)
@@ -76,32 +86,15 @@ struct TaskSwitcher: View {
     @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        ZStack {
-            Picker("Task", selection: $model.task) {
-                ForEach(WorkbenchTask.allCases) { task in
-                    Text(task.rawValue).tag(task)
-                }
-            }
-            .labelsHidden()
-            .pickerStyle(.segmented)
-            .frame(width: 260)
-
-            HStack {
-                HStack(spacing: 7) {
-                    Image("safeparts-logo", bundle: .module)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 22, height: 22)
-                    Text("Safeparts")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.secondary)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Safeparts")
-
-                Spacer()
+        Picker("Task", selection: $model.task) {
+            ForEach(WorkbenchTask.allCases) { task in
+                Text(task.rawValue).tag(task)
             }
         }
+        .labelsHidden()
+        .pickerStyle(.segmented)
+        .frame(width: 260)
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
         .padding(.vertical, 9)
         .background(.bar)
@@ -185,12 +178,15 @@ struct SplitView: View {
                 ShareEncodingSelector(selection: $model.encoding)
                     .onChange(of: model.encoding) { _, _ in model.invalidateSplitResult() }
 
-                LabeledContent("Passphrase") {
-                    SecureField("Passphrase", text: $model.splitPassphrase)
-                        .labelsHidden()
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Passphrase")
+                        .font(.subheadline.weight(.medium))
+                    SecureField("", text: $model.splitPassphrase)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(maxWidth: .infinity)
                         .accessibilityLabel("Passphrase")
+                        .onChange(of: model.splitPassphrase) { _, _ in model.invalidateSplitResult() }
                 }
-                    .onChange(of: model.splitPassphrase) { _, _ in model.invalidateSplitResult() }
             }
 
             Section {
@@ -225,7 +221,14 @@ struct SplitView: View {
                         ShareRow(share: share)
                     }
 
-                    HStack {
+                    HStack(spacing: 10) {
+                        Text("Filename prefix")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        TextField("Optional", text: $model.exportPrefix)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 200)
+                            .accessibilityLabel("Export filename prefix")
                         Spacer()
                         Button("Export All…", systemImage: "folder.badge.plus") {
                             model.exportAllShares()
@@ -235,7 +238,6 @@ struct SplitView: View {
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("Split")
     }
 }
 
@@ -314,16 +316,39 @@ struct RecoverView: View {
             Section {
                 ForEach(model.recoveryShareInputs.indices, id: \.self) { index in
                     VStack(alignment: .leading, spacing: 6) {
-                        HStack {
+                        HStack(spacing: 8) {
                             Text("Share \(index + 1)")
                                 .font(.subheadline.weight(.medium))
-                            Spacer()
                             if index < model.minimumRecoveryShareCount {
                                 Text("Required")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
+                            Spacer()
+
+                            Button {
+                                model.pasteRecoveryShare(at: index)
+                            } label: {
+                                Image(systemName: "doc.on.clipboard")
+                                    .frame(width: 22, height: 20)
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Paste share \(index + 1)")
+                            .help("Paste")
+
+                            Button {
+                                model.clearRecoveryShare(at: index)
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .frame(width: 22, height: 20)
+                            }
+                            .buttonStyle(.borderless)
+                            .foregroundStyle(.secondary)
+                            .disabled(model.recoveryShareInputs[index].isEmpty)
+                            .accessibilityLabel("Clear share \(index + 1)")
+                            .help("Clear")
                         }
+                        .controlSize(.small)
 
                         TextEditor(text: shareBinding(at: index))
                             .font(.caption.monospaced())
@@ -348,45 +373,55 @@ struct RecoverView: View {
                 HStack {
                     Text("Recovery shares")
                     Spacer()
-                    Text("At least \(model.minimumRecoveryShareCount)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if model.inspection?.ready == true {
+                        Label("Ready", systemImage: "checkmark.circle.fill")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.green)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Capsule().fill(Color.green.opacity(0.10)))
+                            .accessibilityLabel("Shares are ready to recover")
+                    } else {
+                        Text("At least \(model.minimumRecoveryShareCount)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            if let recovery = model.recovery {
+                Section("Recovered secret") {
+                    if let text = model.recoveredText {
+                        Text(text)
+                            .font(.body.monospaced())
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Button("Copy Text", systemImage: "doc.on.doc") {
+                            model.copy(text)
+                        }
+                    } else {
+                        Label("Binary data (\(recovery.bytes.count.formatted()) bytes)", systemImage: "doc")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button("Save Recovered Secret…", systemImage: "square.and.arrow.down") {
+                        model.saveRecovery()
+                    }
                 }
             }
 
             Section("Recovery options") {
                 ShareEncodingSelector(selection: encodingBinding)
 
-                LabeledContent("Passphrase") {
-                    SecureField("Passphrase", text: $model.recoveryPassphrase)
-                        .labelsHidden()
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Passphrase")
+                        .font(.subheadline.weight(.medium))
+                    SecureField("", text: $model.recoveryPassphrase)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(maxWidth: .infinity)
                         .accessibilityLabel("Passphrase")
                         .disabled(!model.recoveryPassphraseEnabled)
                         .onChange(of: model.recoveryPassphrase) { _, _ in model.invalidateRecoveryResult() }
-                }
-            }
-
-            if let inspection = model.inspection {
-                Section("Share summary") {
-                    LabeledContent("Detected format", value: inspection.detectedEncoding.friendlyName)
-                    LabeledContent("Recovery threshold", value: "\(inspection.threshold) of \(inspection.shareCount)")
-                    LabeledContent("Shares provided", value: "\(inspection.providedCount)")
-                    LabeledContent("Passphrase protected", value: inspection.encrypted ? "Yes" : "No")
-                    LabeledContent("Consistent") {
-                        if inspection.consistent {
-                            Text("Yes")
-                        } else {
-                            Text("No")
-                                .foregroundStyle(.orange)
-                        }
-                    }
-                    LabeledContent("Status") {
-                        Label(
-                            inspection.ready ? "Ready to recover" : "More valid shares needed",
-                            systemImage: inspection.ready ? "checkmark.circle.fill" : "exclamationmark.circle"
-                        )
-                        .foregroundStyle(inspection.ready ? .green : .secondary)
-                    }
                 }
             }
 
@@ -416,29 +451,24 @@ struct RecoverView: View {
                 }
             }
 
-            if let recovery = model.recovery {
-                Section("Recovered secret") {
-                    if let text = model.recoveredText {
-                        Text(text)
-                            .font(.body.monospaced())
-                            .textSelection(.enabled)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Button("Copy Text", systemImage: "doc.on.doc") {
-                            model.copy(text)
+            if let inspection = model.inspection {
+                Section("Share summary") {
+                    LabeledContent("Detected format", value: inspection.detectedEncoding.friendlyName)
+                    LabeledContent("Recovery threshold", value: "\(inspection.threshold) of \(inspection.shareCount)")
+                    LabeledContent("Shares provided", value: "\(inspection.providedCount)")
+                    LabeledContent("Passphrase protected", value: inspection.encrypted ? "Yes" : "No")
+                    LabeledContent("Consistent") {
+                        if inspection.consistent {
+                            Text("Yes")
+                        } else {
+                            Text("No")
+                                .foregroundStyle(.orange)
                         }
-                    } else {
-                        Label("Binary data (\(recovery.bytes.count.formatted()) bytes)", systemImage: "doc")
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Button("Save Recovered Secret…", systemImage: "square.and.arrow.down") {
-                        model.saveRecovery()
                     }
                 }
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("Recover")
     }
 }
 
