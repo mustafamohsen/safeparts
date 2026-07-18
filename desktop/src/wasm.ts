@@ -9,10 +9,6 @@ type ShareInspectionAdapter = {
 
 let cached: DesktopSafepartsAdapter | null = null;
 
-function normalizeEncoding(encoding: Encoding): string {
-  return encoding;
-}
-
 function toBytes(value: Uint8Array | ArrayBuffer | ArrayLike<number>): Uint8Array {
   if (value instanceof Uint8Array) return value;
   if (value instanceof ArrayBuffer) return new Uint8Array(value);
@@ -38,7 +34,7 @@ class DesktopSafepartsAdapter {
       secret: toBytes(bytes),
       threshold: k,
       shareCount: n,
-      encoding: normalizeEncoding(encoding),
+      encoding,
       passphrase,
     });
     return response.shares;
@@ -51,7 +47,7 @@ class DesktopSafepartsAdapter {
   ): Promise<Uint8Array> {
     const response = await combineShares({
       input,
-      encoding: normalizeEncoding(encoding),
+      encoding,
       passphrase,
     });
     return new Uint8Array(response.secret);
@@ -69,10 +65,7 @@ class DesktopSafepartsAdapter {
     input: string,
     encoding: Encoding,
   ): Promise<ShareInspectionAdapter> {
-    const inspection = await inspectShares({
-      input,
-      encoding: normalizeEncoding(encoding),
-    });
+    const inspection = await inspectShares({ input, encoding });
     return {
       k: inspection.threshold,
       encoding: inspection.encoding,

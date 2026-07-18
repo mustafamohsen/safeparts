@@ -37,17 +37,30 @@ export interface ShareInspection {
   shareIndexes: number[];
 }
 
-export function supportedEncodings(): Promise<EncodingInfo[]> {
-  return invoke<EncodingInfo[]>("supported_encodings_command");
-}
-
-export function splitSecret(args: {
+type SplitSecretArgs = {
   secret: Uint8Array;
   threshold: number;
   shareCount: number;
   encoding: string;
   passphrase?: string;
-}): Promise<SplitResponse> {
+};
+
+type CombineSharesArgs = {
+  input: string;
+  encoding: string;
+  passphrase?: string;
+};
+
+type InspectSharesArgs = {
+  input: string;
+  encoding: string;
+};
+
+export function supportedEncodings(): Promise<EncodingInfo[]> {
+  return invoke<EncodingInfo[]>("supported_encodings_command");
+}
+
+export function splitSecret(args: SplitSecretArgs): Promise<SplitResponse> {
   return invoke<SplitResponse>("split_secret_command", {
     secret: Array.from(args.secret),
     threshold: args.threshold,
@@ -57,17 +70,10 @@ export function splitSecret(args: {
   });
 }
 
-export function combineShares(args: {
-  input: string;
-  encoding: string;
-  passphrase?: string;
-}): Promise<CombineResponse> {
+export function combineShares(args: CombineSharesArgs): Promise<CombineResponse> {
   return invoke<CombineResponse>("combine_shares_command", args);
 }
 
-export function inspectShares(args: {
-  input: string;
-  encoding: string;
-}): Promise<ShareInspection> {
+export function inspectShares(args: InspectSharesArgs): Promise<ShareInspection> {
   return invoke<ShareInspection>("inspect_shares_command", args);
 }

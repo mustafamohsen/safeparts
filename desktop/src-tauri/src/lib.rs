@@ -105,8 +105,8 @@ fn split_secret_command(
     }
 
     let secret = Zeroizing::new(secret);
-    let passphrase = passphrase.map(|value| Zeroizing::new(value.into_bytes()));
-    let passphrase_bytes = passphrase.as_ref().map(|value| value.as_slice());
+    let passphrase = zeroize_passphrase(passphrase);
+    let passphrase_bytes = passphrase.as_deref().map(Vec::as_slice);
     let packets =
         safeparts_core::split_secret(secret.as_slice(), threshold, share_count, passphrase_bytes)
             .map_err(|err| err.to_string())?;
@@ -132,8 +132,8 @@ fn combine_shares_command(
     passphrase: Option<String>,
 ) -> Result<CombineResponse, String> {
     let parsed = parse_input(&input, &encoding)?;
-    let passphrase = passphrase.map(|value| Zeroizing::new(value.into_bytes()));
-    let passphrase_bytes = passphrase.as_ref().map(|value| value.as_slice());
+    let passphrase = zeroize_passphrase(passphrase);
+    let passphrase_bytes = passphrase.as_deref().map(Vec::as_slice);
     let secret = safeparts_core::combine_shares(&parsed.packets, passphrase_bytes)
         .map_err(|err| err.to_string())?;
     let byte_count = secret.len();
@@ -182,6 +182,10 @@ fn inspect_shares_command(input: String, encoding: String) -> Result<ShareInspec
         set_id: hex_bytes(&first.set_id.0),
         share_indexes,
     })
+}
+
+fn zeroize_passphrase(passphrase: Option<String>) -> Option<Zeroizing<Vec<u8>>> {
+    passphrase.map(String::into_bytes).map(Zeroizing::new)
 }
 
 fn parse_input(input: &str, encoding: &str) -> Result<encoding::ParsedSharePackets, String> {
