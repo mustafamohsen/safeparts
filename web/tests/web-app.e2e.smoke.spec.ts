@@ -5,20 +5,22 @@ import { waitForWasmReady } from './a11y-utils'
 async function splitAndCollectShares(
   page: Page,
   secret: string,
-  opts?: { passphrase?: string },
+  options?: { passphrase?: string },
 ): Promise<string[]> {
   await page.getByRole('tab', { name: /split|تقسيم/i }).click()
   await page.locator('#split-panel textarea').first().fill(secret)
 
-  if (opts?.passphrase) {
-    await page.locator('#split-panel input[aria-labelledby="passphrase-label"]').fill(opts.passphrase)
+  if (options?.passphrase) {
+    await page
+      .locator('#split-panel input[aria-labelledby="passphrase-label"]')
+      .fill(options.passphrase)
   }
 
   await page.getByRole('button', { name: /^(split|قسم)$/i }).click()
   await expect(page.getByRole('heading', { name: /shares|الحصص/i })).toBeVisible()
 
   const shareValues = await page.locator('#split-panel div[dir="ltr"].input .sr-only').allTextContents()
-  return shareValues.map((v) => v.trim()).filter(Boolean)
+  return shareValues.map((share) => share.trim()).filter(Boolean)
 }
 
 test.describe('Web App E2E Smoke @smoke', () => {
@@ -42,7 +44,7 @@ test.describe('Web App E2E Smoke @smoke', () => {
     await expect(page.getByRole('heading', { name: /recovered secret|السر المستعاد/i })).toBeVisible()
 
     const recovered = await page.locator('#combine-panel div[dir="auto"].input .sr-only').textContent()
-    expect((recovered ?? '').trim()).toBe(secret)
+    expect(recovered?.trim() ?? '').toBe(secret)
   })
 
   test('shows useful validation when shares are insufficient', async ({ page }) => {

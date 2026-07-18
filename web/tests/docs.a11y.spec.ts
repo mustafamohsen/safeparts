@@ -1,8 +1,11 @@
-import { test, expect } from '@playwright/test'
-import { expectNoA11yViolations } from './a11y-utils'
-
 import fs from 'node:fs'
 import path from 'node:path'
+
+import { expect, test } from '@playwright/test'
+
+import { expectNoA11yViolations } from './a11y-utils'
+
+const MDX_EXTENSION = '.mdx'
 
 type DocsRouteSets = {
   english: string[]
@@ -24,9 +27,9 @@ function listMdxSlugs(dir: string): string[] {
         continue
       }
 
-      if (!entry.isFile() || !entry.name.endsWith('.mdx')) continue
+      if (!entry.isFile() || !entry.name.endsWith(MDX_EXTENSION)) continue
 
-      const name = entry.name.slice(0, -('.mdx'.length))
+      const name = entry.name.slice(0, -MDX_EXTENSION.length)
       const slug = prefix ? `${prefix}/${name}` : name
       out.push(slug)
     }
@@ -41,7 +44,7 @@ function getDocsRouteSets(): DocsRouteSets {
   const docsRoot = path.resolve(process.cwd(), 'help/src/content/docs')
   const arRoot = path.join(docsRoot, 'ar')
 
-  const englishSlugs = listMdxSlugs(docsRoot).filter(s => !s.startsWith('ar/'))
+  const englishSlugs = listMdxSlugs(docsRoot).filter((slug) => !slug.startsWith('ar/'))
   const arabicSlugs = listMdxSlugs(arRoot)
 
   const toRoute = (base: string, slug: string) => {
@@ -49,8 +52,8 @@ function getDocsRouteSets(): DocsRouteSets {
     return `${base}/${slug.replace(/\\/g, '/')}/`
   }
 
-  const english = englishSlugs.map(s => toRoute('/help', s))
-  const arabic = arabicSlugs.map(s => toRoute('/help/ar', s))
+  const english = englishSlugs.map((slug) => toRoute('/help', slug))
+  const arabic = arabicSlugs.map((slug) => toRoute('/help/ar', slug))
 
   return { english, arabic, englishSlugs, arabicSlugs }
 }
@@ -109,10 +112,10 @@ test.describe('Docs Site Accessibility @full', () => {
       await expect(link).toHaveAttribute('rel', /noopener/)
       
       // Should have accessible label or title indicating external behavior
-      const hasExternalIndicator = await link.evaluate(el => {
-        const ariaLabel = el.getAttribute('aria-label')
-        const title = el.getAttribute('title')
-        const text = el.textContent
+      const hasExternalIndicator = await link.evaluate((linkElement) => {
+        const ariaLabel = linkElement.getAttribute('aria-label')
+        const title = linkElement.getAttribute('title')
+        const text = linkElement.textContent
         return (
           ariaLabel?.includes('new tab') ||
           ariaLabel?.includes('new window') ||

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { expectNoA11yViolations, waitForWasmReady } from './a11y-utils'
 
 test.describe('Web App Accessibility @smoke', () => {
@@ -40,7 +40,7 @@ test.describe('Web App Accessibility @smoke', () => {
     // Exactly one should be pressed
     const enPressed = await enButton.getAttribute('aria-pressed')
     const arPressed = await arButton.getAttribute('aria-pressed')
-    expect([enPressed, arPressed].filter(p => p === 'true')).toHaveLength(1)
+    expect([enPressed, arPressed].filter((pressed) => pressed === 'true')).toHaveLength(1)
   })
 
   test('Tab navigation follows logical order', async ({ page }) => {

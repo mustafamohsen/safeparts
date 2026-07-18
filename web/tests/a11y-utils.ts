@@ -1,5 +1,5 @@
-import { Page, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { expect, type Page } from '@playwright/test'
 
 /**
  * Accessibility test utilities using axe-core.
@@ -51,7 +51,7 @@ export async function expectNoA11yViolations(page: Page): Promise<void> {
     .analyze()
 
   const seriousAndCritical = accessibilityScanResults.violations.filter(
-    v => v.impact === 'serious' || v.impact === 'critical'
+    (violation) => violation.impact === 'serious' || violation.impact === 'critical',
   )
 
   // Log all violations for debugging
@@ -68,13 +68,13 @@ export async function expectNoA11yViolations(page: Page): Promise<void> {
   // Assert no serious or critical violations
   expect(
     seriousAndCritical,
-    `Found ${seriousAndCritical.length} serious/critical accessibility violations`
+    `Found ${seriousAndCritical.length} serious/critical accessibility violations`,
   ).toHaveLength(0)
 
   // Also assert no violations at all (ideal state)
   expect(
     accessibilityScanResults.violations,
-    `Found ${accessibilityScanResults.violations.length} total accessibility violations`
+    `Found ${accessibilityScanResults.violations.length} total accessibility violations`,
   ).toHaveLength(0)
 }
 
@@ -87,7 +87,9 @@ export async function waitForWasmReady(page: Page): Promise<void> {
   await page.waitForFunction(
     async () => {
       try {
-        const dynamicImport = new Function('p', 'return import(p)') as (path: string) => Promise<unknown>
+        const dynamicImport = new Function('path', 'return import(path)') as (
+          path: string,
+        ) => Promise<unknown>
         await dynamicImport('/src/wasm_pkg/safeparts_wasm.js')
         return true
       } catch {
