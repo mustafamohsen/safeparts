@@ -29,6 +29,15 @@ fn run_split(encoding: &str, k: u8, n: u8, input: &[u8], passphrase: Option<&str
         .collect()
 }
 
+#[test]
+fn version_matches_package_release() {
+    Command::new(assert_cmd::cargo::cargo_bin!("safeparts"))
+        .arg("--version")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(env!("CARGO_PKG_VERSION")));
+}
+
 fn run_combine(encoding: Option<&str>, shares: &[String], passphrase: Option<&str>) -> Vec<u8> {
     let stdin = shares.join("\n") + "\n";
 

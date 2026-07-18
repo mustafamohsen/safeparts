@@ -9,6 +9,7 @@ use zeroize::Zeroizing;
 
 #[derive(Debug, Parser)]
 #[command(name = "safeparts")]
+#[command(version)]
 #[command(about = "Split/combine secrets into threshold shares", long_about = None)]
 #[command(disable_help_subcommand = true)]
 struct Cli {
