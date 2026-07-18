@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
@@ -21,5 +20,5 @@ const warmupWasm = () => {
 if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
   window.requestIdleCallback(warmupWasm, { timeout: 1500 })
 } else {
-  window.setTimeout(warmupWasm, 0)
+  setTimeout(warmupWasm, 0)
 }

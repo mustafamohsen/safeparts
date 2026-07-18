@@ -1,7 +1,6 @@
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type FocusEvent,
@@ -32,6 +31,11 @@ function toErrorMessage(err: unknown, strings: Strings): string {
   return message;
 }
 
+function resizeTextarea(textarea: HTMLTextAreaElement) {
+  textarea.style.height = "auto";
+  textarea.style.height = `${textarea.scrollHeight}px`;
+}
+
 export function SplitForm({ strings }: SplitFormProps) {
   const secretTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [secret, setSecret] = useState("");
@@ -59,18 +63,10 @@ export function SplitForm({ strings }: SplitFormProps) {
     return () => media.removeListener(update);
   }, []);
 
-  const resizeSecretTextarea = useCallback((textarea: HTMLTextAreaElement) => {
-    textarea.style.height = "auto";
-    textarea.style.height = `${textarea.scrollHeight}px`;
+  const setSecretTextareaRef = useCallback((textarea: HTMLTextAreaElement | null) => {
+    secretTextareaRef.current = textarea;
+    if (textarea) resizeTextarea(textarea);
   }, []);
-
-  const setSecretTextareaRef = useCallback(
-    (textarea: HTMLTextAreaElement | null) => {
-      secretTextareaRef.current = textarea;
-      if (textarea) resizeSecretTextarea(textarea);
-    },
-    [resizeSecretTextarea],
-  );
 
   function clampK(nextK: number, nextN: number): number {
     if (!Number.isFinite(nextK)) return 2;
@@ -108,26 +104,20 @@ export function SplitForm({ strings }: SplitFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const encodingOptions: EncodingOption[] = useMemo(
-    () => [
-      {
-        value: "mnemo-words",
-        label: strings.encodingMnemoWords,
-        description: strings.encodingMnemoWordsDesc,
-      },
-      {
-        value: "base64url",
-        label: strings.encodingBase64url,
-        description: strings.encodingBase64urlDesc,
-      },
-    ],
-    [strings]
-  );
+  const encodingOptions: EncodingOption[] = [
+    {
+      value: "mnemo-words",
+      label: strings.encodingMnemoWords,
+      description: strings.encodingMnemoWordsDesc,
+    },
+    {
+      value: "base64url",
+      label: strings.encodingBase64url,
+      description: strings.encodingBase64urlDesc,
+    },
+  ];
 
-  const canSplit = useMemo(
-    () => secret.length > 0 && k >= 2 && n >= 2 && n <= 255,
-    [secret, k, n],
-  );
+  const canSplit = secret.length > 0 && k >= 2 && n >= 2 && n <= 255;
 
   async function onSplit() {
     setBusy(true);
@@ -172,7 +162,7 @@ export function SplitForm({ strings }: SplitFormProps) {
               value={secret}
               onChange={(e) => {
                 setSecret(e.target.value);
-                resizeSecretTextarea(e.currentTarget);
+                resizeTextarea(e.currentTarget);
               }}
               rows={4}
               className="input input-with-clear min-h-[120px] resize-none overflow-hidden font-mono text-xs leading-relaxed"
@@ -186,7 +176,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   setSecret(text);
                   requestAnimationFrame(() => {
                     if (secretTextareaRef.current) {
-                      resizeSecretTextarea(secretTextareaRef.current);
+                      resizeTextarea(secretTextareaRef.current);
                     }
                   });
                 }}
@@ -199,7 +189,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   setSecret("");
                   requestAnimationFrame(() => {
                     if (secretTextareaRef.current) {
-                      resizeSecretTextarea(secretTextareaRef.current);
+                      resizeTextarea(secretTextareaRef.current);
                     }
                   });
                 }}

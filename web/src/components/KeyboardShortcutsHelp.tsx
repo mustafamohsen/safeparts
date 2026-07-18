@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import type { Lang, Strings } from "../i18n";
 import { cn } from "../lib/cn";
@@ -50,18 +50,15 @@ export function KeyboardShortcutsHelp({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
 
-  const rows = useMemo((): ShortcutRow[] => {
-    const ctrlOrCmd = "Ctrl/Cmd";
-
-    return [
-      { keys: "1", action: strings.shortcutGoToSplit },
-      { keys: "2", action: strings.shortcutGoToCombine },
-      { keys: "Hold ?", action: strings.shortcutShowKeytips },
-      { keys: `${ctrlOrCmd}+/`, action: strings.shortcutShowHelp },
-      { keys: `${ctrlOrCmd}+Enter`, action: strings.shortcutSubmitForm },
-      { keys: `${ctrlOrCmd}+Shift+C`, action: strings.shortcutCopyResult },
-    ];
-  }, [strings]);
+  const ctrlOrCmd = "Ctrl/Cmd";
+  const rows: ShortcutRow[] = [
+    { keys: "1", action: strings.shortcutGoToSplit },
+    { keys: "2", action: strings.shortcutGoToCombine },
+    { keys: "Hold ?", action: strings.shortcutShowKeytips },
+    { keys: `${ctrlOrCmd}+/`, action: strings.shortcutShowHelp },
+    { keys: `${ctrlOrCmd}+Enter`, action: strings.shortcutSubmitForm },
+    { keys: `${ctrlOrCmd}+Shift+C`, action: strings.shortcutCopyResult },
+  ];
 
   useEffect(() => {
     if (!open) return;

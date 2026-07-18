@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { Lang, Strings } from "../i18n";
 import { ensureWasm } from "../wasm";
@@ -107,21 +107,18 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
 
   const shareBoxCount = shareBoxes.length;
 
-  const encodingOptions: EncodingOption[] = useMemo(
-    () => [
-      {
-        value: "mnemo-words",
-        label: strings.encodingMnemoWords,
-        description: strings.encodingMnemoWordsDesc,
-      },
-      {
-        value: "base64url",
-        label: strings.encodingBase64url,
-        description: strings.encodingBase64urlDesc,
-      },
-    ],
-    [strings]
-  );
+  const encodingOptions: EncodingOption[] = [
+    {
+      value: "mnemo-words",
+      label: strings.encodingMnemoWords,
+      description: strings.encodingMnemoWordsDesc,
+    },
+    {
+      value: "base64url",
+      label: strings.encodingBase64url,
+      description: strings.encodingBase64urlDesc,
+    },
+  ];
 
   const triggerEncodingFlash = useCallback(() => {
     setEncodingFlash(true);
@@ -233,19 +230,11 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
     })();
   }, [shareBoxes, encoding, triggerEncodingFlash]);
 
-  const shares = useMemo(
-    () => shareBoxes.flatMap((b) => parseSharesFromBox(b.value)),
-    [shareBoxes],
-  );
-
-  const combinedShareInput = useMemo(
-    () =>
-      shareBoxes
-        .map((b) => b.value.trim())
-        .filter(Boolean)
-        .join("\n\n"),
-    [shareBoxes],
-  );
+  const shares = shareBoxes.flatMap((box) => parseSharesFromBox(box.value));
+  const combinedShareInput = shareBoxes
+    .map((box) => box.value.trim())
+    .filter(Boolean)
+    .join("\n\n");
 
   function setShareBoxValue(id: string, value: string) {
     setShareBoxes((prev) =>
@@ -284,7 +273,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
               passphrase ? passphrase : undefined,
             )
           : await wasm.combine_shares(
-              shares as any,
+              shares,
               encoding,
               passphrase ? passphrase : undefined,
             );

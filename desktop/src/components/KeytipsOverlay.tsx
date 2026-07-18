@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { Lang, Strings } from '../i18n'
 
@@ -75,14 +75,12 @@ export function KeytipsOverlay({ active, lang, strings }: KeytipsOverlayProps) {
     }
   }, [active])
 
-  const className = useMemo(() => {
-    // Keep mounted for layout stability; only animate opacity.
-    return [
-      'pointer-events-none fixed inset-0 z-[70]',
-      'transition-opacity duration-150 ease-out',
-      active ? 'opacity-100' : 'opacity-0',
-    ].join(' ')
-  }, [active])
+  // Keep mounted for layout stability; only animate opacity.
+  const className = [
+    'pointer-events-none fixed inset-0 z-[70]',
+    'transition-opacity duration-150 ease-out',
+    active ? 'opacity-100' : 'opacity-0',
+  ].join(' ')
 
   return (
     <div className={className} aria-hidden="true">
