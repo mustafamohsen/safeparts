@@ -3,8 +3,32 @@ use safeparts_core::{
     encoding::{self, Encoding},
     packet::SharePacket,
 };
-use std::collections::HashSet;
-use zeroize::Zeroizing;
+use std::{collections::HashSet, ops::Deref};
+use zeroize::{Zeroize, Zeroizing};
+
+struct SensitivePackets(Vec<SharePacket>);
+
+impl SensitivePackets {
+    fn zeroize_payloads(&mut self) {
+        for packet in &mut self.0 {
+            packet.payload.zeroize();
+        }
+    }
+}
+
+impl Deref for SensitivePackets {
+    type Target = [SharePacket];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl Drop for SensitivePackets {
+    fn drop(&mut self) {
+        self.zeroize_payloads();
+    }
+}
 
 #[derive(Clone, Copy, Debug, uniffi::Enum)]
 pub enum ShareEncoding {
@@ -118,11 +142,11 @@ fn map_error(error: CoreError) -> BridgeError {
 fn parse(
     input: String,
     selected: ShareEncoding,
-) -> Result<(Vec<SharePacket>, Encoding), BridgeError> {
+) -> Result<(SensitivePackets, Encoding), BridgeError> {
     let guarded = Zeroizing::new(input);
     let parsed = encoding::parse_share_packets_wrapped_mnemonics(&guarded, core_encoding(selected))
         .map_err(map_error)?;
-    Ok((parsed.packets, parsed.encoding))
+    Ok((SensitivePackets(parsed.packets), parsed.encoding))
 }
 fn set_id(packet: &SharePacket) -> String {
     packet.set_id.0.iter().map(|b| format!("{b:02x}")).collect()
@@ -151,13 +175,15 @@ pub fn split_secret(
     }
     let secret = Zeroizing::new(secret);
     let passphrase = passphrase.map(Zeroizing::new);
-    let packets = safeparts_core::split_secret(
-        &secret,
-        threshold,
-        share_count,
-        passphrase.as_deref().map(|value| value.as_bytes()),
-    )
-    .map_err(map_error)?;
+    let packets = SensitivePackets(
+        safeparts_core::split_secret(
+            &secret,
+            threshold,
+            share_count,
+            passphrase.as_deref().map(|value| value.as_bytes()),
+        )
+        .map_err(map_error)?,
+    );
     packets
         .iter()
         .map(|p| {
@@ -272,14 +298,36 @@ mod tests {
         );
     }
     #[test]
+    fn packet_payload_guard_zeroizes_owned_payloads() {
+        let mut packets =
+            SensitivePackets(safeparts_core::split_secret(&[1, 2, 3], 1, 1, None).unwrap());
+        assert!(
+            packets
+                .iter()
+                .any(|packet| packet.payload.iter().any(|byte| *byte != 0))
+        );
+        packets.zeroize_payloads();
+        assert!(
+            packets
+                .iter()
+                .all(|packet| packet.payload.iter().all(|byte| *byte == 0))
+        );
+    }
+
+    #[test]
     fn inspect_and_negative_inputs_are_sanitized() {
         let shares = split_secret(vec![1], 2, 3, ShareEncoding::Base64url, None).unwrap();
         let one = shares[0].text.clone();
-        assert!(
-            !inspect_share_input(one.clone(), ShareEncoding::Auto)
-                .unwrap()
-                .ready
-        );
+        let one_inspection = inspect_share_input(one.clone(), ShareEncoding::Auto).unwrap();
+        assert_eq!(one_inspection.threshold, 2);
+        assert_eq!(one_inspection.share_count, 3);
+        assert_eq!(one_inspection.provided_count, 1);
+        assert!(one_inspection.consistent);
+        assert!(!one_inspection.ready);
+        assert!(matches!(
+            inspect_share_input(String::new(), ShareEncoding::Auto),
+            Err(BridgeError::EmptyInput)
+        ));
         assert!(matches!(
             combine_share_input(one.clone(), ShareEncoding::Auto, None),
             Err(BridgeError::InsufficientShares)
