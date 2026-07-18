@@ -32,7 +32,10 @@ for path in root.iterdir():
     if not path.is_file():
         continue
     text = path.read_text(encoding="utf-8")
-    normalized = "\n".join(line.rstrip() for line in text.splitlines()) + "\n"
+    lines = [line.rstrip() for line in text.splitlines()]
+    while lines and not lines[-1]:
+        lines.pop()
+    normalized = "\n".join(lines) + "\n"
     path.write_text(normalized, encoding="utf-8")
 PY
 

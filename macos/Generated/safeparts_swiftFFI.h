@@ -570,4 +570,3 @@ uint32_t ffi_safeparts_swift_uniffi_contract_version(void
 
 );
 #endif
-
