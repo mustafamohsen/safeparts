@@ -4,6 +4,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 MACOS="$ROOT/macos"
 export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-14.0}"
+python3 - "$MACOSX_DEPLOYMENT_TARGET" <<'PY'
+import sys
+
+parts = tuple(int(part) for part in sys.argv[1].split("."))
+if parts < (14, 0):
+    raise SystemExit("MACOSX_DEPLOYMENT_TARGET must be 14.0 or newer")
+PY
 export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT/target/macos-host}"
 LIB_DIR="$CARGO_TARGET_DIR/debug"
 

@@ -85,7 +85,7 @@ swift build --package-path macos
 swift test --package-path macos
 ```
 
-`mise run macos:check` runs all three steps. The preparation script sets the Rust deployment target to macOS 14 and verifies that the compiled generated Swift binding matches the canonical copy.
+`mise run macos:check` runs these steps and then inspects the executable. It checks the macOS 14.0 deployment target and confirms that the Rust bridge is statically linked. The preparation script rejects deployment targets older than 14.0 and verifies that the compiled generated Swift binding matches the canonical copy.
 
 ## Release packaging
 

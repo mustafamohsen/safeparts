@@ -97,7 +97,7 @@ run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/prepare.sh; else echo
 
 [tasks."macos:check"]
 description = "Build and test the native macOS app."
-run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/prepare.sh && swift build --package-path macos && swift test --package-path macos; else echo 'macos:check skipped: requires macOS'; fi"
+run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/prepare.sh && swift build --package-path macos && macos/scripts/verify-binary.sh && swift test --package-path macos; else echo 'macos:check skipped: requires macOS'; fi"
 
 [tasks."desktop:dev"]
 description = "Start the desktop app."

@@ -29,6 +29,7 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 
 - `./scripts/prepare.sh`
 - `swift build`
+- `./scripts/verify-binary.sh`
 - `swift test`
 
 ## Child DOX Index
