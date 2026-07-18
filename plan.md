@@ -6,7 +6,30 @@ Add a first-class macOS 14+ application with a native SwiftUI interface while ke
 
 The native app will live alongside the existing Tauri desktop app. It will not replace the Windows, Linux, or macOS Tauri builds in this change.
 
-## User experience
+## Scope
+
+### In scope
+
+- A separate native macOS 14+ application under `macos/`.
+- A narrow Rust-to-Swift bridge under `crates/safeparts_swift/`.
+- Local split, inspection, and recovery workflows backed by `safeparts_core`.
+- Native clipboard and file import/export behavior.
+- All existing core share encodings and Auto recovery detection.
+- Optional passphrase protection.
+- Swift and Rust tests for the new boundary and application model.
+- Local host-architecture build tooling and contributor documentation.
+
+### Out of scope
+
+- Replacing or reducing support for the Tauri desktop app.
+- Changing the secret-sharing algorithm, packet format, encodings, or passphrase cryptography.
+- Adding a server, synchronization, persistence, telemetry, or analytics.
+- Signed releases, notarization, universal binaries, installers, or App Store distribution.
+- QR codes, third-party share formats, mobile parity, or new recovery protocols.
+
+## Features
+
+### Native application shell
 
 The app uses standard macOS controls and interaction patterns:
 
@@ -37,7 +60,18 @@ The default policy is 2-of-3. The valid core range remains `1 <= k <= n <= 255`.
 5. Recover the exact original bytes locally.
 6. Display and copy the result only when it is valid UTF-8. Always allow the recovered bytes to be saved without lossy conversion.
 
-## Architecture
+## Boundaries and architecture
+
+| Boundary | Responsibility | Must not own |
+| --- | --- | --- |
+| `safeparts_core` | Cryptography, secret sharing, packets, encodings, integrity, typed core errors | Swift, AppKit, file panels, clipboard behavior |
+| `crates/safeparts_swift` | UniFFI-safe records, byte transport, inspection, error sanitization, practical boundary zeroization | Cryptographic rules, UI state, persistence |
+| `SafepartsKit` | In-memory workflow state, async coordination, file IO, clipboard actions, app-facing error copy | Cryptographic or packet-format implementation |
+| `SafepartsMac` | SwiftUI views, native controls, menus, toolbar, focus, accessibility presentation | Direct core calls, storage, sensitive logging |
+| macOS system APIs | Open/save panels, pasteboard, window and accessibility behavior | Automatic secret persistence or network transfer |
+| Build and release tooling | Host bridge generation, SwiftPM build/test, generated-file policy | Signing, notarization, universal packaging in this change |
+
+Data crosses the Rust/Swift boundary as owned bytes, encoded recovery-share strings, small metadata records, and stable error categories. Rust-native collections, `CoreError`, and `SharePacket` do not cross directly.
 
 ### Rust ownership
 
@@ -177,15 +211,41 @@ Generated source files are tracked. Compiled libraries and SwiftPM build output 
 
 ## Acceptance criteria
 
-- The native app builds and tests on macOS with a declared minimum version of 14.0.
+### Functional
+
 - Swift calls the Rust core through UniFFI; no algorithm is reimplemented.
-- Split and recovery preserve arbitrary bytes.
-- All four encodings and Auto recovery behave compatibly with the Rust toolchain.
-- Copy, paste, import, save, and export are explicit native desktop actions.
-- File and bridge failures are visible and do not leak sensitive input.
-- Expensive passphrase operations do not block the main actor.
-- Generated bindings are reproducible and compiled artifacts remain untracked.
-- Existing Rust, web, Tauri desktop, documentation, and DX checks remain green.
+- Text and imported binary secrets split successfully with valid `k` and `n` values.
+- Recovery returns the original bytes for every supported encoding and valid threshold subset.
+- Auto detects `base64url`, `base58check`, `mnemo-words`, and `mnemo-bip39` recovery input.
+- Passphrase-protected shares require the correct passphrase and fail safely otherwise.
+- Duplicate, mixed, malformed, empty, and insufficient share input produces the expected stable error category.
+- Valid UTF-8 recovery can be displayed and copied. Invalid UTF-8 recovery remains losslessly saveable.
+
+### macOS experience
+
+- The app uses native navigation, forms, text editors, secure fields, pickers, steppers, toolbars, menus, buttons, and system file panels.
+- Copy, Paste, Import, Save, Export All, and Clear are explicit and available in the relevant task.
+- Imported binary input is visibly represented as the current source instead of being converted to text.
+- Primary actions are disabled until minimum input requirements are met.
+- Command-Return runs the current operation without taking plain Return away from multiline editors.
+- Progress, success, warning, and failure states are visibly distinct and have accessibility labels.
+- Changing input or clearing a task prevents stale asynchronous results from reappearing.
+
+### Security and privacy
+
+- No secret, recovery share, passphrase, or recovered bytes are logged or persisted.
+- Bridge and file errors do not include sensitive input.
+- Owned Rust secret, passphrase, and share-input buffers are zeroized where practical.
+- Clipboard writes occur only after an explicit Copy action and warn that other apps can read the content.
+- Recovery shares export as separate files with stable set/index/count names.
+
+### Build and quality
+
+- The native app builds and tests on macOS with a declared minimum version of 14.0.
+- Expensive passphrase operations run outside the main actor.
+- Generated bindings reproduce without drift, and compiled artifacts remain untracked.
+- Rust bridge tests and Swift integration/model tests cover the test matrix in this plan.
+- `cargo fmt`, strict Clippy, `cargo test --all-features`, Swift build/tests, web build, Tauri desktop checks, docs build, and DX verification pass.
 - Signing, notarization, universal binaries, and installer packaging are documented as future work rather than completed features.
 
 ## Non-goals
