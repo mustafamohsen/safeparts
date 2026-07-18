@@ -124,6 +124,7 @@ public final class AppModel: ObservableObject {
     private var inspectionToken = UUID()
     private var inspectionTask: Task<Void, Never>?
     private var recoveryEncodingWasManuallySelected = false
+    private var automaticallyExpandRecoveryShareInputs = true
 
     public init() {}
 
@@ -203,6 +204,7 @@ public final class AppModel: ObservableObject {
     }
 
     public func updateShareInput(_ input: String) {
+        automaticallyExpandRecoveryShareInputs = true
         let normalized = input.replacingOccurrences(of: "\r\n", with: "\n")
         let values = normalized
             .components(separatedBy: "\n\n")
@@ -226,6 +228,13 @@ public final class AppModel: ObservableObject {
         updateRecoveryShare(at: index, with: "")
     }
 
+    public func removeRecoveryShare(at index: Int) {
+        guard recoveryShareInputs.count > 2, recoveryShareInputs.indices.contains(index) else { return }
+        automaticallyExpandRecoveryShareInputs = false
+        recoveryShareInputs.remove(at: index)
+        refreshRecoveryInput()
+    }
+
     public func setRecoveryEncoding(_ selected: ShareEncoding) {
         recoveryEncodingWasManuallySelected = true
         recoveryEncoding = selected
@@ -243,6 +252,12 @@ public final class AppModel: ObservableObject {
         isSplitting = false
     }
 
+    public func dismissRecoveryFailure() {
+        if recoveryStatus?.kind == .failure {
+            recoveryStatus = nil
+        }
+    }
+
     public func clearRecovery() {
         recoveryToken = UUID()
         inspectionToken = UUID()
@@ -251,6 +266,7 @@ public final class AppModel: ObservableObject {
         recoveryPassphrase = ""
         recoveryEncoding = .mnemoWords
         recoveryEncodingWasManuallySelected = false
+        automaticallyExpandRecoveryShareInputs = true
         inspection = nil
         recovery = nil
         recoveryStatus = nil
@@ -374,7 +390,9 @@ public final class AppModel: ObservableObject {
             if !self.recoveryEncodingWasManuallySelected {
                 self.recoveryEncoding = value.detectedEncoding
             }
-            self.ensureRecoveryShareInputCount(Int(value.threshold))
+            if self.automaticallyExpandRecoveryShareInputs {
+                self.ensureRecoveryShareInputCount(Int(value.threshold))
+            }
             if !value.encrypted {
                 self.recoveryPassphrase = ""
             }

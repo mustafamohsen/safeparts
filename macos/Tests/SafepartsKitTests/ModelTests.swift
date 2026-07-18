@@ -53,6 +53,46 @@ func individualRecoveryShareCanBeCleared() {
 
 @MainActor
 @Test
+func recoveryFailureCanBeDismissedAfterPresentation() async {
+    let model = AppModel()
+    model.updateShareInput("malformed")
+    await model.recover()
+
+    #expect(model.recoveryStatus?.kind == .failure)
+    model.dismissRecoveryFailure()
+    #expect(model.recoveryStatus == nil)
+}
+
+@MainActor
+@Test
+func recoveryShareRemovalMatchesWebMinimumAndStaysRemoved() async throws {
+    let model = AppModel()
+    let shares = try splitSecret(
+        secret: Data("removal".utf8),
+        threshold: 4,
+        shareCount: 5,
+        selected: .mnemoWords,
+        passphrase: nil
+    )
+
+    model.updateShareInput(shares[0].text)
+    #expect(await waitUntil { model.recoveryShareInputs.count == 4 })
+
+    model.removeRecoveryShare(at: 3)
+    #expect(await waitUntil { model.inspection?.threshold == 4 })
+    #expect(model.recoveryShareInputs.count == 3)
+
+    model.updateRecoveryShare(at: 0, with: shares[0].text)
+    #expect(await waitUntil { model.inspection?.threshold == 4 })
+    #expect(model.recoveryShareInputs.count == 3)
+
+    model.removeRecoveryShare(at: 2)
+    model.removeRecoveryShare(at: 1)
+    #expect(model.recoveryShareInputs.count == 2)
+}
+
+@MainActor
+@Test
 func recoveryInputsFollowMetadataAndEnablePassphrase() async throws {
     let model = AppModel()
     #expect(model.encoding == .mnemoWords)

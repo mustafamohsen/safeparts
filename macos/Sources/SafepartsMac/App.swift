@@ -193,16 +193,12 @@ struct SplitView: View {
                             ProgressView()
                                 .controlSize(.small)
                         } else {
-                            Label("Create Recovery Shares", systemImage: "square.split.2x1")
+                            Label("Split", systemImage: "square.split.2x1")
                         }
                     }
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.return, modifiers: .command)
                     .disabled(!model.canSplit)
-
-                    Text("Command-Return")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
                 }
 
                 if let status = model.splitStatus {
@@ -301,6 +297,17 @@ struct RecoverView: View {
         )
     }
 
+    private var recoveryFailurePresented: Binding<Bool> {
+        Binding(
+            get: { model.recoveryStatus?.kind == .failure },
+            set: { presented in
+                if !presented {
+                    model.dismissRecoveryFailure()
+                }
+            }
+        )
+    }
+
     private func shareBinding(at index: Int) -> Binding<String> {
         Binding(
             get: { model.recoveryShareInputs[index] },
@@ -364,6 +371,19 @@ struct RecoverView: View {
                             .disabled(model.recoveryShareInputs[index].isEmpty)
                             .accessibilityLabel("Clear text in share \(index + 1)")
                             .help("Clear text")
+
+                            if model.recoveryShareInputs.count > 2 {
+                                Button {
+                                    model.removeRecoveryShare(at: index)
+                                } label: {
+                                    Image(systemName: "minus.circle")
+                                        .frame(width: 22, height: 20)
+                                }
+                                .buttonStyle(.borderless)
+                                .foregroundStyle(.secondary)
+                                .accessibilityLabel("Remove share \(index + 1)")
+                                .help("Remove share")
+                            }
                         }
                         .controlSize(.small)
 
@@ -422,10 +442,6 @@ struct RecoverView: View {
                     .keyboardShortcut(.return, modifiers: .command)
                     .disabled(!model.canRecover)
                 }
-
-                if let status = model.recoveryStatus {
-                    StatusView(status: status)
-                }
             }
 
             if let recovery = model.recovery {
@@ -436,6 +452,15 @@ struct RecoverView: View {
                                 .font(.body.monospaced())
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                        .fill(Color.green.opacity(0.08))
+                                )
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                        .stroke(Color.green.opacity(0.28))
+                                }
                         } else {
                             Label("Binary data (\(recovery.bytes.count.formatted()) bytes)", systemImage: "doc")
                                 .foregroundStyle(.secondary)
@@ -471,6 +496,13 @@ struct RecoverView: View {
             }
         }
         .formStyle(.grouped)
+        .alert("Unable to Continue", isPresented: recoveryFailurePresented) {
+            Button("OK", role: .cancel) {
+                model.dismissRecoveryFailure()
+            }
+        } message: {
+            Text(model.recoveryStatus?.message ?? "Safeparts couldn’t complete the operation.")
+        }
     }
 }
 
