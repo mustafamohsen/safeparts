@@ -83,6 +83,11 @@ func bridgeEncodingsPassphraseAndTypedErrors() throws {
         } throws: { error in
             error as? BridgeError == .PassphraseRequired
         }
+        #expect {
+            try combineShareInput(input: input, selected: .auto, passphrase: "wrong")
+        } throws: { error in
+            error as? BridgeError == .IncorrectPassphrase
+        }
         let recovered = try combineShareInput(input: input, selected: .auto, passphrase: "correct")
         #expect(recovered.bytes == Data([0, 255, 3]))
     }

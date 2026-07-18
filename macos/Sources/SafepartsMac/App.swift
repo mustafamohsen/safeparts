@@ -229,11 +229,15 @@ struct ShareRow: View {
                 .labelStyle(.iconOnly)
             }
 
-            Text(share.text)
-                .font(.caption.monospaced())
-                .textSelection(.enabled)
-                .lineLimit(4)
-                .accessibilityLabel("Recovery share \(share.index)")
+            ScrollView([.horizontal, .vertical]) {
+                Text(share.text)
+                    .font(.caption.monospaced())
+                    .textSelection(.enabled)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
+            .frame(minHeight: 72, maxHeight: 160)
+            .accessibilityLabel("Recovery share \(share.index)")
+            .accessibilityValue(share.text)
         }
         .padding(.vertical, 4)
     }
@@ -296,6 +300,14 @@ struct RecoverView: View {
                     LabeledContent("Recovery threshold", value: "\(inspection.threshold) of \(inspection.shareCount)")
                     LabeledContent("Shares provided", value: "\(inspection.providedCount)")
                     LabeledContent("Passphrase protected", value: inspection.encrypted ? "Yes" : "No")
+                    LabeledContent("Consistent") {
+                        if inspection.consistent {
+                            Text("Yes")
+                        } else {
+                            Text("No")
+                                .foregroundStyle(.orange)
+                        }
+                    }
                     LabeledContent("Status") {
                         Label(
                             inspection.ready ? "Ready to recover" : "More valid shares needed",
