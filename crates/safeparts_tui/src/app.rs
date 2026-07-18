@@ -83,8 +83,8 @@ struct Theme {
     border: Color,
 }
 
-impl Theme {
-    fn default_dark() -> Self {
+impl Default for Theme {
+    fn default() -> Self {
         Self {
             accent: Color::Cyan,
             dim: Color::Gray,
@@ -129,7 +129,7 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
-        let theme = Theme::default_dark();
+        let theme = Theme::default();
 
         let mut split_secret_text = TextArea::default();
         split_secret_text
@@ -196,13 +196,11 @@ impl App {
     }
 
     fn expire_status(&mut self) {
-        let should_expire = self
+        if self
             .status
             .as_ref()
-            .map(|status| status.at.elapsed() > Duration::from_secs(3))
-            .unwrap_or(false);
-
-        if should_expire {
+            .is_some_and(|status| status.at.elapsed() > Duration::from_secs(3))
+        {
             self.status = None;
         }
     }
@@ -239,7 +237,7 @@ impl App {
             return self.on_modal_key(key);
         }
 
-        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('q') {
+        if is_control_key(key, 'q') {
             return Ok(true);
         }
 
@@ -258,22 +256,22 @@ impl App {
             return Ok(false);
         }
 
-        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('l') {
-            self.on_load()?;
+        if is_control_key(key, 'l') {
+            self.on_load();
             return Ok(false);
         }
 
-        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('s') {
-            self.on_save()?;
+        if is_control_key(key, 's') {
+            self.on_save();
             return Ok(false);
         }
 
-        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
+        if is_control_key(key, 'c') {
             self.on_copy()?;
             return Ok(false);
         }
 
-        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('v') {
+        if is_control_key(key, 'v') {
             self.on_paste()?;
             return Ok(false);
         }
@@ -329,7 +327,7 @@ impl App {
     }
 
     fn passphrase_input(key: KeyEvent, buf: &mut Zeroizing<String>) {
-        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('u') {
+        if is_control_key(key, 'u') {
             buf.clear();
             return;
         }
@@ -401,48 +399,36 @@ impl App {
         }
     }
 
-    fn on_load(&mut self) -> Result<()> {
-        match self.tab {
-            TabId::Split => {
-                self.modal = Some(Modal::new(
-                    ModalKind::LoadSecretFile,
-                    "Enter secret file path (bytes)",
-                ));
-            }
-            TabId::Combine => {
-                self.modal = Some(Modal::new(
-                    ModalKind::LoadShareFiles,
-                    "Enter share file paths (one per line)",
-                ));
-            }
-        }
-        Ok(())
+    fn on_load(&mut self) {
+        self.modal = Some(match self.tab {
+            TabId::Split => Modal::new(ModalKind::LoadSecretFile, "Enter secret file path (bytes)"),
+            TabId::Combine => Modal::new(
+                ModalKind::LoadShareFiles,
+                "Enter share file paths (one per line)",
+            ),
+        });
     }
 
-    fn on_save(&mut self) -> Result<()> {
-        match self.tab {
-            TabId::Split => {
-                if self.split_shares.is_empty() {
-                    self.set_info("no shares to save");
-                    return Ok(());
-                }
-                self.modal = Some(Modal::new(
-                    ModalKind::SaveSharesDir,
-                    "Enter output directory for share files",
-                ));
+    fn on_save(&mut self) {
+        let modal = match self.tab {
+            TabId::Split if self.split_shares.is_empty() => {
+                self.set_info("no shares to save");
+                return;
             }
-            TabId::Combine => {
-                if self.combine_recovered.is_none() {
-                    self.set_info("nothing to save");
-                    return Ok(());
-                }
-                self.modal = Some(Modal::new(
-                    ModalKind::SaveSecretFile,
-                    "Enter output file path for recovered secret",
-                ));
+            TabId::Split => Modal::new(
+                ModalKind::SaveSharesDir,
+                "Enter output directory for share files",
+            ),
+            TabId::Combine if self.combine_recovered.is_none() => {
+                self.set_info("nothing to save");
+                return;
             }
-        }
-        Ok(())
+            TabId::Combine => Modal::new(
+                ModalKind::SaveSecretFile,
+                "Enter output file path for recovered secret",
+            ),
+        };
+        self.modal = Some(modal);
     }
 
     fn on_copy(&mut self) -> Result<()> {
@@ -606,8 +592,8 @@ impl App {
     }
 
     fn do_split(&mut self) -> Result<()> {
-        let secret_bytes = if let Some(path) = self.split_secret_file.clone() {
-            fs::read(&path).with_context(|| format!("read {}", path.display()))?
+        let secret_bytes = if let Some(path) = self.split_secret_file.as_ref() {
+            fs::read(path).with_context(|| format!("read {}", path.display()))?
         } else {
             self.split_secret_text.lines().join("\n").into_bytes()
         };
@@ -663,12 +649,7 @@ impl App {
                 self.combine_used_encoding = Some(used_enc);
                 self.combine_recovered_text = recovered_text;
                 self.combine_recovered = Some(recovered);
-
-                let detected = self
-                    .combine_used_encoding
-                    .map(|e| e.label().to_string())
-                    .unwrap_or_else(|| "unknown".into());
-                self.set_ok(format!("combined ok ({detected})"));
+                self.set_ok(format!("combined ok ({})", used_enc.label()));
             }
             Err(e) => {
                 self.combine_recovered = None;
@@ -1214,6 +1195,10 @@ impl App {
     }
 }
 
+fn is_control_key(key: KeyEvent, character: char) -> bool {
+    key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char(character)
+}
+
 fn settings_row(label: &'static str, value: String, active: bool, theme: Theme) -> Row<'static> {
     let value_style = if active {
         Style::default()
@@ -1282,4 +1267,69 @@ fn list_state(selected: usize) -> ratatui::widgets::ListState {
     let mut state = ratatui::widgets::ListState::default();
     state.select(Some(selected));
     state
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn focus_navigation_wraps_within_each_tab() {
+        let mut app = App::new();
+
+        for expected in [
+            Focus::SplitK,
+            Focus::SplitN,
+            Focus::SplitEncoding,
+            Focus::SplitPassphrase,
+            Focus::SplitShares,
+            Focus::SplitSecret,
+        ] {
+            app.next_focus();
+            assert_eq!(app.focus, expected);
+        }
+
+        app.next_tab();
+        assert_eq!(app.focus, Focus::CombineShares);
+        app.prev_focus();
+        assert_eq!(app.focus, Focus::CombinePassphrase);
+        app.next_focus();
+        assert_eq!(app.focus, Focus::CombineShares);
+    }
+
+    #[test]
+    fn load_and_save_shortcuts_preserve_modal_and_status_behavior() {
+        let mut app = App::new();
+
+        app.on_key(KeyEvent::new(KeyCode::Char('l'), KeyModifiers::CONTROL))
+            .unwrap();
+        assert_eq!(
+            app.modal.as_ref().map(|modal| modal.kind),
+            Some(ModalKind::LoadSecretFile)
+        );
+
+        app.on_key(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE))
+            .unwrap();
+        assert!(app.modal.is_none());
+
+        app.on_key(KeyEvent::new(KeyCode::Char('s'), KeyModifiers::CONTROL))
+            .unwrap();
+        assert_eq!(
+            app.status.as_ref().map(|status| status.msg.as_str()),
+            Some("no shares to save")
+        );
+        assert!(app.modal.is_none());
+    }
+
+    #[test]
+    fn encoding_cycles_wrap_in_both_directions() {
+        assert_eq!(
+            cycle_encoding(Encoding::Base64url, -1, Encoding::SPLIT),
+            Encoding::MnemoBip39
+        );
+        assert_eq!(
+            cycle_encoding(Encoding::MnemoBip39, 1, Encoding::SPLIT),
+            Encoding::Base64url
+        );
+    }
 }

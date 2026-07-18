@@ -1,4 +1,3 @@
-use std::ffi::OsStr;
 use std::fs;
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
@@ -153,9 +152,7 @@ fn main() -> Result<()> {
             write_output_bytes(out, &secret)?;
         }
 
-        Commands::Tui => {
-            launch_tui()?;
-        }
+        Commands::Tui => launch_tui()?,
     }
 
     Ok(())
@@ -193,19 +190,18 @@ fn parse_share_packets(
     encoding: Option<CliEncoding>,
 ) -> Result<Vec<safeparts_core::packet::SharePacket>> {
     let encoding = encoding.map_or(Encoding::Auto, Into::into);
-    encoding::parse_share_packets(input, encoding)
-        .map(|parsed| parsed.packets)
-        .map_err(|e| anyhow!(e))
+    let parsed = encoding::parse_share_packets(input, encoding).map_err(|e| anyhow!(e))?;
+    Ok(parsed.packets)
 }
 
-fn is_dash_path(p: &Path) -> bool {
-    p.as_os_str() == OsStr::new("-")
+fn is_dash_path(path: &Path) -> bool {
+    path == Path::new("-")
 }
 
 fn read_input(path: Option<PathBuf>) -> Result<Vec<u8>> {
-    match path {
-        Some(p) if !is_dash_path(p.as_path()) => {
-            fs::read(&p).with_context(|| format!("read input {}", p.display()))
+    match path.as_deref() {
+        Some(path) if !is_dash_path(path) => {
+            fs::read(path).with_context(|| format!("read input {}", path.display()))
         }
         _ => {
             let mut buf = Vec::new();
@@ -215,14 +211,14 @@ fn read_input(path: Option<PathBuf>) -> Result<Vec<u8>> {
     }
 }
 
-fn write_output_text(path: Option<PathBuf>, s: &str) -> Result<()> {
-    match path {
-        Some(p) if !is_dash_path(p.as_path()) => {
-            fs::write(&p, s).with_context(|| format!("write output {}", p.display()))
+fn write_output_text(path: Option<PathBuf>, text: &str) -> Result<()> {
+    match path.as_deref() {
+        Some(path) if !is_dash_path(path) => {
+            fs::write(path, text).with_context(|| format!("write output {}", path.display()))
         }
         _ => {
             io::stdout()
-                .write_all(s.as_bytes())
+                .write_all(text.as_bytes())
                 .context("write stdout")?;
             Ok(())
         }
@@ -230,9 +226,9 @@ fn write_output_text(path: Option<PathBuf>, s: &str) -> Result<()> {
 }
 
 fn write_output_bytes(path: Option<PathBuf>, bytes: &[u8]) -> Result<()> {
-    match path {
-        Some(p) if !is_dash_path(p.as_path()) => {
-            fs::write(&p, bytes).with_context(|| format!("write output {}", p.display()))
+    match path.as_deref() {
+        Some(path) if !is_dash_path(path) => {
+            fs::write(path, bytes).with_context(|| format!("write output {}", path.display()))
         }
         _ => {
             io::stdout().write_all(bytes).context("write stdout")?;

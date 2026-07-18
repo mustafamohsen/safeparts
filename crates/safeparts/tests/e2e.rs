@@ -48,6 +48,31 @@ fn run_combine(encoding: Option<&str>, shares: &[String], passphrase: Option<&st
 }
 
 #[test]
+fn explicit_dash_paths_use_stdin_and_stdout() {
+    let input = b"explicit stdio paths";
+    let mut split = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
+    let split_output = split
+        .args([
+            "split", "-k", "2", "-n", "3", "-e", "base64", "-i", "-", "-o", "-",
+        ])
+        .write_stdin(input.as_slice())
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let shares = String::from_utf8(split_output).unwrap();
+
+    let mut combine = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
+    combine
+        .args(["combine", "-i", "-", "-o", "-"])
+        .write_stdin(shares)
+        .assert()
+        .success()
+        .stdout(input.as_slice());
+}
+
+#[test]
 fn e2e_round_trip_base58() {
     let input = b"hello e2e base58";
     let shares = run_split("base58", 2, 3, input, None);

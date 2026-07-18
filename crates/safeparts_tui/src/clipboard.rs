@@ -20,15 +20,17 @@ impl Clipboard {
     }
 
     pub fn get_text(&mut self) -> Result<String> {
-        match self.inner.as_mut() {
-            Some(cb) => cb.get_text().context("read clipboard"),
-            None => anyhow::bail!("clipboard unavailable"),
-        }
+        let Some(clipboard) = self.inner.as_mut() else {
+            anyhow::bail!("clipboard unavailable");
+        };
+        clipboard.get_text().context("read clipboard")
     }
 
     pub fn set_text(&mut self, text: &str) -> Result<CopyMethod> {
-        if let Some(cb) = self.inner.as_mut() {
-            cb.set_text(text.to_string()).context("write clipboard")?;
+        if let Some(clipboard) = self.inner.as_mut() {
+            clipboard
+                .set_text(text.to_string())
+                .context("write clipboard")?;
             return Ok(CopyMethod::System);
         }
 
