@@ -304,11 +304,17 @@ jobs:
           from pathlib import Path
 
           out_dir = Path('dist/release')
+          published_suffixes = (
+              '.tar.gz', '.zip', '.AppImage', '.deb', '.rpm', '.dmg', '.msi', '.exe'
+          )
           files = sorted(
               p
               for p in out_dir.rglob('*')
-              if p.is_file() and p.name != 'SHA256SUMS.txt'
+              if p.is_file() and p.name.endswith(published_suffixes)
           )
+          names = [p.name for p in files]
+          if len(names) != len(set(names)):
+              raise RuntimeError('published release asset names must be unique')
 
           def sha256_hex(path: Path) -> str:
               h = hashlib.sha256()
@@ -320,7 +326,7 @@ jobs:
           sums = out_dir / 'SHA256SUMS.txt'
           with sums.open('w', encoding='utf-8') as f:
               for p in files:
-                  f.write(f"{sha256_hex(p)}  {p.relative_to(out_dir).as_posix()}\n")
+                  f.write(f"{sha256_hex(p)}  {p.name}\n")
           print(f"wrote {sums}")
           PY
 

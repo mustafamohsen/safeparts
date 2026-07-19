@@ -12,7 +12,7 @@ Release tooling builds and publishes:
 - Tauri desktop installers for Linux and Windows
 - the native SwiftUI universal DMG for macOS 14+
 - self-contained native WinUI preview archives for Windows 11 x64 and ARM64
-- one checksum manifest covering every published file
+- one checksum manifest listing every published asset by its release-page filename
 
 The web UI is deployed as static output rather than a release archive. A manual `workflow_dispatch` assembles every release artifact and `SHA256SUMS.txt` into a short-lived dry-run artifact without creating a GitHub Release.
 

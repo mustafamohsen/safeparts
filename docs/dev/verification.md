@@ -127,7 +127,7 @@ python3 scripts/release/package.py --version 0.3.0
 RELEASE_VERSION=v0.3.0 mise run macos:package
 ```
 
-Release CI owns Tauri installers for Linux and Windows, the unsigned universal native DMG for macOS, and unsigned self-contained native Windows preview archives for x64 and ARM64. The assembly job generates one checksum manifest after downloading every platform artifact. On `workflow_dispatch`, it uploads the complete result as a short-lived dry-run artifact instead of creating a GitHub Release.
+Release CI owns Tauri installers for Linux and Windows, the unsigned universal native DMG for macOS, and unsigned self-contained native Windows preview archives for x64 and ARM64. The assembly job generates one checksum manifest that lists only published assets by their release-page filenames. On `workflow_dispatch`, it uploads the complete result as a short-lived dry-run artifact instead of creating a GitHub Release.
 
 ## DX checks
 
