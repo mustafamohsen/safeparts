@@ -77,3 +77,74 @@ jobs:
         run: |
           $env:SAFEPARTS_NATIVE_DIR = (Resolve-Path ../target/debug)
           dotnet run --project Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
+
+      - name: Package self-contained x64 preview
+        run: python windows/scripts/package-release.py 0.2.0 x64
+
+      - name: Test exact x64 package
+        shell: pwsh
+        run: |
+          $package = (Resolve-Path target/native-windows-release/x64/extract/safeparts-native-windows-x64-0.2.0).Path
+          windows/scripts/launch-package-smoke.ps1 -PackageRoot $package
+          $env:SAFEPARTS_NATIVE_DIR = $package
+          dotnet run --project windows/Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
+
+      - name: Upload x64 package smoke
+        uses: actions/upload-artifact@v4
+        with:
+          name: safeparts-native-windows-x64-package-smoke
+          path: dist/release/safeparts-native-windows-x64-0.2.0.zip
+          if-no-files-found: error
+
+  arm64-package-smoke:
+    name: native ARM64 package smoke
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Assert native ARM64 runner
+        shell: pwsh
+        run: |
+          if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne 'Arm64') { throw 'ARM64 package must execute on an ARM64 runner.' }
+
+      - name: Check generated binding
+        run: python windows/scripts/prepare.py --check
+
+      - name: Test Windows application model
+        working-directory: windows
+        run: dotnet test Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --configuration Release
+
+      - name: Build interoperability smoke
+        working-directory: windows
+        run: dotnet build Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release
+
+      - name: Package self-contained ARM64 preview
+        run: python windows/scripts/package-release.py 0.2.0 arm64
+
+      - name: Test exact ARM64 package
+        shell: pwsh
+        run: |
+          $package = (Resolve-Path target/native-windows-release/arm64/extract/safeparts-native-windows-arm64-0.2.0).Path
+          windows/scripts/launch-package-smoke.ps1 -PackageRoot $package
+          $env:SAFEPARTS_NATIVE_DIR = $package
+          dotnet run --project windows/Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
+
+      - name: Upload ARM64 package smoke
+        uses: actions/upload-artifact@v4
+        with:
+          name: safeparts-native-windows-arm64-package-smoke
+          path: dist/release/safeparts-native-windows-arm64-0.2.0.zip
+          if-no-files-found: error

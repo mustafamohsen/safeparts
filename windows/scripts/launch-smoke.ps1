@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
-$exe = Get-ChildItem (Join-Path $root 'windows/Safeparts.App/bin') -Recurse -Filter 'Safeparts.App.exe' |
+$exe = Get-ChildItem (Join-Path $root 'windows/Safeparts.App/bin') -Recurse -Filter 'Safeparts.exe' |
     Where-Object { $_.FullName -match 'Release' -and $_.FullName -match 'win-x64' } |
     Select-Object -First 1
 if (-not $exe) { throw 'Built Safeparts.App.exe was not found.' }
