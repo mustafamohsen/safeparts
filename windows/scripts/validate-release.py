@@ -36,8 +36,9 @@ def main() -> int:
     root = args.package_root.resolve()
     exe = root / "Safeparts.exe"
     bridge = root / "safeparts_uniffi.dll"
-    for path in [exe, bridge, root / "Safeparts.deps.json", root / "Safeparts.runtimeconfig.json", root / "resources.pri"]:
+    for path in [exe, bridge, root / "Safeparts.deps.json", root / "Safeparts.runtimeconfig.json"]:
         require(path.is_file(), f"missing package file: {path.name}")
+    require(any(root.glob("*.pri")), "missing WinUI resource index")
     require((root / "Assets" / "Safeparts.ico").is_file(), "missing app icon")
     require(pe_machine(exe) == MACHINES[args.architecture], "apphost architecture mismatch")
     require(pe_machine(bridge) == MACHINES[args.architecture], "Rust bridge architecture mismatch")
