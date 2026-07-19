@@ -10,6 +10,7 @@ required_xaml = [
     'AutomationProperties.AutomationId="TaskRecover"',
     'AutomationProperties.AutomationId="SecretText"',
     'AutomationProperties.AutomationId="SplitEncoding"',
+    'AutomationProperties.AutomationId="RecoveryEncoding"',
     'AutomationProperties.AutomationId="SplitAction"',
     'AutomationProperties.AutomationId="RecoverAction"',
     'AutomationProperties.AutomationId="RecoveredText"',

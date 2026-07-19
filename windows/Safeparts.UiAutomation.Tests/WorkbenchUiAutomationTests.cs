@@ -54,6 +54,10 @@ public sealed class WorkbenchUiAutomationTests
             Assert.Equal(3, shareText.Distinct(StringComparer.Ordinal).Count());
 
             FocusAndPress(recoverTask, VirtualKeyShort.SPACE);
+            ComboBox recoveryEncoding = WaitForById(window, "RecoveryEncoding").AsComboBox();
+            Assert.Equal(ControlType.ComboBox, recoveryEncoding.ControlType);
+            Assert.Equal("Recovery Share encoding", recoveryEncoding.Name);
+            FocusAndPress(recoveryEncoding, VirtualKeyShort.HOME);
             TextBox[] recoveryFields = WaitForTextBoxes(window, "Recovery share", 2);
             FocusAndType(recoveryFields[0], shareText[0]);
             WaitUntil(() => recoveryFields[0].Text == shareText[0], "First Recovery share did not accept keyboard input.");
