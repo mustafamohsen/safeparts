@@ -14,22 +14,22 @@ Status keys:
 
 | Feature | Core | CLI | TUI | WASM | Web | Desktop | Native macOS | Native Windows | Help docs | Tests | Update when changed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Split/combine bytes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core | Yes | Rust, native bridges, CLI e2e, web smoke, desktop command tests | All surface guides |
-| Threshold range `1 <= k <= n <= 255` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core | Yes | Core and native-bridge negative tests | Core, CLI, TUI, WASM, web, desktop, native apps |
+| Split/combine bytes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Rust, native bridges, Windows model/launch smoke, CLI e2e, web smoke, desktop command tests | All surface guides |
+| Threshold range `1 <= k <= n <= 255` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, Windows model, and native-bridge negative tests | Core, CLI, TUI, WASM, web, desktop, native apps |
 | BLAKE3 integrity tag | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core | Yes | Core corruption tests | Core and technical docs |
-| Passphrase protection | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core | Yes | Core, native bridges, CLI e2e, web smoke, desktop command tests | Security docs and every exposed UI |
-| `base64url` share encoding | Yes | Yes, alias `base64` | Yes | Yes | Yes | Yes | Yes | Core | Yes | Core, native bridges, CLI e2e, desktop command tests | Encoding lists and UI choices |
-| `base58check` share encoding | Yes | Yes, alias `base58` | Yes | Yes | Core | Core | Yes | Core | Yes | Core, native bridges, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
-| `mnemo-words` share encoding | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core | Yes | Core, native bridges, CLI e2e, web smoke, desktop command tests | Encoding docs and UI choices |
-| `mnemo-bip39` share encoding | Yes | Yes | Yes | Yes | Core | Core | Yes | Core | Yes | Core, native bridges, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
-| Auto encoding parse | Yes | Yes for combine | Yes for combine | Yes | Yes for combine | Yes for combine | Yes | Core | Yes | Core, native bridges, CLI e2e, web smoke, desktop command tests | Encoding parser docs and UI guidance |
+| Passphrase protection | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, native bridges, Windows model, CLI e2e, web smoke, desktop command tests | Security docs and every exposed UI |
+| `base64url` share encoding | Yes | Yes, alias `base64` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, native bridges, Windows smoke, CLI e2e, desktop command tests | Encoding lists and UI choices |
+| `base58check` share encoding | Yes | Yes, alias `base58` | Yes | Yes | Core | Core | Yes | Yes | Yes | Core, native bridges, Windows smoke, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
+| `mnemo-words` share encoding | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, native bridges, Windows smoke, CLI e2e, web smoke, desktop command tests | Encoding docs and UI choices |
+| `mnemo-bip39` share encoding | Yes | Yes | Yes | Yes | Core | Core | Yes | Yes | Yes | Core, native bridges, Windows smoke, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
+| Auto encoding parse | Yes | Yes for combine | Yes for combine | Yes | Yes for combine | Yes for combine | Yes | Yes | Yes | Core, native bridges, Windows smoke, CLI e2e, web smoke, desktop command tests | Encoding parser docs and UI guidance |
 | Web local-only workflow | N/A | N/A | N/A | Yes | Yes | N/A | N/A | N/A | Yes | Web build and smoke tests | Web surface guide |
 | Desktop local-only Tauri workflow | N/A | N/A | N/A | N/A | Mirrored UI source | Yes | N/A | N/A | Yes | Desktop build, Tauri command tests | Desktop surface guide |
 | Native macOS local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | N/A | Rust bridge and Swift model tests | Native macOS surface guide |
 | Native Windows C# interoperability | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Rust public-API tests and real-DLL C# smoke | Native Windows bridge and surface guide |
-| Native Windows local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Planned | N/A | Planned WinUI model and UI tests | Native Windows surface guide |
-| Metadata-guided native recovery inputs | N/A | N/A | N/A | N/A | N/A | N/A | Yes | Core | N/A | Swift model tests and C# bridge smoke | Native app models and UI |
-| Native batch-export filename prefix | N/A | N/A | N/A | N/A | N/A | N/A | Yes | Planned | N/A | Swift filename tests | Native app models and UI |
+| Native Windows local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Windows model, launch, accessibility source, and real-DLL smoke | Native Windows surface guide |
+| Metadata-guided native recovery inputs | N/A | N/A | N/A | N/A | N/A | N/A | Yes | Yes | N/A | Swift and Windows model tests plus real bridge smoke | Native app models and UI |
+| Native batch-export filename prefix | N/A | N/A | N/A | N/A | N/A | N/A | Yes | Yes | N/A | Swift and Windows filename tests | Native app models and UI |
 | English + Arabic user docs | N/A | N/A | N/A | N/A | Links to help | N/A | N/A | N/A | Yes | Docs build, docs a11y route parity | Help docs guide |
 | Release CLI/TUI archives | N/A | Yes | Yes | N/A | N/A | N/A | N/A | N/A | Yes | Release workflow, package script | Release guide |
 | Tauri desktop installers | N/A | N/A | N/A | N/A | N/A | Yes, Linux and Windows | N/A | N/A | Yes | Release workflow | Release guide and desktop guide |

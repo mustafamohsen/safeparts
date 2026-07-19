@@ -1,19 +1,25 @@
 # Native Windows surface
 
-The Windows surface currently proves C# interoperability with the real Rust library. It does not contain the end-user WinUI app or a downloadable package yet.
+The `windows/` solution owns the native WinUI 3 app for supported Windows 11 releases. It mirrors the native macOS Split and Recover workbench with Windows controls, file pickers, clipboard APIs, keyboard accelerators, UI Automation semantics, themes, and scaling behavior.
 
-`crates/safeparts_uniffi/` exposes the same operation-shaped split, inspection, and recovery contract planned for the native app. `windows/Generated/` contains the tracked C# binding. The generator and UniFFI runtime use matching pinned versions, and generated bindings keep their contract and checksum checks enabled.
+`Safeparts.AppModel` keeps workbench state independent of WinUI. It owns generation guards, stable Recovery-share identities, metadata-driven readiness, binary/text presentation, safe messages, and Windows filename policy. `Safeparts.Native` adapts the generated C# UniFFI API and runs every Rust call on a worker task. Cryptography, Share packets, Share encodings, Auto encoding, integrity, and Passphrase protection remain in `safeparts_core`.
 
-Regenerate or verify the binding from the repository root:
+Regenerate or verify bindings from the repository root:
 
 ```bash
-python3 windows/scripts/prepare.py
-python3 windows/scripts/prepare.py --check
-cargo test -p safeparts_uniffi
+mise run windows:prepare
+mise run windows:binding-check
+python3 windows/scripts/verify-accessibility.py
 ```
 
-The preparation script builds a host dynamic library, installs the pinned C# generator under Cargo's target directory, and normalizes the generated file. It does not install a global tool.
+With .NET 10 installed, the UI-free tests run on any host:
 
-Windows CI compiles the C# smoke executable and loads the real `safeparts_uniffi.dll`. The executable tests binary and passphrase-protected round trips through every concrete Share encoding, Auto recovery, metadata inspection, typed failures, repeated calls, and sanitized exception text. It prints only a generic result.
+```bash
+dotnet test windows/Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --configuration Release
+```
 
-The native macOS app and C# smoke executable use the same platform-neutral bridge. Changes to this foundation trigger the macOS build, generated-binding drift check, tests, and package smoke so either binding surface cannot silently diverge.
+Windows CI builds the WinUI project for an explicit x64 RID, launches the self-contained app with the real Rust DLL, and runs the full interoperability smoke. The smoke covers text and binary Secrets, every concrete Share encoding, Auto recovery, metadata inspection, typed failures, Passphrase protection, repeated calls, and generated contract checks.
+
+Before release, complete `windows/docs/accessibility-release-checklist.md` with Narrator and Accessibility Insights. CI source checks do not replace manual Narrator, contrast, scaling, RTL, or IME review.
+
+The native app currently remains a CI-tested product surface while packaging and release ownership proceed through the preview tickets. Tauri continues to own released Windows installers until that cutover.

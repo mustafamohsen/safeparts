@@ -267,6 +267,7 @@ bun run test:a11y
 - `web/help/`: Astro + Starlight docs
 - `desktop/`: Tauri + React desktop app
 - `macos/`: native SwiftUI macOS app
+- `windows/`: native WinUI 3 Windows app, model, generated binding, and tests
 
 ## Contributing
 

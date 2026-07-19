@@ -111,6 +111,10 @@ run = "python3 windows/scripts/prepare.py"
 description = "Verify the generated C# binding and platform-neutral Rust API."
 run = ["python3 windows/scripts/prepare.py --check", "cargo test -p safeparts_uniffi"]
 
+[tasks."windows:model-test"]
+description = "Run the UI-free native Windows application-model tests."
+run = "dotnet test windows/Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --configuration Release"
+
 [tasks."desktop:dev"]
 description = "Start the desktop app."
 dir = "desktop"

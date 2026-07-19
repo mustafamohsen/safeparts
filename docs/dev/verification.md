@@ -107,7 +107,14 @@ cargo test -p safeparts_uniffi
 
 The preparation script installs the exact C# generator revision under Cargo's target directory. C# compilation and DLL execution require Windows. The native Windows CI job builds the Rust DLL, checks generated-binding drift, compiles the .NET smoke executable, and runs binary, Share encoding, Auto encoding, inspection, Passphrase protection, typed-error, and repeated-call checks against the real DLL.
 
-This is an interoperability gate, not a packaged native Windows app check.
+Run the UI-free application-model tests on any .NET 10 host:
+
+```bash
+dotnet test windows/Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --configuration Release
+python3 windows/scripts/verify-accessibility.py
+```
+
+Windows CI also builds the WinUI project for `win-x64`, launches the self-contained application with the real Rust DLL, and runs the generated-binding interoperability smoke. Complete the manual Narrator, Accessibility Insights, contrast, scaling, RTL, and IME checklist before a release.
 
 ## Release packaging
 

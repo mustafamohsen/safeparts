@@ -52,6 +52,21 @@ jobs:
       - name: Check generated C# binding
         run: python windows/scripts/prepare.py --check
 
+      - name: Test Windows application model
+        working-directory: windows
+        run: dotnet test Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --configuration Release
+
+      - name: Verify accessibility source contract
+        run: python windows/scripts/verify-accessibility.py
+
+      - name: Build native Windows app
+        working-directory: windows
+        run: dotnet build Safeparts.App/Safeparts.App.csproj --configuration Release -p:Platform=x64 -p:RuntimeIdentifier=win-x64
+
+      - name: Launch native Windows app
+        shell: pwsh
+        run: windows/scripts/launch-smoke.ps1
+
       - name: Build C# smoke executable
         working-directory: windows
         run: dotnet build Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release

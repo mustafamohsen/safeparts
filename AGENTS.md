@@ -92,7 +92,7 @@ Default section order:
   - `web/help/`: Astro + Starlight help docs served under `/help/`.
 - `desktop/`: standalone Tauri desktop app with React UI and Rust command layer.
 - `macos/`: native macOS 14+ SwiftUI app using the platform-neutral UniFFI bridge.
-- `windows/`: generated C# UniFFI binding and native Windows interoperability smoke executable; the end-user WinUI app is planned.
+- `windows/`: native Windows 11 WinUI app, UI-free model and tests, generated C# UniFFI binding, and Windows validation scripts.
 - `docs/`: internal repository docs for agents and developers.
 - `openspec/`: OpenSpec project context, active/archived changes, and accepted specs.
 - `scripts/`: repository automation scripts, including release packaging.

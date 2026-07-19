@@ -6,6 +6,7 @@ import argparse
 import json
 import re
 import tomllib
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
@@ -26,6 +27,13 @@ def json_version(path: Path) -> str:
         return str(json.load(file)["version"])
 
 
+def project_version(path: Path) -> str:
+    value = ET.parse(path).findtext(".//Version")
+    if value is None:
+        raise ValueError(f"project has no Version property: {path}")
+    return value
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check release version consistency")
     parser.add_argument("version")
@@ -42,6 +50,7 @@ def main() -> int:
         "desktop/src-tauri/Cargo.toml": toml_version,
         "desktop/package.json": json_version,
         "desktop/src-tauri/tauri.conf.json": json_version,
+        "windows/Safeparts.App/Safeparts.App.csproj": project_version,
     }
 
     mismatches: list[str] = []
