@@ -56,7 +56,9 @@ public sealed class WorkbenchUiAutomationTests
             FocusAndPress(recoverTask, VirtualKeyShort.SPACE);
             TextBox[] recoveryFields = WaitForTextBoxes(window, "Recovery share", 2);
             FocusAndType(recoveryFields[0], shareText[0]);
+            WaitUntil(() => recoveryFields[0].Text == shareText[0], "First Recovery share did not accept keyboard input.");
             FocusAndType(recoveryFields[1], shareText[1]);
+            WaitUntil(() => recoveryFields[1].Text == shareText[1], "Second Recovery share did not accept keyboard input.");
 
             Button recoverAction = RequireById(window, "RecoverAction").AsButton();
             AutomationElement readiness = RequireById(window, "RecoveryReadiness");
@@ -120,6 +122,7 @@ public sealed class WorkbenchUiAutomationTests
 
     private static void FocusAndType(AutomationElement element, string value)
     {
+        ScrollIntoView(element);
         element.FocusNative();
         Keyboard.TypeSimultaneously(VirtualKeyShort.CONTROL, VirtualKeyShort.KEY_A);
         Keyboard.Type(value);
@@ -128,9 +131,19 @@ public sealed class WorkbenchUiAutomationTests
 
     private static void FocusAndPress(AutomationElement element, VirtualKeyShort key)
     {
+        ScrollIntoView(element);
         element.FocusNative();
         Keyboard.Type(key);
         Wait.UntilInputIsProcessed(TimeSpan.FromMilliseconds(100));
+    }
+
+    private static void ScrollIntoView(AutomationElement element)
+    {
+        if (element.Patterns.ScrollItem.IsSupported)
+        {
+            element.Patterns.ScrollItem.Pattern.ScrollIntoView();
+            Wait.UntilInputIsProcessed(TimeSpan.FromMilliseconds(100));
+        }
     }
 
     private static void WaitUntil(Func<bool> condition, string message)
