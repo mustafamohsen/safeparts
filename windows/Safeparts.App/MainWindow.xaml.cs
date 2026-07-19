@@ -88,7 +88,7 @@ public sealed partial class MainWindow : Window
     }
     private async void ImportSharesClicked(object sender, RoutedEventArgs args)
     {
-        FileOpenPicker picker = new(); picker.FileTypeFilter.Add(".txt"); InitializePicker(picker); IReadOnlyList<Windows.Storage.StorageFile> files = await picker.PickMultipleFilesAsync(); if (files.Count == 0) return;
+        FileOpenPicker picker = new(); picker.FileTypeFilter.Add("*"); InitializePicker(picker); IReadOnlyList<Windows.Storage.StorageFile> files = await picker.PickMultipleFilesAsync(); if (files.Count == 0) return;
         List<string> shares = [];
         try { foreach (Windows.Storage.StorageFile file in files) { string text = await File.ReadAllTextAsync(file.Path, new System.Text.UTF8Encoding(false, true)); if (!string.IsNullOrWhiteSpace(text)) shares.Add(text.Trim()); } if (shares.Count == 0) throw new InvalidDataException(); Model.SetRecoveryInput(string.Join("\n\n", shares)); RefreshUi(); }
         catch { await ShowFileErrorAsync("Couldn’t import the selected Recovery-share files."); }
