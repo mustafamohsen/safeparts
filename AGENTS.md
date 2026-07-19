@@ -120,6 +120,10 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
 - Contributor onboarding and DX workflow: `CONTRIBUTING.md`, `docs/dev/README.md`
 - Local dev toolchain/env/task shortcuts: `mise.toml`
 
+## Research
+
+- Use Brave search using the API key in `.env`
+
 ## Checks (mirrors CI)
 
 - Build / lint / test commands: `docs/agents/checks.md`, `docs/dev/verification.md`
