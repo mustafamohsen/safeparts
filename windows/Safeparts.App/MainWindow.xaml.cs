@@ -16,13 +16,14 @@ public sealed partial class MainWindow : Window
 
     public MainWindow()
     {
+        _refreshing = true;
         InitializeComponent(); Title = "Safeparts"; ExtendsContentIntoTitleBar = true; SetTitleBar(AppTitleBar);
         Model.PropertyChanged += (_, _) => DispatcherQueue.TryEnqueue(RefreshUi);
         Model.Shares.CollectionChanged += (_, _) => DispatcherQueue.TryEnqueue(RefreshUi);
         Model.RecoveryFields.CollectionChanged += (_, _) => DispatcherQueue.TryEnqueue(RefreshUi);
         SplitEncodingBox.ItemsSource = ConcreteEncodings(); SplitEncodingBox.SelectedItem = ShareEncoding.MnemoWords;
         RecoveryEncodingBox.ItemsSource = Enum.GetValues<ShareEncoding>(); RecoveryEncodingBox.SelectedItem = ShareEncoding.Auto;
-        AddAccelerators(); RefreshUi();
+        AddAccelerators(); _refreshing = false; RefreshUi();
     }
 
     private static ShareEncoding[] ConcreteEncodings() => [ShareEncoding.Base64url, ShareEncoding.Base58check, ShareEncoding.MnemoWords, ShareEncoding.MnemoBip39];
