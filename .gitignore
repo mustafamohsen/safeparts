@@ -14,3 +14,4 @@ web/test-results
 # Desktop
 /desktop/node_modules
 /desktop/dist
+.env
