@@ -9,10 +9,12 @@ required_xaml = [
     'AutomationProperties.AutomationId="TaskSplit"',
     'AutomationProperties.AutomationId="TaskRecover"',
     'AutomationProperties.AutomationId="SecretText"',
+    'AutomationProperties.AutomationId="SplitEncoding"',
     'AutomationProperties.AutomationId="SplitAction"',
     'AutomationProperties.AutomationId="RecoverAction"',
     'AutomationProperties.AutomationId="RecoveredText"',
     'AutomationProperties.LiveSetting="Polite"',
+    'AutomationProperties.AutomationId="RecoveryReadiness"',
     'AutomationProperties.Name="Recovery share"',
 ]
 required_code = [

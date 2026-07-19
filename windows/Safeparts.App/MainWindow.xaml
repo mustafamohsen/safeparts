@@ -29,7 +29,7 @@
       <StackPanel><TextBlock Text="Threshold"/><NumberBox x:Name="ThresholdBox" Minimum="1" Maximum="255" SpinButtonPlacementMode="Inline" Value="2" ValueChanged="ThresholdChanged" AutomationProperties.Name="Minimum Recovery shares"/></StackPanel>
       <StackPanel Grid.Column="1"><TextBlock Text="Share count"/><NumberBox x:Name="ShareCountBox" Minimum="1" Maximum="255" SpinButtonPlacementMode="Inline" Value="3" ValueChanged="ShareCountChanged" AutomationProperties.Name="Total Recovery shares"/></StackPanel>
      </Grid>
-     <StackPanel><TextBlock Text="Share encoding"/><ComboBox x:Name="SplitEncodingBox" SelectionChanged="SplitEncodingChanged" AutomationProperties.Name="Share encoding"/></StackPanel>
+     <StackPanel><TextBlock Text="Share encoding"/><ComboBox x:Name="SplitEncodingBox" SelectionChanged="SplitEncodingChanged" AutomationProperties.Name="Share encoding" AutomationProperties.AutomationId="SplitEncoding"/></StackPanel>
      <StackPanel><TextBlock Text="Passphrase (optional)"/><PasswordBox x:Name="SplitPassphraseBox" PasswordChanged="SplitPassphraseChanged" AutomationProperties.Name="Split passphrase"/></StackPanel>
      <Button x:Name="SplitButton" Content="Split" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Left" Click="SplitClicked" AutomationProperties.AutomationId="SplitAction"/>
      <InfoBar x:Name="SplitStatus" IsOpen="False"/>
@@ -41,7 +41,7 @@
      <TextBlock Text="Enter enough Recovery shares from the same set." Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
      <StackPanel><TextBlock Text="Share encoding"/><ComboBox x:Name="RecoveryEncodingBox" SelectionChanged="RecoveryEncodingChanged" AutomationProperties.Name="Recovery Share encoding"/></StackPanel>
      <PasswordBox x:Name="RecoveryPassphraseBox" Header="Passphrase" IsEnabled="False" PasswordChanged="RecoveryPassphraseChanged"/>
-     <TextBlock x:Name="RecoveryReadinessText" Text="Waiting for Recovery shares" AutomationProperties.LiveSetting="Polite"/>
+     <TextBlock x:Name="RecoveryReadinessText" Text="Waiting for Recovery shares" AutomationProperties.LiveSetting="Polite" AutomationProperties.AutomationId="RecoveryReadiness"/>
      <ItemsControl x:Name="RecoveryFieldList"><ItemsControl.ItemTemplate><DataTemplate><Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="12" Margin="0,4" CornerRadius="6"><StackPanel Spacing="8"><TextBox Text="{Binding Text, Mode=TwoWay}" Tag="{Binding Id}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="72" TextChanged="RecoveryFieldTextChanged" AutomationProperties.Name="Recovery share"/><StackPanel Orientation="Horizontal" Spacing="8"><Button Content="Paste" Tag="{Binding Id}" Click="PasteRecoveryFieldClicked"/><Button Content="Clear" Tag="{Binding Id}" Click="ClearRecoveryFieldClicked"/><Button Content="Remove" Tag="{Binding Id}" Click="RemoveRecoveryFieldClicked"/></StackPanel></StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
      <StackPanel Orientation="Horizontal" Spacing="8"><Button Content="Paste shares" Click="PasteSharesClicked"/><Button Content="Import files…" Click="ImportSharesClicked"/><Button Content="Add share" Click="AddRecoveryFieldClicked"/></StackPanel>
      <Button x:Name="RecoverButton" Content="Recover Secret" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Left" Click="RecoverClicked" AutomationProperties.AutomationId="RecoverAction"/>

@@ -28,6 +28,7 @@ public sealed class WorkbenchUiAutomationTests
             RadioButton splitTask = RequireById(window, "TaskSplit").AsRadioButton();
             RadioButton recoverTask = RequireById(window, "TaskRecover").AsRadioButton();
             TextBox secretText = RequireById(window, "SecretText").AsTextBox();
+            ComboBox splitEncoding = RequireById(window, "SplitEncoding").AsComboBox();
             Button splitAction = RequireById(window, "SplitAction").AsButton();
 
             Assert.Equal(ControlType.RadioButton, splitTask.ControlType);
@@ -36,9 +37,12 @@ public sealed class WorkbenchUiAutomationTests
             Assert.Equal("Recover", recoverTask.Name);
             Assert.Equal(ControlType.Edit, secretText.ControlType);
             Assert.Equal("Secret text", secretText.Name);
+            Assert.Equal(ControlType.ComboBox, splitEncoding.ControlType);
+            Assert.Equal("Share encoding", splitEncoding.Name);
             Assert.Equal(ControlType.Button, splitAction.ControlType);
             Assert.False(splitAction.IsEnabled);
 
+            FocusAndPress(splitEncoding, VirtualKeyShort.HOME);
             const string syntheticSecret = "synthetic keyboard workflow secret";
             FocusAndType(secretText, syntheticSecret);
             WaitUntil(() => splitAction.IsEnabled, "Split action did not become enabled.");
@@ -47,6 +51,7 @@ public sealed class WorkbenchUiAutomationTests
             TextBox[] splitShares = WaitForTextBoxes(window, "Recovery share text", 3);
             string[] shareText = splitShares.Select(box => box.Text).ToArray();
             Assert.All(shareText, value => Assert.False(string.IsNullOrWhiteSpace(value)));
+            Assert.Equal(3, shareText.Distinct(StringComparer.Ordinal).Count());
 
             FocusAndPress(recoverTask, VirtualKeyShort.SPACE);
             TextBox[] recoveryFields = WaitForTextBoxes(window, "Recovery share", 2);
@@ -54,8 +59,9 @@ public sealed class WorkbenchUiAutomationTests
             FocusAndType(recoveryFields[1], shareText[1]);
 
             Button recoverAction = RequireById(window, "RecoverAction").AsButton();
+            AutomationElement readiness = RequireById(window, "RecoveryReadiness");
             Assert.Equal(ControlType.Button, recoverAction.ControlType);
-            WaitUntil(() => recoverAction.IsEnabled, "Recover action did not become enabled.");
+            WaitUntil(() => recoverAction.IsEnabled, $"Recover action did not become enabled. Readiness: {readiness.Name}");
             FocusAndPress(recoverAction, VirtualKeyShort.RETURN);
 
             TextBox recoveredText = WaitForById(window, "RecoveredText").AsTextBox();
