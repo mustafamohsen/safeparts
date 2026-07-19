@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Safeparts.AppModel/Safeparts.AppModel.csproj" />
+  <Project Path="Safeparts.Native/Safeparts.Native.csproj" />
+  <Project Path="Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj" />
+  <Project Path="Safeparts.App/Safeparts.App.csproj" />
+  <Project Path="Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj" />
+</Solution>
