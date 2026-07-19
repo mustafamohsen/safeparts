@@ -1,11 +1,11 @@
 ---
 title: Desktop app
-description: Use the native Windows app or local Tauri Linux app without a web deployment.
+description: Use the Tauri desktop app or evaluate the native Windows preview without a web deployment.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-Windows 11 uses the native WinUI app, macOS 14+ uses the native SwiftUI app, and Linux uses the Tauri desktop app. Every desktop app runs locally without a Safeparts server, telemetry, or external service at runtime.
+The Tauri desktop app is released for Linux and Windows. Windows 11 users can also evaluate the native WinUI preview, while macOS 14+ uses the native SwiftUI app. Every desktop app runs locally without a Safeparts server, telemetry, or external service at runtime.
 
 ## When to use it
 
@@ -18,14 +18,14 @@ Use the desktop app when you want:
 
 Use the CLI or TUI when you need file-oriented binary workflows, all four encodings, or terminal-only operation.
 
-## Linux Tauri scope
+## Tauri scope
 
-The Linux Tauri UI exposes the same primary formats as the web app:
+The Linux and Windows Tauri UI exposes the same primary formats as the web app:
 
 - <span class="token">base64url</span>, shown as <span class="token">Letters</span>;
 - <span class="token">mnemo-words</span>, shown as <span class="token">Words</span>.
 
-The underlying core supports <span class="token">base58check</span> and <span class="token">mnemo-bip39</span>, but those are not exposed in the Linux Tauri UI yet. The native Windows app exposes all four Share encodings, exact file workflows, and Auto recovery.
+The underlying core supports <span class="token">base58check</span> and <span class="token">mnemo-bip39</span>, but those are not exposed in the Tauri UI yet. The native Windows preview exposes all four Share encodings, exact file workflows, and Auto recovery. It has a separate identity and does not replace an installed Tauri app.
 
 ## Split
 

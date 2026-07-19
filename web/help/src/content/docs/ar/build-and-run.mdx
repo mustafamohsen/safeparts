@@ -16,7 +16,8 @@ import { Steps } from '@astrojs/starlight/components';
 تتضمن حزم الإصدار أرشيفات CLI وTUI للمنصات المدعومة، إضافة إلى تطبيقات سطح المكتب:
 
 - Linux: حزم Tauri بصيغ AppImage و`.deb` و`.rpm`
-- Windows 11: أرشيفات `.zip` ذاتية الاكتفاء لتطبيق WinUI الأصلي، بإصداري x64 وARM64، من دون توقيع
+- Windows: مثبتات Tauri بصيغ NSIS `.exe` وMSI
+- معاينة Windows 11: أرشيفات `.zip` ذاتية الاكتفاء لتطبيق WinUI الأصلي، بإصداري x64 وARM64، من دون توقيع
 - macOS 14 أو أحدث: ملف `.dmg` عام لتطبيق SwiftUI الأصلي، من دون توقيع
 
 فحص سريع بعد تثبيت binaries الخاصة بـ CLI/TUI:
@@ -43,9 +44,9 @@ xattr -dr com.apple.quarantine /Applications/Safeparts.app
 
 ملف DMG الأصلي غير موقّع وغير موثّق لدى Apple. لا تتجاوز Gatekeeper إلا إذا نزّلت الملف من إصدار المشروع وتحققت من checksum.
 
-### SmartScreen في Windows
+### معاينة Windows الأصلية وSmartScreen
 
-اختر أرشيف x64 أو ARM64 المطابق لجهاز Windows 11. الأرشيفات الأصلية غير موقعة، لذلك قد يعرض SmartScreen تحذيراً عند التشغيل الأول. تحقق من ملف zip باستخدام `SHA256SUMS.txt`، ثم فك الأرشيف كاملاً وأبق ملفات runtime بجوار `Safeparts.exe`.
+اختر أرشيف المعاينة x64 أو ARM64 المطابق لجهاز Windows 11. الأرشيفات الأصلية غير موقعة، لذلك قد يعرض SmartScreen تحذيراً عند التشغيل الأول. تحقق من ملف zip باستخدام `SHA256SUMS.txt`، ثم فك الأرشيف كاملاً وأبق ملفات runtime بجوار `Safeparts.exe`. لا تستبدل المعاينة تطبيق Tauri المثبت.
 
 ## بناء binaries من المصدر
 
@@ -92,7 +93,7 @@ bun run dev
 
 ## تطبيق Tauri لسطح المكتب
 
-يوجد تطبيق Tauri المستخدم في إصدارات Linux في <span class="token token--mono" dir="ltr">desktop/</span>.
+يوجد تطبيق Tauri المستخدم في إصدارات Linux وWindows في <span class="token token--mono" dir="ltr">desktop/</span>.
 
 ```bash
 cd desktop
@@ -127,7 +128,7 @@ swift run --package-path macos SafepartsMac
 RELEASE_VERSION=v0.3.0 mise run macos:package
 ```
 
-## تطبيق Windows الأصلي
+## معاينة تطبيق Windows الأصلي
 
 على Windows 11 مع .NET 10 وRust:
 
@@ -137,7 +138,7 @@ cargo build -p safeparts_uniffi
 dotnet run --project windows/Safeparts.App/Safeparts.App.csproj -p:Platform=x64 -p:RuntimeIdentifier=win-x64
 ```
 
-تُبنى حزمة الإصدار على المعمارية المطابقة:
+تُبنى حزمة المعاينة على المعمارية المطابقة:
 
 ```powershell
 python windows/scripts/package-release.py 0.3.0 x64

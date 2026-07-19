@@ -9,18 +9,18 @@ Release tooling builds and publishes:
 
 - `safeparts` CLI archives
 - `safeparts-tui` archives
-- Tauri desktop installers for Linux
+- Tauri desktop installers for Linux and Windows
 - the native SwiftUI universal DMG for macOS 14+
-- self-contained native WinUI archives for Windows 11 x64 and ARM64
+- self-contained native WinUI preview archives for Windows 11 x64 and ARM64
 - one checksum manifest covering every published file
 
 The web UI is deployed as static output rather than a release archive.
 
 ## Platform ownership
 
-- `desktop/` owns the Tauri source and Linux installers.
+- `desktop/` owns the Tauri source and the canonical Linux and Windows installers during the native preview.
 - `macos/` owns the downloadable macOS app and its unsigned universal DMG.
-- `windows/` owns the downloadable Windows app and its unsigned architecture-specific archives.
+- `windows/` owns the unsigned architecture-specific Windows preview archives.
 - `scripts/release/package.py` owns CLI/TUI archives.
 - `.github/workflows/release.yml` joins these artifacts and creates the GitHub Release.
 

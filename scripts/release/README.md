@@ -6,8 +6,9 @@ Release artifacts include:
 
 - `safeparts` and `safeparts-tui` archives for Linux, Windows, Intel macOS, and Apple Silicon macOS
 - Tauri desktop installers for Linux: AppImage, `.deb`, and `.rpm`
+- Tauri desktop installers for Windows: NSIS `.exe` and MSI
 - the native SwiftUI app for macOS 14+ as an unsigned universal `.dmg`
-- the native WinUI app for Windows 11 as unsigned self-contained x64 and ARM64 `.zip` archives
+- native WinUI preview archives for Windows 11 x64 and ARM64
 
 The web UI is deployed separately and is not included as a release archive.
 
@@ -44,7 +45,7 @@ The validator checks the macOS 14.0 deployment target, static Rust linkage, bund
 
 The DMG is unsigned and unnotarized. Downloaded copies may require an explicit Gatekeeper override. Do not describe this artifact as signed or notarized until Apple release credentials and CI checks are added.
 
-## Native Windows archives
+## Native Windows preview archives
 
 On a matching native Windows runner with .NET 10 and Rust:
 
@@ -55,4 +56,4 @@ python windows/scripts/package-release.py 0.3.0 arm64
 
 Each command publishes an architecture-specific, self-contained WinUI app, adds the matching Rust DLL, validates the staged directory, creates a deterministic zip, extracts it into a clean directory, and validates the exact packaged copy. CI launches that extracted app and runs the Rust/C# interoperability smoke against its bundled bridge.
 
-The artifacts are `safeparts-native-windows-x64-0.3.0.zip` and `safeparts-native-windows-arm64-0.3.0.zip`. They are unsigned and may trigger SmartScreen. The central `SHA256SUMS.txt` covers both archives.
+The artifacts are `safeparts-native-windows-x64-0.3.0.zip` and `safeparts-native-windows-arm64-0.3.0.zip`. They are unsigned and may trigger SmartScreen. The central `SHA256SUMS.txt` covers both archives. During the preview, release CI also publishes the established Tauri Windows MSI and NSIS installers. The native archives have a separate identity and are not an in-place upgrade for the Tauri app.

@@ -16,7 +16,8 @@ Download release artifacts from GitHub:
 Release packaging includes CLI and TUI archives for supported platforms. It also includes desktop apps:
 
 - Linux: Tauri AppImage, `.deb`, and `.rpm`
-- Windows 11: unsigned self-contained native WinUI `.zip` archives for x64 and ARM64
+- Windows: Tauri NSIS `.exe` and MSI installers
+- Windows 11 preview: unsigned self-contained native WinUI `.zip` archives for x64 and ARM64
 - macOS 14+: unsigned universal native SwiftUI `.dmg`
 
 Quick check after installing CLI/TUI binaries:
@@ -43,9 +44,9 @@ xattr -dr com.apple.quarantine /Applications/Safeparts.app
 
 The native DMG is unsigned and unnotarized. Only override Gatekeeper when you downloaded the artifact from the project release and verified its checksum.
 
-### Windows SmartScreen
+### Native Windows preview and SmartScreen
 
-Choose the x64 or ARM64 archive that matches your Windows 11 device. The native archives are unsigned, so SmartScreen may warn on first launch. Verify the downloaded zip against `SHA256SUMS.txt`, extract the complete directory, and keep its runtime files beside `Safeparts.exe`.
+Choose the x64 or ARM64 preview archive that matches your Windows 11 device. The native archives are unsigned, so SmartScreen may warn on first launch. Verify the downloaded zip against `SHA256SUMS.txt`, extract the complete directory, and keep its runtime files beside `Safeparts.exe`. The preview does not replace an installed Tauri app.
 
 ## Build Rust binaries from source
 
@@ -92,7 +93,7 @@ Open [http://localhost:5173](http://localhost:5173).
 
 ## Tauri desktop app
 
-The Tauri app used for Linux releases lives in <span class="token token--mono">desktop/</span>.
+The Tauri app used for Linux and Windows releases lives in <span class="token token--mono">desktop/</span>.
 
 ```bash
 cd desktop
@@ -127,7 +128,7 @@ Build the unsigned universal release DMG:
 RELEASE_VERSION=v0.3.0 mise run macos:package
 ```
 
-## Native Windows app
+## Native Windows preview
 
 On Windows 11 with .NET 10 and Rust:
 
@@ -137,7 +138,7 @@ cargo build -p safeparts_uniffi
 dotnet run --project windows/Safeparts.App/Safeparts.App.csproj -p:Platform=x64 -p:RuntimeIdentifier=win-x64
 ```
 
-Release packaging runs on the matching native architecture:
+Preview packaging runs on the matching native architecture:
 
 ```powershell
 python windows/scripts/package-release.py 0.3.0 x64

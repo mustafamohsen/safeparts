@@ -86,11 +86,11 @@ Use these checklists to keep future changes predictable.
 
 ## Change release packaging
 
-1. Keep Tauri installer changes scoped to Linux. Native apps own macOS and Windows release artifacts.
+1. Keep Tauri installer changes scoped to Linux and Windows while native Windows remains in preview.
 2. Build the native macOS artifact with `RELEASE_VERSION=v0.3.0 mise run macos:package`.
-3. On Windows, build both native archives with `windows/scripts/package-release.py` and explicit x64 or ARM64 architecture.
+3. On Windows, build both native preview archives with `windows/scripts/package-release.py` and an explicit x64 or ARM64 architecture.
 4. Verify the macOS architectures and bundle contract, then verify each staged and extracted Windows package.
-5. Run the CLI/TUI archive command and retained Linux Tauri checks.
+5. Run the CLI/TUI archive command and the Linux and Windows Tauri checks.
 6. Update the release workflow, release guide, feature matrix, and public download guidance together.
 7. Treat the native macOS and Windows artifacts as unsigned until platform signing credentials and checks are implemented.
 

@@ -125,6 +125,13 @@ jobs:
               target/release/bundle/appimage/*.AppImage
               target/release/bundle/deb/*.deb
               target/release/bundle/rpm/*.rpm
+          - id: windows-desktop
+            os: windows-latest
+            bundles: nsis,msi
+            artifact_name: safeparts-desktop-windows
+            artifact_paths: |
+              target/release/bundle/nsis/*.exe
+              target/release/bundle/msi/*.msi
     steps:
       - uses: actions/checkout@v4
 

@@ -22,4 +22,4 @@ Windows CI builds the WinUI project for an explicit x64 RID, launches the self-c
 
 Before release, complete `windows/docs/accessibility-release-checklist.md` with Narrator and Accessibility Insights. CI source checks do not replace manual Narrator, contrast, scaling, RTL, or IME review.
 
-Release CI publishes separate unsigned self-contained archives for Windows 11 x64 and ARM64. The package validator checks the exact staged and extracted archives for architecture, native bridge placement, .NET and Windows App SDK runtime files, resources, version, debug files, and the expected unsigned state. Native Windows owns the Windows download; Tauri remains the Linux desktop release.
+Release CI publishes separate unsigned self-contained preview archives for Windows 11 x64 and ARM64 beside the established Tauri Windows installers. The package validator checks the staged and extracted archives for architecture, native bridge placement, .NET and Windows App SDK runtime files, resources, version, debug files, and the expected unsigned state. Tauri remains the canonical Windows download until maintainers record preview acceptance and approve the cutover.

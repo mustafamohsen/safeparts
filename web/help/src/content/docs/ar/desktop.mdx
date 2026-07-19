@@ -1,11 +1,11 @@
 ---
 title: تطبيق سطح المكتب
-description: استخدم تطبيق Windows الأصلي أو تطبيق Tauri المحلي لـ Linux دون نشر ويب.
+description: استخدم تطبيق Tauri لسطح المكتب أو جرّب معاينة Windows الأصلية دون نشر ويب.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-يستخدم Windows 11 تطبيق WinUI الأصلي، ويستخدم macOS 14 أو أحدث تطبيق SwiftUI الأصلي، بينما يستخدم Linux تطبيق Tauri. تعمل جميع تطبيقات سطح المكتب محلياً من دون خادم Safeparts أو telemetry أو خدمة خارجية أثناء التشغيل.
+يصدر تطبيق Tauri لسطح المكتب على Linux وWindows. ويمكن لمستخدمي Windows 11 أيضاً تجربة معاينة WinUI الأصلية، بينما يستخدم macOS 14 أو أحدث تطبيق SwiftUI الأصلي. تعمل جميع تطبيقات سطح المكتب محلياً من دون خادم Safeparts أو telemetry أو خدمة خارجية أثناء التشغيل.
 
 ## متى تستخدمه
 
@@ -18,14 +18,14 @@ import { Steps } from '@astrojs/starlight/components';
 
 استخدم CLI أو TUI عندما تحتاج إلى سير عمل ثنائي موجه للملفات، أو كل الترميزات الأربعة، أو عمل كامل من الطرفية.
 
-## نطاق تطبيق Tauri في Linux
+## نطاق تطبيق Tauri
 
-تعرض واجهة Tauri في Linux الصيغ الأساسية نفسها الموجودة في تطبيق الويب:
+تعرض واجهة Tauri في Linux وWindows الصيغ الأساسية نفسها الموجودة في تطبيق الويب:
 
 - <span class="token" dir="ltr">base64url</span> وتظهر باسم <span class="token">Letters</span>؛
 - <span class="token" dir="ltr">mnemo-words</span> وتظهر باسم <span class="token">Words</span>.
 
-تدعم النواة الداخلية <span class="token" dir="ltr">base58check</span> و<span class="token" dir="ltr">mnemo-bip39</span>، لكنهما غير معروضين في واجهة Tauri على Linux حالياً. يعرض تطبيق Windows الأصلي الترميزات الأربعة وسير عمل الملفات الدقيق والاسترداد التلقائي.
+تدعم النواة الداخلية <span class="token" dir="ltr">base58check</span> و<span class="token" dir="ltr">mnemo-bip39</span>، لكنهما غير معروضين في واجهة Tauri حالياً. تعرض معاينة Windows الأصلية الترميزات الأربعة وسير عمل الملفات الدقيق والاسترداد التلقائي. ولها هوية منفصلة ولا تستبدل تطبيق Tauri المثبت.
 
 ## التقسيم
 
