@@ -14,7 +14,7 @@ Release tooling builds and publishes:
 - self-contained native WinUI preview archives for Windows 11 x64 and ARM64
 - one checksum manifest covering every published file
 
-The web UI is deployed as static output rather than a release archive.
+The web UI is deployed as static output rather than a release archive. A manual `workflow_dispatch` assembles every release artifact and `SHA256SUMS.txt` into a short-lived dry-run artifact without creating a GitHub Release.
 
 ## Platform ownership
 

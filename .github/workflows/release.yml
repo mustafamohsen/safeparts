@@ -289,7 +289,6 @@ jobs:
       - desktop
       - native-macos
       - native-windows
-    if: github.event_name == 'push'
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -325,7 +324,17 @@ jobs:
           print(f"wrote {sums}")
           PY
 
+      - name: Upload assembled release dry run
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: safeparts-release-dry-run-${{ env.RELEASE_VERSION }}
+          path: dist/release
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Publish GitHub Release
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
