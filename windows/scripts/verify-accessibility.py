@@ -11,6 +11,7 @@ required_xaml = [
     'AutomationProperties.AutomationId="SecretText"',
     'AutomationProperties.AutomationId="SplitAction"',
     'AutomationProperties.AutomationId="RecoverAction"',
+    'AutomationProperties.AutomationId="RecoveredText"',
     'AutomationProperties.LiveSetting="Polite"',
     'AutomationProperties.Name="Recovery share"',
 ]

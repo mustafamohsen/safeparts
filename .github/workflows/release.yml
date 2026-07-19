@@ -227,6 +227,14 @@ jobs:
           $env:SAFEPARTS_NATIVE_DIR = $package
           dotnet run --project windows/Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
 
+      - name: Test keyboard and UI Automation workflow
+        if: matrix.arch == 'x64'
+        shell: pwsh
+        run: |
+          $version = "${{ env.RELEASE_VERSION }}".TrimStart('v')
+          $env:SAFEPARTS_APP_EXE = (Resolve-Path "target/native-windows-release/x64/extract/safeparts-native-windows-x64-$version/Safeparts.exe").Path
+          dotnet test windows/Safeparts.UiAutomation.Tests/Safeparts.UiAutomation.Tests.csproj --configuration Release
+
       - name: Upload native Windows artifact
         uses: actions/upload-artifact@v4
         with:

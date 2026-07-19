@@ -114,7 +114,7 @@ dotnet test windows/Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --c
 python3 windows/scripts/verify-accessibility.py
 ```
 
-Windows CI also builds the WinUI project for `win-x64`, launches the self-contained application with the real Rust DLL, and runs the generated-binding interoperability smoke. Complete the manual Narrator, Accessibility Insights, contrast, scaling, RTL, and IME checklist before a release.
+Windows CI also builds the WinUI project for `win-x64`, launches the self-contained application with the real Rust DLL, and runs the generated-binding interoperability smoke. A FlaUI test drives synthetic Split and Recover workflows through keyboard input against the extracted x64 package and checks UI Automation names, control types, enabled states, and the recovered value. Complete the manual Narrator, Accessibility Insights, contrast, scaling, RTL, and IME checklist before a release.
 
 ## Release packaging
 

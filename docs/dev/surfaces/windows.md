@@ -18,7 +18,7 @@ With .NET 10 installed, the UI-free tests run on any host:
 dotnet test windows/Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --configuration Release
 ```
 
-Windows CI builds the WinUI project for an explicit x64 RID, launches the self-contained app with the real Rust DLL, and runs the full interoperability smoke. The smoke covers text and binary Secrets, every concrete Share encoding, Auto recovery, metadata inspection, typed failures, Passphrase protection, repeated calls, and generated contract checks.
+Windows CI builds the WinUI project for an explicit x64 RID, launches the self-contained app with the real Rust DLL, and runs the full interoperability smoke. The smoke covers text and binary Secrets, every concrete Share encoding, Auto recovery, metadata inspection, typed failures, Passphrase protection, repeated calls, and generated contract checks. A keyboard-driven FlaUI test completes Split and Recover against the extracted x64 package and verifies UI Automation semantics.
 
 Before release, complete `windows/docs/accessibility-release-checklist.md` with Narrator and Accessibility Insights. CI source checks do not replace manual Narrator, contrast, scaling, RTL, or IME review.
 

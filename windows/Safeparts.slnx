@@ -4,4 +4,5 @@
   <Project Path="Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj" />
   <Project Path="Safeparts.App/Safeparts.App.csproj" />
   <Project Path="Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj" />
+  <Project Path="Safeparts.UiAutomation.Tests/Safeparts.UiAutomation.Tests.csproj" />
 </Solution>

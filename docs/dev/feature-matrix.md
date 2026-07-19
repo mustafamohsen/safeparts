@@ -27,7 +27,7 @@ Status keys:
 | Desktop local-only Tauri workflow | N/A | N/A | N/A | N/A | Mirrored UI source | Yes | N/A | N/A | Yes | Desktop build, Tauri command tests | Desktop surface guide |
 | Native macOS local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | N/A | Rust bridge and Swift model tests | Native macOS surface guide |
 | Native Windows C# interoperability | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Rust public-API tests and real-DLL C# smoke | Native Windows bridge and surface guide |
-| Native Windows local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Windows model, launch, accessibility source, and real-DLL smoke | Native Windows surface guide |
+| Native Windows local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Windows model, keyboard UI Automation, launch, accessibility source, and real-DLL smoke | Native Windows surface guide |
 | Metadata-guided native recovery inputs | N/A | N/A | N/A | N/A | N/A | N/A | Yes | Yes | N/A | Swift and Windows model tests plus real bridge smoke | Native app models and UI |
 | Native batch-export filename prefix | N/A | N/A | N/A | N/A | N/A | N/A | Yes | Yes | N/A | Swift and Windows filename tests | Native app models and UI |
 | English + Arabic user docs | N/A | N/A | N/A | N/A | Links to help | N/A | N/A | N/A | Yes | Docs build, docs a11y route parity | Help docs guide |

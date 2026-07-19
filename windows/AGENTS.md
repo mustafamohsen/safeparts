@@ -10,6 +10,7 @@ Owns the native WinUI 3 Windows 11 app, its UI-free model, generated C# UniFFI b
 - `Safeparts.AppModel/`: platform-independent workbench state, stable Recovery-share fields, filename policy, and service contracts.
 - `Safeparts.Native/`: managed adapter over the generated UniFFI binding.
 - `Safeparts.AppModel.Tests/`: UI-free behavioral tests.
+- `Safeparts.UiAutomation.Tests/`: keyboard-driven UI Automation workflow and semantics tests against the packaged app.
 - `Safeparts.InteropSmoke/`: real native-library contract and repeated-call smoke executable.
 - `Generated/`: canonical generated C# binding for the platform-neutral Rust bridge.
 - `scripts/`: reproducible binding, accessibility, launch, and later package checks.
@@ -43,6 +44,7 @@ Owns the native WinUI 3 Windows 11 app, its UI-free model, generated C# UniFFI b
 - `dotnet test windows/Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --configuration Release`
 - On Windows: build `windows/Safeparts.App/Safeparts.App.csproj` for an explicit platform/RID and run the launch plus interoperability smoke scripts.
 - On Windows: run `python windows/scripts/package-release.py 0.3.0 <x64|arm64>`; package validation rejects missing application PRI files, architecture mismatches, and incomplete self-contained runtimes.
+- On Windows x64: set `SAFEPARTS_APP_EXE` to the extracted packaged executable and run `dotnet test windows/Safeparts.UiAutomation.Tests/Safeparts.UiAutomation.Tests.csproj --configuration Release`.
 
 ## Child DOX Index
 
