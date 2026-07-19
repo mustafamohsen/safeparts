@@ -26,6 +26,7 @@ Owns the native WinUI 3 Windows 11 app, its UI-free model, generated C# UniFFI b
 - Prefer standard WinUI controls, theme resources, keyboard access, and UI Automation semantics.
 - Pin the C# generator, compatible UniFFI runtime, .NET SDK, Windows SDK tools, and Windows App SDK.
 - The app targets supported Windows 11 releases and x64/ARM64. Do not package AnyCPU with one native DLL.
+- Self-contained archives must include the generated `Safeparts.pri` and its `resources.pri` alias for unpackaged Windows App SDK 1.8 resource loading.
 
 ## Work Guidance
 
@@ -41,6 +42,7 @@ Owns the native WinUI 3 Windows 11 app, its UI-free model, generated C# UniFFI b
 - `cargo test -p safeparts_uniffi`
 - `dotnet test windows/Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --configuration Release`
 - On Windows: build `windows/Safeparts.App/Safeparts.App.csproj` for an explicit platform/RID and run the launch plus interoperability smoke scripts.
+- On Windows: run `python windows/scripts/package-release.py 0.3.0 <x64|arm64>`; package validation rejects missing application PRI files, architecture mismatches, and incomplete self-contained runtimes.
 
 ## Child DOX Index
 
