@@ -30,7 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
-    <Content Include="Assets\Safeparts.ico" />
-    <Content Include="Assets\safeparts-logo.png" />
+    <Content Include="Assets\Safeparts.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Assets\safeparts-logo.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
