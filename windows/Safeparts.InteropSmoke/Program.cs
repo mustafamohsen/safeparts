@@ -1,11 +1,13 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using Safeparts.Native;
 
 internal static class Program
 {
     private const string NativeLibraryName = "safeparts_uniffi";
     private static readonly byte[] BinarySecret = [0, 255, 3, 128];
+    private static readonly byte[] TextSecret = Encoding.UTF8.GetBytes("synthetic text secret");
 
     private static int Main()
     {
@@ -65,21 +67,27 @@ internal static class Program
 
         foreach (ShareEncoding encoding in encodings)
         {
-            VerifyPlainRoundTrip(encoding);
-            VerifyProtectedRoundTrip(encoding);
+            VerifyPlainRoundTrip(encoding, BinarySecret);
+            VerifyPlainRoundTrip(encoding, TextSecret);
+            VerifyProtectedRoundTrip(encoding, BinarySecret);
+            VerifyProtectedRoundTrip(encoding, TextSecret);
         }
 
-        for (int repetition = 0; repetition < 16; repetition++)
+        for (int repetition = 0; repetition < 128; repetition++)
         {
-            VerifyPlainRoundTrip(encodings[repetition % encodings.Length]);
+            VerifyPlainRoundTrip(encodings[repetition % encodings.Length], BinarySecret);
         }
 
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        VerifyPlainRoundTrip(ShareEncoding.Base64url, BinarySecret);
         VerifyTypedFailures();
     }
 
-    private static void VerifyPlainRoundTrip(ShareEncoding encoding)
+    private static void VerifyPlainRoundTrip(ShareEncoding encoding, byte[] secret)
     {
-        EncodedShare[] shares = SafepartsNative.SplitSecret(BinarySecret, 2, 3, encoding, null);
+        EncodedShare[] shares = SafepartsNative.SplitSecret(secret, 2, 3, encoding, null);
         Require(shares.Length == 3, "Split should return the requested Share count.");
         Require(shares.Select(share => share.Index).Distinct().Count() == 3, "Share indexes should be unique.");
         Require(shares.All(share => share.ShareCount == 3), "Recovery shares should report their Share count.");
@@ -95,15 +103,15 @@ internal static class Program
         Require(!inspection.Encrypted, "Plain Recovery shares should not report Passphrase protection.");
 
         Recovery recovery = SafepartsNative.CombineShareInput(input, ShareEncoding.Auto, null);
-        Require(recovery.Bytes.SequenceEqual(BinarySecret), "Recovery should preserve arbitrary bytes.");
+        Require(recovery.Bytes.SequenceEqual(secret), "Recovery should preserve Secret bytes.");
         Require(recovery.DetectedEncoding == encoding, "Recovery should report the concrete Share encoding.");
     }
 
-    private static void VerifyProtectedRoundTrip(ShareEncoding encoding)
+    private static void VerifyProtectedRoundTrip(ShareEncoding encoding, byte[] secret)
     {
         const string correctPassphrase = "correct-synthetic-passphrase";
         EncodedShare[] shares = SafepartsNative.SplitSecret(
-            BinarySecret,
+            secret,
             2,
             3,
             encoding,
@@ -125,7 +133,7 @@ internal static class Program
             input,
             ShareEncoding.Auto,
             correctPassphrase);
-        Require(recovery.Bytes.SequenceEqual(BinarySecret), "Protected recovery should preserve arbitrary bytes.");
+        Require(recovery.Bytes.SequenceEqual(secret), "Protected recovery should preserve Secret bytes.");
     }
 
     private static void VerifyTypedFailures()
