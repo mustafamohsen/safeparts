@@ -34,4 +34,15 @@
     <Content Include="Assets\Safeparts.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Assets\safeparts-logo.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+  <Target Name="IncludeWinUiResourceIndexInPublish" BeforeTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(TargetDir)$(AssemblyName).pri" Condition="Exists('$(TargetDir)$(AssemblyName).pri')">
+        <RelativePath>$(AssemblyName).pri</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+  <Target Name="AddUnpackagedResourceIndexAlias" AfterTargets="Publish">
+    <Copy SourceFiles="$(PublishDir)$(AssemblyName).pri" DestinationFiles="$(PublishDir)resources.pri" />
+  </Target>
 </Project>
