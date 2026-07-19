@@ -1,4 +1,4 @@
-# Dev toolchain for the Rust, WASM, web, docs, desktop, and native macOS apps.
+# Dev toolchain for the Rust, WASM, web, docs, desktop, and native apps.
 [tools]
 # Rust 2024 workspace; include the browser WASM target.
 rust = { version = "1.93.0", targets = "wasm32-unknown-unknown", components = "rustfmt,clippy" }
@@ -102,6 +102,14 @@ run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/prepare.sh && swift b
 [tasks."macos:package"]
 description = "Build the unsigned universal native macOS DMG."
 run = "if [ \"$(uname -s)\" = Darwin ]; then macos/scripts/package-release.sh \"${RELEASE_VERSION:?set RELEASE_VERSION, for example v0.2.0}\"; else echo 'macos:package requires macOS' >&2; exit 1; fi"
+
+[tasks."windows:prepare"]
+description = "Build the host UniFFI library and regenerate the C# binding."
+run = "python3 windows/scripts/prepare.py"
+
+[tasks."windows:binding-check"]
+description = "Verify the generated C# binding and platform-neutral Rust API."
+run = ["python3 windows/scripts/prepare.py --check", "cargo test -p safeparts_uniffi"]
 
 [tasks."desktop:dev"]
 description = "Start the desktop app."

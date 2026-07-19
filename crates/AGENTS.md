@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Owns Rust workspace members for the core library, CLI, TUI, WASM bindings, and native Swift bridge.
+Owns Rust workspace members for the core library, CLI, TUI, WASM bindings, and native UniFFI bridges.
 
 ## Ownership
 
@@ -10,7 +10,8 @@ Owns Rust workspace members for the core library, CLI, TUI, WASM bindings, and n
 - `safeparts/`: script-friendly CLI binary and CLI integration tests.
 - `safeparts_tui/`: terminal UI binary and interaction/domain state.
 - `safeparts_wasm/`: wasm-bindgen facade consumed by `web/`.
-- `safeparts_swift/`: narrow UniFFI facade consumed by the native macOS app.
+- `safeparts_swift/`: current narrow UniFFI facade consumed by the native macOS app.
+- `safeparts_uniffi/`: platform-neutral UniFFI facade used to generate native bindings, starting with C# interoperability.
 
 ## Local Contracts
 
@@ -37,4 +38,5 @@ Owns Rust workspace members for the core library, CLI, TUI, WASM bindings, and n
 - `safeparts/`: CLI binary and e2e tests.
 - `safeparts_tui/`: terminal UI binary.
 - `safeparts_wasm/`: browser/WASM binding layer.
-- `safeparts_swift/`: native Swift/UniFFI binding layer.
+- `safeparts_swift/`: current native Swift/UniFFI binding layer.
+- `safeparts_uniffi/`: platform-neutral UniFFI binding layer.

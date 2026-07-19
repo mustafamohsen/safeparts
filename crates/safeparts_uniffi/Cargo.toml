@@ -1,0 +1,16 @@
+[package]
+name = "safeparts_uniffi"
+version = "0.2.0"
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[lints]
+workspace = true
+
+[dependencies]
+safeparts_core = { path = "../safeparts_core" }
+uniffi = { version = "=0.31.0", features = ["cli"] }
+zeroize = "1.8.1"

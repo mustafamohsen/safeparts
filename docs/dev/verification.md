@@ -35,6 +35,7 @@ cargo test -p safeparts_tui app::tests
 cargo test -p safeparts_wasm
 cargo test -p safeparts_desktop --lib
 cargo test -p safeparts_swift
+cargo test -p safeparts_uniffi
 ```
 
 ## Web app
@@ -94,6 +95,20 @@ RELEASE_VERSION=v0.2.0 mise run macos:package
 ```
 
 This checks both executable slices, bundle metadata and resources, static linkage, and the mounted DMG. The output is unsigned and unnotarized.
+
+## Native Windows interoperability
+
+On any Rust host, regenerate or verify the tracked C# binding:
+
+```bash
+python3 windows/scripts/prepare.py
+python3 windows/scripts/prepare.py --check
+cargo test -p safeparts_uniffi
+```
+
+The preparation script installs the exact C# generator revision under Cargo's target directory. C# compilation and DLL execution require Windows. The native Windows CI job builds the Rust DLL, checks generated-binding drift, compiles the .NET smoke executable, and runs binary, Share encoding, Auto encoding, inspection, Passphrase protection, typed-error, and repeated-call checks against the real DLL.
+
+This is an interoperability gate, not a packaged native Windows app check.
 
 ## Release packaging
 

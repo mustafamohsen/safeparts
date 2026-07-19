@@ -9,7 +9,7 @@ Use these checklists to keep future changes predictable.
 3. For multi-surface work, copy [change-checklist.md](change-checklist.md) into your issue, PR, or task notes.
 4. Update [feature-matrix.md](feature-matrix.md) with intended surface coverage.
 5. Add the lowest-level tests first.
-6. Update each exposed boundary: CLI, TUI, WASM, web, Tauri desktop, native macOS, docs, and release packaging.
+6. Update each exposed boundary: CLI, TUI, WASM, web, Tauri desktop, native macOS, native Windows, docs, and release packaging.
 7. Update the nearest `AGENTS.md` if contracts changed.
 8. Update developer docs under `docs/dev/`.
 9. Update user docs only when the change is user-visible and the task includes that scope.
@@ -74,6 +74,15 @@ Use these checklists to keep future changes predictable.
 4. Use byte-accurate file IO and explicit clipboard actions. Keep Rust work off the main actor.
 5. Add Rust bridge tests and Swift model tests for success and failure paths.
 6. Run `mise run macos:check` on macOS.
+
+## Change native Windows interoperability
+
+1. Read `windows/AGENTS.md`, `crates/AGENTS.md`, and `docs/dev/surfaces/windows.md`.
+2. Keep cryptography and Share packet parsing in Rust and keep the C# API operation-shaped.
+3. Run `mise run windows:prepare` after bridge metadata or generator changes, then review the tracked C# diff.
+4. Keep the UniFFI runtime and C# generator on the exact compatible versions recorded by the preparation script.
+5. Run the Rust public-API test locally. Treat Windows CI as the source of truth for C# compilation and execution against the real DLL.
+6. Do not present the interoperability executable as an end-user Windows app or release package.
 
 ## Change release packaging
 

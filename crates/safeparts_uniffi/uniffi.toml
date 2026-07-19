@@ -1,0 +1,5 @@
+[bindings.csharp]
+namespace = "Safeparts.Native"
+cdylib_name = "safeparts_uniffi"
+global_methods_class_name = "SafepartsNative"
+access_modifier = "public"

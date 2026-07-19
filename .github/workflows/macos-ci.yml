@@ -7,9 +7,12 @@ on:
       - 'Cargo.lock'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_swift/**'
+      - 'crates/safeparts_uniffi/**'
       - 'macos/**'
+      - 'windows/**'
       - 'mise.toml'
       - '.github/workflows/macos-ci.yml'
+      - '.github/workflows/windows-native-ci.yml'
       - '.github/workflows/release.yml'
   pull_request:
     paths:
@@ -17,9 +20,12 @@ on:
       - 'Cargo.lock'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_swift/**'
+      - 'crates/safeparts_uniffi/**'
       - 'macos/**'
+      - 'windows/**'
       - 'mise.toml'
       - '.github/workflows/macos-ci.yml'
+      - '.github/workflows/windows-native-ci.yml'
       - '.github/workflows/release.yml'
   workflow_dispatch:
 

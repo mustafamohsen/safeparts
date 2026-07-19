@@ -91,7 +91,8 @@ Default section order:
 - `web/`: Vite + React web app, WASM build integration, browser tests, and docs child site.
   - `web/help/`: Astro + Starlight help docs served under `/help/`.
 - `desktop/`: standalone Tauri desktop app with React UI and Rust command layer.
-- `macos/`: native macOS 14+ SwiftUI app using the UniFFI bridge.
+- `macos/`: native macOS 14+ SwiftUI app using the Swift-specific UniFFI bridge.
+- `windows/`: generated C# UniFFI binding and native Windows interoperability smoke executable; the end-user WinUI app is planned.
 - `docs/`: internal repository docs for agents and developers.
 - `openspec/`: OpenSpec project context, active/archived changes, and accepted specs.
 - `scripts/`: repository automation scripts, including release packaging.
@@ -108,7 +109,8 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
   - `crates/safeparts/` (CLI wrapper; binary: `safeparts`)
   - `crates/safeparts_tui/` (interactive terminal UI; binary: `safeparts-tui`)
   - `crates/safeparts_wasm/` (wasm-bindgen exports for the web UI)
-  - `crates/safeparts_swift/` (UniFFI exports for the native macOS app)
+  - `crates/safeparts_swift/` (current UniFFI exports for the native macOS app)
+  - `crates/safeparts_uniffi/` (platform-neutral UniFFI exports for generated native bindings)
 - Web app: `web/` (Vite + React) which expects a WASM build step.
 - Desktop app: `desktop/` (Tauri + React) with Rust commands over `safeparts_core`; release CI packages it for Linux and Windows.
 - Help/docs: `web/help/` (Astro + Starlight), deployed under `/help/`.

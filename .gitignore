@@ -14,4 +14,9 @@ web/test-results
 # Desktop
 /desktop/node_modules
 /desktop/dist
+
+# Native Windows
+/windows/**/bin
+/windows/**/obj
+
 .env
