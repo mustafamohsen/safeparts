@@ -44,6 +44,7 @@ Owns the native WinUI 3 Windows 11 app, its UI-free model, generated C# UniFFI b
 - `dotnet test windows/Safeparts.AppModel.Tests/Safeparts.AppModel.Tests.csproj --configuration Release`
 - On Windows: build `windows/Safeparts.App/Safeparts.App.csproj` for an explicit platform/RID and run the launch plus interoperability smoke scripts.
 - On Windows: run `python windows/scripts/package-release.py 0.3.0 <x64|arm64>`; package validation rejects missing application PRI files, architecture mismatches, and incomplete self-contained runtimes.
+- Run `python windows/scripts/write-checksum.py <archive.zip>` to create the package-smoke SHA-256 sidecar used by Windows CI.
 - On Windows x64: set `SAFEPARTS_APP_EXE` to the extracted packaged executable and run `dotnet test windows/Safeparts.UiAutomation.Tests/Safeparts.UiAutomation.Tests.csproj --configuration Release`.
 
 ## Child DOX Index
