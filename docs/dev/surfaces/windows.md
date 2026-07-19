@@ -22,4 +22,4 @@ Windows CI builds the WinUI project for an explicit x64 RID, launches the self-c
 
 Before release, complete `windows/docs/accessibility-release-checklist.md` with Narrator and Accessibility Insights. CI source checks do not replace manual Narrator, contrast, scaling, RTL, or IME review.
 
-The native app currently remains a CI-tested product surface while packaging and release ownership proceed through the preview tickets. Tauri continues to own released Windows installers until that cutover.
+Release CI publishes separate unsigned self-contained archives for Windows 11 x64 and ARM64. The package validator checks the exact staged and extracted archives for architecture, native bridge placement, .NET and Windows App SDK runtime files, resources, version, debug files, and the expected unsigned state. Native Windows owns the Windows download; Tauri remains the Linux desktop release.

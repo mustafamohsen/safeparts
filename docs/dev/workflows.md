@@ -86,12 +86,13 @@ Use these checklists to keep future changes predictable.
 
 ## Change release packaging
 
-1. Keep Tauri installer changes scoped to Linux and Windows unless platform ownership changes explicitly.
-2. Build the native macOS artifact with `RELEASE_VERSION=v0.2.0 mise run macos:package`.
-3. Verify both architectures, macOS 14 deployment, bundle resources, static Rust linkage, and the mounted DMG.
-4. Run the CLI/TUI archive command and retained Tauri checks.
-5. Update the release workflow, release guide, feature matrix, and public download guidance together.
-6. Treat the native DMG as unsigned and unnotarized until Apple credential checks are implemented.
+1. Keep Tauri installer changes scoped to Linux. Native apps own macOS and Windows release artifacts.
+2. Build the native macOS artifact with `RELEASE_VERSION=v0.3.0 mise run macos:package`.
+3. On Windows, build both native archives with `windows/scripts/package-release.py` and explicit x64 or ARM64 architecture.
+4. Verify the macOS architectures and bundle contract, then verify each staged and extracted Windows package.
+5. Run the CLI/TUI archive command and retained Linux Tauri checks.
+6. Update the release workflow, release guide, feature matrix, and public download guidance together.
+7. Treat the native macOS and Windows artifacts as unsigned until platform signing credentials and checks are implemented.
 
 ## Change developer tooling
 

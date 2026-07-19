@@ -90,7 +90,7 @@ swift test --package-path macos
 Build and validate the universal release DMG with:
 
 ```bash
-RELEASE_VERSION=v0.2.0 mise run macos:package
+RELEASE_VERSION=v0.3.0 mise run macos:package
 ```
 
 This checks both executable slices, bundle metadata and resources, static linkage, and the mounted DMG. The output is unsigned and unnotarized.
@@ -123,11 +123,11 @@ From the repo root:
 ```bash
 cargo test --all-features
 cargo build --release -p safeparts -p safeparts_tui
-python3 scripts/release/package.py --version 0.2.0
-RELEASE_VERSION=v0.2.0 mise run macos:package
+python3 scripts/release/package.py --version 0.3.0
+RELEASE_VERSION=v0.3.0 mise run macos:package
 ```
 
-Release CI owns Tauri installers for Linux and Windows and the unsigned universal native DMG for macOS. The publish job generates one checksum manifest after downloading every platform artifact.
+Release CI owns Tauri installers for Linux, the unsigned universal native DMG for macOS, and unsigned self-contained native Windows archives for x64 and ARM64. The publish job generates one checksum manifest after downloading every platform artifact.
 
 ## DX checks
 

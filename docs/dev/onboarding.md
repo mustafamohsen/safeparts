@@ -14,7 +14,7 @@ The `AGENTS.md` files are the working contracts for this repo. If you add a dura
 
 ## 2. Install tools
 
-Safeparts uses Rust, Bun, wasm-pack, wasm-bindgen, and Tauri tooling. Native macOS work also needs Xcode with Swift 6. The native Windows interoperability check needs Windows and the .NET SDK selected by its `global.json`. The repo includes [`mise.toml`](../../mise.toml) with pinned local tool versions and shortcuts.
+Safeparts uses Rust, Bun, wasm-pack, wasm-bindgen, and Tauri tooling. Native macOS work also needs Xcode with Swift 6. Native Windows work needs Windows and the .NET SDK selected by its `global.json`. The repo includes [`mise.toml`](../../mise.toml) with pinned local tool versions and shortcuts.
 
 ```bash
 mise install

@@ -79,12 +79,12 @@ jobs:
           dotnet run --project Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
 
       - name: Package self-contained x64 preview
-        run: python windows/scripts/package-release.py 0.2.0 x64
+        run: python windows/scripts/package-release.py 0.3.0 x64
 
       - name: Test exact x64 package
         shell: pwsh
         run: |
-          $package = (Resolve-Path target/native-windows-release/x64/extract/safeparts-native-windows-x64-0.2.0).Path
+          $package = (Resolve-Path target/native-windows-release/x64/extract/safeparts-native-windows-x64-0.3.0).Path
           windows/scripts/launch-package-smoke.ps1 -PackageRoot $package
           $env:SAFEPARTS_NATIVE_DIR = $package
           dotnet run --project windows/Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
@@ -93,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: safeparts-native-windows-x64-package-smoke
-          path: dist/release/safeparts-native-windows-x64-0.2.0.zip
+          path: dist/release/safeparts-native-windows-x64-0.3.0.zip
           if-no-files-found: error
 
   arm64-package-smoke:
@@ -132,12 +132,12 @@ jobs:
         run: dotnet build Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release
 
       - name: Package self-contained ARM64 preview
-        run: python windows/scripts/package-release.py 0.2.0 arm64
+        run: python windows/scripts/package-release.py 0.3.0 arm64
 
       - name: Test exact ARM64 package
         shell: pwsh
         run: |
-          $package = (Resolve-Path target/native-windows-release/arm64/extract/safeparts-native-windows-arm64-0.2.0).Path
+          $package = (Resolve-Path target/native-windows-release/arm64/extract/safeparts-native-windows-arm64-0.3.0).Path
           windows/scripts/launch-package-smoke.ps1 -PackageRoot $package
           $env:SAFEPARTS_NATIVE_DIR = $package
           dotnet run --project windows/Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
@@ -146,5 +146,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: safeparts-native-windows-arm64-package-smoke
-          path: dist/release/safeparts-native-windows-arm64-0.2.0.zip
+          path: dist/release/safeparts-native-windows-arm64-0.3.0.zip
           if-no-files-found: error

@@ -32,9 +32,9 @@ Status keys:
 | Native batch-export filename prefix | N/A | N/A | N/A | N/A | N/A | N/A | Yes | Yes | N/A | Swift and Windows filename tests | Native app models and UI |
 | English + Arabic user docs | N/A | N/A | N/A | N/A | Links to help | N/A | N/A | N/A | Yes | Docs build, docs a11y route parity | Help docs guide |
 | Release CLI/TUI archives | N/A | Yes | Yes | N/A | N/A | N/A | N/A | N/A | Yes | Release workflow, package script | Release guide |
-| Tauri desktop installers | N/A | N/A | N/A | N/A | N/A | Yes, Linux and Windows | N/A | N/A | Yes | Release workflow | Release guide and desktop guide |
+| Tauri desktop installers | N/A | N/A | N/A | N/A | N/A | Yes, Linux | N/A | N/A | Yes | Release workflow | Release guide and desktop guide |
 | Native macOS universal DMG | N/A | N/A | N/A | N/A | N/A | N/A | Yes, unsigned | N/A | Yes | macOS CI, package validator | Release guide and native macOS guide |
-| Native Windows packages | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Planned | Planned | Planned Windows CI and package validator | Release guide and native Windows guide |
+| Native Windows packages | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Yes, unsigned x64 and ARM64 | Yes | Windows CI, exact-package launch, and package validator | Release guide and native Windows guide |
 | QR export | No | No | No | No | Planned | Planned | N/A | N/A | Planned | None yet | Add proposal, UI tests, docs |
 | Web `base58check` and `mnemo-bip39` exposure | Core | Yes | Yes | Yes | Planned | Planned after web | N/A | N/A | Planned | Add web and desktop parity tests | Web, desktop, help docs |
 | Compatibility import/export | Planned | Planned | Planned | Planned | Planned | Planned | N/A | Planned | Planned | None yet | Add spec and migration notes |

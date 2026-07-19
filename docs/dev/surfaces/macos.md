@@ -11,7 +11,7 @@ The app keeps secrets in memory, uses byte-accurate file operations, and only ac
 Run:
 
 ```bash
-RELEASE_VERSION=v0.2.0 mise run macos:package
+RELEASE_VERSION=v0.3.0 mise run macos:package
 ```
 
 The release script builds the Rust bridge and Swift executable for arm64 and x86_64, assembles `Safeparts.app`, and creates an unsigned universal DMG. Validation checks the app and mounted DMG for:

@@ -9,16 +9,18 @@ Release tooling builds and publishes:
 
 - `safeparts` CLI archives
 - `safeparts-tui` archives
-- Tauri desktop installers for Linux and Windows
+- Tauri desktop installers for Linux
 - the native SwiftUI universal DMG for macOS 14+
+- self-contained native WinUI archives for Windows 11 x64 and ARM64
 - one checksum manifest covering every published file
 
 The web UI is deployed as static output rather than a release archive.
 
 ## Platform ownership
 
-- `desktop/` owns the Tauri source and the Linux and Windows installers.
+- `desktop/` owns the Tauri source and Linux installers.
 - `macos/` owns the downloadable macOS app and its unsigned universal DMG.
+- `windows/` owns the downloadable Windows app and its unsigned architecture-specific archives.
 - `scripts/release/package.py` owns CLI/TUI archives.
 - `.github/workflows/release.yml` joins these artifacts and creates the GitHub Release.
 
@@ -35,8 +37,10 @@ The web UI is deployed as static output rather than a release archive.
 ```bash
 cargo test --all-features
 cargo build --release -p safeparts -p safeparts_tui
-python3 scripts/release/package.py --version 0.2.0
-RELEASE_VERSION=v0.2.0 mise run macos:package
+python3 scripts/release/package.py --version 0.3.0
+RELEASE_VERSION=v0.3.0 mise run macos:package
+# On Windows:
+python windows/scripts/package-release.py 0.3.0 x64
 ```
 
 The native package command verifies both architectures, bundle metadata, the macOS 14 deployment target, static Rust linkage, SwiftPM resources, and the mounted DMG.

@@ -16,7 +16,7 @@ Download release artifacts from GitHub:
 Release packaging includes CLI and TUI archives for supported platforms. It also includes desktop apps:
 
 - Linux: Tauri AppImage, `.deb`, and `.rpm`
-- Windows: Tauri NSIS `.exe` and MSI
+- Windows 11: unsigned self-contained native WinUI `.zip` archives for x64 and ARM64
 - macOS 14+: unsigned universal native SwiftUI `.dmg`
 
 Quick check after installing CLI/TUI binaries:
@@ -42,6 +42,10 @@ xattr -dr com.apple.quarantine /Applications/Safeparts.app
 ```
 
 The native DMG is unsigned and unnotarized. Only override Gatekeeper when you downloaded the artifact from the project release and verified its checksum.
+
+### Windows SmartScreen
+
+Choose the x64 or ARM64 archive that matches your Windows 11 device. The native archives are unsigned, so SmartScreen may warn on first launch. Verify the downloaded zip against `SHA256SUMS.txt`, extract the complete directory, and keep its runtime files beside `Safeparts.exe`.
 
 ## Build Rust binaries from source
 
@@ -88,7 +92,7 @@ Open [http://localhost:5173](http://localhost:5173).
 
 ## Tauri desktop app
 
-The Tauri app used for Linux and Windows releases lives in <span class="token token--mono">desktop/</span>.
+The Tauri app used for Linux releases lives in <span class="token token--mono">desktop/</span>.
 
 ```bash
 cd desktop
@@ -120,7 +124,25 @@ swift run --package-path macos SafepartsMac
 Build the unsigned universal release DMG:
 
 ```bash
-RELEASE_VERSION=v0.2.0 mise run macos:package
+RELEASE_VERSION=v0.3.0 mise run macos:package
+```
+
+## Native Windows app
+
+On Windows 11 with .NET 10 and Rust:
+
+```powershell
+python windows/scripts/prepare.py --check
+cargo build -p safeparts_uniffi
+dotnet run --project windows/Safeparts.App/Safeparts.App.csproj -p:Platform=x64 -p:RuntimeIdentifier=win-x64
+```
+
+Release packaging runs on the matching native architecture:
+
+```powershell
+python windows/scripts/package-release.py 0.3.0 x64
+# Run this on Windows ARM64 for the ARM64 package:
+python windows/scripts/package-release.py 0.3.0 arm64
 ```
 
 ## Web app and docs with Docker

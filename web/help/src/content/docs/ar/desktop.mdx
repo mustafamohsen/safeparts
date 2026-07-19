@@ -1,31 +1,31 @@
 ---
 title: تطبيق سطح المكتب
-description: استخدم تطبيق Tauri المحلي المتاح لـ Linux وWindows دون نشر ويب.
+description: استخدم تطبيق Windows الأصلي أو تطبيق Tauri المحلي لـ Linux دون نشر ويب.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-تطبيق سطح المكتب هو نسخة Tauri من واجهة Safeparts تصدر لـ Linux وWindows. يعمل محلياً ويستدعي `safeparts_core` عبر أوامر Tauri. لا يحتاج إلى خادم Safeparts أو CLI sidecar أو عملية node أو telemetry أو خدمة خارجية أثناء التشغيل. على macOS، نزّل ملف DMG الخاص بتطبيق SwiftUI الأصلي.
+يستخدم Windows 11 تطبيق WinUI الأصلي، ويستخدم macOS 14 أو أحدث تطبيق SwiftUI الأصلي، بينما يستخدم Linux تطبيق Tauri. تعمل جميع تطبيقات سطح المكتب محلياً من دون خادم Safeparts أو telemetry أو خدمة خارجية أثناء التشغيل.
 
 ## متى تستخدمه
 
 استخدم تطبيق سطح المكتب عندما تريد:
 
 - مساحة عمل محلية مثبتة للتقسيم والاسترداد؛
-- واجهة مشابهة لتطبيق الويب؛
-- حزم native لـ Linux وWindows؛
-- تنفيذ أوامر محلية دون نشر متصفح.
+- استيراد الملفات الثنائية واستردادها بدقة في Windows وmacOS؛
+- استخدام ترميزات الحصص الأربعة والاسترداد التلقائي في Windows وmacOS؛
+- تشغيل محلي دون نشر متصفح.
 
 استخدم CLI أو TUI عندما تحتاج إلى سير عمل ثنائي موجه للملفات، أو كل الترميزات الأربعة، أو عمل كامل من الطرفية.
 
-## نطاق الواجهة الحالي
+## نطاق تطبيق Tauri في Linux
 
-تعرض واجهة سطح المكتب الصيغ الأساسية نفسها الموجودة في تطبيق الويب:
+تعرض واجهة Tauri في Linux الصيغ الأساسية نفسها الموجودة في تطبيق الويب:
 
 - <span class="token" dir="ltr">base64url</span> وتظهر باسم <span class="token">Letters</span>؛
 - <span class="token" dir="ltr">mnemo-words</span> وتظهر باسم <span class="token">Words</span>.
 
-تدعم النواة الداخلية <span class="token" dir="ltr">base58check</span> و<span class="token" dir="ltr">mnemo-bip39</span>، لكنهما غير معروضين في واجهة سطح المكتب حالياً.
+تدعم النواة الداخلية <span class="token" dir="ltr">base58check</span> و<span class="token" dir="ltr">mnemo-bip39</span>، لكنهما غير معروضين في واجهة Tauri على Linux حالياً. يعرض تطبيق Windows الأصلي الترميزات الأربعة وسير عمل الملفات الدقيق والاسترداد التلقائي.
 
 ## التقسيم
 

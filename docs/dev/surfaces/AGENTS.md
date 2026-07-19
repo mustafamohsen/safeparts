@@ -16,7 +16,7 @@ Owns focused contributor guides for each Safeparts surface.
 - `release.md`: release packaging and workflow notes.
 - `mobile.md`: dormant mobile prototype expectations.
 - `macos.md`: native SwiftUI app and shared UniFFI bridge workflow.
-- `windows.md`: native Windows interoperability foundation and planned WinUI surface.
+- `windows.md`: native WinUI app, shared bridge, tests, and package workflow.
 
 ## Local Contracts
 
