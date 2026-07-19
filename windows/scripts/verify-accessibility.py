@@ -17,6 +17,8 @@ required_xaml = [
 required_code = [
     "VirtualKey.Number1",
     "VirtualKey.Number2",
+    "VirtualKey.O",
+    "VirtualKey.S",
     "VirtualKey.Enter",
     "VirtualKey.Delete",
     "SetTitleBar(AppTitleBar)",

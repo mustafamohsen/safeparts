@@ -22,7 +22,7 @@ public sealed partial class MainWindow : Window
         Model.Shares.CollectionChanged += (_, _) => DispatcherQueue.TryEnqueue(RefreshUi);
         Model.RecoveryFields.CollectionChanged += (_, _) => DispatcherQueue.TryEnqueue(RefreshUi);
         SplitEncodingBox.ItemsSource = ConcreteEncodings(); SplitEncodingBox.SelectedItem = ShareEncoding.MnemoWords;
-        RecoveryEncodingBox.ItemsSource = Enum.GetValues<ShareEncoding>(); RecoveryEncodingBox.SelectedItem = ShareEncoding.Auto;
+        RecoveryEncodingBox.ItemsSource = Enum.GetValues<ShareEncoding>(); RecoveryEncodingBox.SelectedItem = ShareEncoding.MnemoWords;
         AddAccelerators(); _refreshing = false; RefreshUi();
     }
 
@@ -107,8 +107,16 @@ public sealed partial class MainWindow : Window
         try { await AtomicWriteAsync(file.Path, bytes); } catch { await ShowFileErrorAsync($"Couldn’t write {file.Name}."); }
     }
     private static async Task AtomicWriteAsync(string path, byte[] bytes) { string temporary = $"{path}.{Guid.NewGuid():N}.tmp"; try { await File.WriteAllBytesAsync(temporary, bytes); File.Move(temporary, path, true); } finally { if (File.Exists(temporary)) File.Delete(temporary); } }
-    private static async Task<string?> ReadClipboardAsync() { DataPackageView content = Clipboard.GetContent(); return content.Contains(StandardDataFormats.Text) ? await content.GetTextAsync() : null; }
-    private static Task WriteClipboardAsync(string text) { DataPackage package = new(); package.SetText(text); Clipboard.SetContent(package); Clipboard.Flush(); return Task.CompletedTask; }
+    private async Task<string?> ReadClipboardAsync()
+    {
+        try { DataPackageView content = Clipboard.GetContent(); return content.Contains(StandardDataFormats.Text) ? await content.GetTextAsync() : null; }
+        catch { await ShowFileErrorAsync("Couldn’t read the clipboard."); return null; }
+    }
+    private async Task WriteClipboardAsync(string text)
+    {
+        try { DataPackage package = new(); package.SetText(text); Clipboard.SetContent(package); Clipboard.Flush(); }
+        catch { await ShowFileErrorAsync("Couldn’t write to the clipboard."); }
+    }
 
     private void InitializePicker(object picker) => WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(this));
     private async Task ShowRecoveryFailureAsync() { string message = Model.RecoveryStatus?.Message ?? "Safeparts could not recover the Secret."; Model.DismissRecoveryFailure(); ContentDialog dialog = new() { Title = "Recovery failed", Content = message, CloseButtonText = "OK", XamlRoot = Content.XamlRoot }; await dialog.ShowAsync(); RecoveryFieldList.Focus(FocusState.Programmatic); }
@@ -118,6 +126,8 @@ public sealed partial class MainWindow : Window
     {
         AddAccelerator(VirtualKey.Number1, VirtualKeyModifiers.Control, () => { SplitTaskButton.IsChecked = true; });
         AddAccelerator(VirtualKey.Number2, VirtualKeyModifiers.Control, () => { RecoverTaskButton.IsChecked = true; });
+        AddAccelerator(VirtualKey.O, VirtualKeyModifiers.Control, () => { if (Model.Task == WorkbenchTask.Split) ImportSecretClicked(this, new RoutedEventArgs()); else ImportSharesClicked(this, new RoutedEventArgs()); });
+        AddAccelerator(VirtualKey.S, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, () => { if (Model.Task == WorkbenchTask.Split && Model.Shares.Count > 0) ExportAllClicked(this, new RoutedEventArgs()); else if (Model.RecoveredSecret is not null) SaveRecoveredClicked(this, new RoutedEventArgs()); });
         AddAccelerator(VirtualKey.Enter, VirtualKeyModifiers.Control, async () => { if (Model.Task == WorkbenchTask.Split) await Model.SplitAsync(); else await Model.RecoverAsync(); RefreshUi(); });
         AddAccelerator(VirtualKey.Delete, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, () => { Model.ClearCurrentTask(); RefreshUi(); });
     }

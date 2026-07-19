@@ -8,8 +8,19 @@ public sealed class WorkbenchModelTests
     public async Task DefaultSplitPublishesThreeWordsShares()
     {
         FakeService service = new(); WorkbenchModel model = new(service) { SecretText = "hello" };
+        Assert.Equal(ShareEncoding.MnemoWords, model.RecoveryEncoding);
         await model.SplitAsync();
         Assert.Equal(3, model.Shares.Count); Assert.Equal(2, model.Threshold); Assert.Equal(3, model.ShareCount); Assert.Equal(ShareEncoding.MnemoWords, model.SplitEncoding);
+    }
+
+    [Fact]
+    public void GlobalClearResetsBothTasks()
+    {
+        WorkbenchModel model = new(new FakeService()) { SecretText = "synthetic", SplitPassphrase = "split", RecoveryPassphrase = "recover" };
+        model.SetRecoveryInput("first\n\nsecond"); model.Clear();
+        Assert.Empty(model.SecretText); Assert.Empty(model.SplitPassphrase); Assert.Empty(model.RecoveryPassphrase);
+        Assert.Equal(2, model.RecoveryFields.Count); Assert.All(model.RecoveryFields, field => Assert.Empty(field.Text));
+        Assert.Equal(ShareEncoding.MnemoWords, model.RecoveryEncoding);
     }
 
     [Fact]

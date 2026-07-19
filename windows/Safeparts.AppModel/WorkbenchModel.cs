@@ -17,7 +17,7 @@ public sealed class WorkbenchModel : ObservableModel
     private AppStatus? _splitStatus;
     private bool _isSplitting;
     private string _recoveryPassphrase = "";
-    private ShareEncoding _recoveryEncoding = ShareEncoding.Auto;
+    private ShareEncoding _recoveryEncoding = ShareEncoding.MnemoWords;
     private Inspection? _inspection;
     private Recovery? _recovery;
     private AppStatus? _recoveryStatus;
@@ -152,7 +152,7 @@ public sealed class WorkbenchModel : ObservableModel
     {
         ++_recoveryGeneration; ++_inspectionGeneration; _inspectionCancellation?.Cancel();
         while (RecoveryFields.Count > 0) { RecoveryFields[0].PropertyChanged -= RecoveryFieldChanged; RecoveryFields.RemoveAt(0); }
-        AddRecoveryField(); AddRecoveryField(); _recoveryPassphrase = ""; _recoveryEncoding = ShareEncoding.Auto; _recoveryEncodingWasManual = false; _automaticExpansion = true;
+        AddRecoveryField(); AddRecoveryField(); _recoveryPassphrase = ""; _recoveryEncoding = ShareEncoding.MnemoWords; _recoveryEncodingWasManual = false; _automaticExpansion = true;
         Inspection = null; RecoveredSecret = null; RecoveryStatus = null; IsRecovering = false;
         Notify(nameof(RecoveryPassphrase), nameof(RecoveryEncoding), nameof(CanRecover));
     }
