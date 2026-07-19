@@ -15,18 +15,19 @@ export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT/target/macos-host}"
 LIB_DIR="$CARGO_TARGET_DIR/debug"
 
 cd "$ROOT"
-cargo build -p safeparts_swift
+cargo build -p safeparts_uniffi
 
+rm -rf "$MACOS/Generated" "$MACOS/Native"
 mkdir -p "$MACOS/Generated" "$MACOS/Native"
-cp "$LIB_DIR/libsafeparts_swift.a" "$MACOS/Native/"
+cp "$LIB_DIR/libsafeparts_uniffi.a" "$MACOS/Native/"
 
-cargo run -q -p safeparts_swift --bin uniffi-bindgen -- \
+cargo run -q -p safeparts_uniffi --bin uniffi-bindgen -- \
   generate \
-  --library "$LIB_DIR/libsafeparts_swift.dylib" \
+  --library "$LIB_DIR/libsafeparts_uniffi.dylib" \
   --language swift \
   --out-dir "$MACOS/Generated"
 
-cp "$MACOS/Generated/safeparts_swiftFFI.modulemap" "$MACOS/Generated/module.modulemap"
+cp "$MACOS/Generated/safeparts_uniffiFFI.modulemap" "$MACOS/Generated/module.modulemap"
 
 # UniFFI output can contain trailing spaces. Normalize generated text so commits
 # remain reviewable and `git diff --check` is useful for the whole repository.
@@ -46,8 +47,8 @@ for path in root.iterdir():
     path.write_text(normalized, encoding="utf-8")
 PY
 
-cp "$MACOS/Generated/safeparts_swift.swift" "$MACOS/Sources/SafepartsKit/Generated.swift"
-cmp "$MACOS/Generated/safeparts_swift.swift" "$MACOS/Sources/SafepartsKit/Generated.swift"
+cp "$MACOS/Generated/safeparts_uniffi.swift" "$MACOS/Sources/SafepartsKit/Generated.swift"
+cmp "$MACOS/Generated/safeparts_uniffi.swift" "$MACOS/Sources/SafepartsKit/Generated.swift"
 
 echo "Prepared the native bridge for macOS ${MACOSX_DEPLOYMENT_TARGET} in $CARGO_TARGET_DIR."
 echo "Run swift build or swift test from macos/."

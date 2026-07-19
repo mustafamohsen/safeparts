@@ -1,6 +1,6 @@
 # Native macOS surface
 
-The `macos/` Swift package owns the macOS 14+ SwiftUI app and the downloadable macOS release. `crates/safeparts_swift/` is a narrow UniFFI adapter. Cryptography, packet parsing, and share encodings stay in `safeparts_core`.
+The `macos/` Swift package owns the macOS 14+ SwiftUI app and the downloadable macOS release. `crates/safeparts_uniffi/` is the platform-neutral UniFFI adapter shared with native Windows. Cryptography, Share packet parsing, and Share encodings stay in `safeparts_core`.
 
 Run `mise run macos:check` on macOS. The preparation step builds a host-architecture Rust library with a macOS 14 deployment target, then regenerates the tracked Swift, header, and module-map files. SwiftPM build output and compiled Rust libraries remain untracked.
 

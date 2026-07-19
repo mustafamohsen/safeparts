@@ -262,7 +262,7 @@ bun run test:a11y
 - `crates/safeparts/`: CLI wrapper (binary: `safeparts`)
 - `crates/safeparts_tui/`: terminal UI (binary: `safeparts-tui`)
 - `crates/safeparts_wasm/`: wasm-bindgen exports used by the web UI
-- `crates/safeparts_swift/`: UniFFI bridge used by the native macOS app
+- `crates/safeparts_uniffi/`: UniFFI bridge shared by native Swift and C# bindings
 - `web/`: Vite + React app
 - `web/help/`: Astro + Starlight docs
 - `desktop/`: Tauri + React desktop app

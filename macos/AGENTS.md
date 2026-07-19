@@ -15,7 +15,7 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 
 ## Local Contracts
 
-- Keep cryptography in `safeparts_core`; Swift calls `safeparts_swift` only.
+- Keep cryptography in `safeparts_core`; Swift calls `safeparts_uniffi` only.
 - Never log or persist secrets, passphrases, or recovery shares.
 - Use byte-accurate file IO and explicit clipboard actions.
 - Put the Safeparts title and logo in the system title bar. The segmented task switcher contains only Split and Recover, and content pages do not set window titles.
@@ -27,7 +27,7 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 - Export All may prepend a sanitized user-provided filename prefix without changing individual Save filenames.
 - Release packaging must contain arm64 and x86_64 slices, target macOS 14.0, keep the Rust bridge static, preserve SwiftPM resources, and remain explicitly unsigned/unnotarized.
 - Do not commit compiled libraries, Swift build output, app bundles, or DMGs.
-- Keep `Generated/safeparts_swift.swift` byte-identical to `Sources/SafepartsKit/Generated.swift`.
+- Keep `Generated/safeparts_uniffi.swift` byte-identical to `Sources/SafepartsKit/Generated.swift`.
 
 ## Work Guidance
 

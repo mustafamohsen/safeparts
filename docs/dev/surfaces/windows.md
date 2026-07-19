@@ -16,4 +16,4 @@ The preparation script builds a host dynamic library, installs the pinned C# gen
 
 Windows CI compiles the C# smoke executable and loads the real `safeparts_uniffi.dll`. The executable tests binary and passphrase-protected round trips through every concrete Share encoding, Auto recovery, metadata inspection, typed failures, repeated calls, and sanitized exception text. It prints only a generic result.
 
-The existing native macOS app still uses `safeparts_swift` until the bridge migration ticket is implemented. Changes to this foundation trigger the existing macOS build, generated-binding drift check, tests, and package smoke so the expansion cannot silently regress Swift.
+The native macOS app and C# smoke executable use the same platform-neutral bridge. Changes to this foundation trigger the macOS build, generated-binding drift check, tests, and package smoke so either binding surface cannot silently diverge.

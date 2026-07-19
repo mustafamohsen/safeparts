@@ -1,5 +1,5 @@
-module safeparts_swiftFFI {
-    header "safeparts_swiftFFI.h"
+module safeparts_uniffiFFI {
+    header "safeparts_uniffiFFI.h"
     export *
     use "Darwin"
     use "_Builtin_stdbool"

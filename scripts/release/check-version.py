@@ -38,7 +38,6 @@ def main() -> int:
         "crates/safeparts_core/Cargo.toml": toml_version,
         "crates/safeparts_tui/Cargo.toml": toml_version,
         "crates/safeparts_wasm/Cargo.toml": toml_version,
-        "crates/safeparts_swift/Cargo.toml": toml_version,
         "crates/safeparts_uniffi/Cargo.toml": toml_version,
         "desktop/src-tauri/Cargo.toml": toml_version,
         "desktop/package.json": json_version,

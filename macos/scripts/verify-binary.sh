@@ -12,12 +12,12 @@ if ! grep -Eq 'minos 14([.]0)?$' <<<"$BUILD_INFO"; then
 fi
 
 LINKED_LIBRARIES="$(otool -L "$EXECUTABLE")"
-if grep -q 'libsafeparts_swift[.]dylib' <<<"$LINKED_LIBRARIES"; then
+if grep -q 'libsafeparts_uniffi[.]dylib' <<<"$LINKED_LIBRARIES"; then
   echo "SafepartsMac links the dynamic Rust bridge instead of the static library" >&2
   exit 1
 fi
 SYMBOLS="$(nm "$EXECUTABLE")"
-if ! grep -q 'uniffi_safeparts_swift' <<<"$SYMBOLS"; then
+if ! grep -q 'uniffi_safeparts_uniffi' <<<"$SYMBOLS"; then
   echo "SafepartsMac does not contain the statically linked Rust bridge symbols" >&2
   exit 1
 fi

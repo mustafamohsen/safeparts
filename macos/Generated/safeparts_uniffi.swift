@@ -7,8 +7,8 @@ import Foundation
 // Depending on the consumer's build setup, the low-level FFI code
 // might be in a separate module, or it might be compiled inline into
 // this module. This is a bit of light hackery to work with both.
-#if canImport(safeparts_swiftFFI)
-import safeparts_swiftFFI
+#if canImport(safeparts_uniffiFFI)
+import safeparts_uniffiFFI
 #endif
 
 fileprivate extension RustBuffer {
@@ -25,13 +25,13 @@ fileprivate extension RustBuffer {
     }
 
     static func from(_ ptr: UnsafeBufferPointer<UInt8>) -> RustBuffer {
-        try! rustCall { ffi_safeparts_swift_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
+        try! rustCall { ffi_safeparts_uniffi_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
     }
 
     // Frees the buffer in place.
     // The buffer must not be used after this is called.
     func deallocate() {
-        try! rustCall { ffi_safeparts_swift_rustbuffer_free(self, $0) }
+        try! rustCall { ffi_safeparts_uniffi_rustbuffer_free(self, $0) }
     }
 }
 
@@ -281,7 +281,7 @@ private func makeRustCall<T, E: Swift.Error>(
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T,
     errorHandler: ((RustBuffer) throws -> E)?
 ) throws -> T {
-    uniffiEnsureSafepartsSwiftInitialized()
+    uniffiEnsureSafepartsUniffiInitialized()
     var callStatus = RustCallStatus.init()
     let returnedVal = callback(&callStatus)
     try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: errorHandler)
@@ -352,19 +352,29 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
         callStatus.pointee.errorBuf = FfiConverterString.lower(String(describing: error))
     }
 }
+// Initial value and increment amount for handles.
+// These ensure that SWIFT handles always have the lowest bit set
+fileprivate let UNIFFI_HANDLEMAP_INITIAL: UInt64 = 1
+fileprivate let UNIFFI_HANDLEMAP_DELTA: UInt64 = 2
+
 fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
     // All mutation happens with this lock held, which is why we implement @unchecked Sendable.
     private let lock = NSLock()
     private var map: [UInt64: T] = [:]
-    private var currentHandle: UInt64 = 1
+    private var currentHandle: UInt64 = UNIFFI_HANDLEMAP_INITIAL
 
     func insert(obj: T) -> UInt64 {
         lock.withLock {
-            let handle = currentHandle
-            currentHandle += 1
-            map[handle] = obj
-            return handle
+            return doInsert(obj)
         }
+    }
+
+    // Low-level insert function, this assumes `lock` is held.
+    private func doInsert(_ obj: T) -> UInt64 {
+        let handle = currentHandle
+        currentHandle += UNIFFI_HANDLEMAP_DELTA
+        map[handle] = obj
+        return handle
     }
 
      func get(handle: UInt64) throws -> T {
@@ -373,6 +383,15 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
                 throw UniffiInternalError.unexpectedStaleHandle
             }
             return obj
+        }
+    }
+
+     func clone(handle: UInt64) throws -> UInt64 {
+        try lock.withLock {
+            guard let obj = map[handle] else {
+                throw UniffiInternalError.unexpectedStaleHandle
+            }
+            return doInsert(obj)
         }
     }
 
@@ -513,7 +532,7 @@ fileprivate struct FfiConverterData: FfiConverterRustBuffer {
 }
 
 
-public struct EncodedShare {
+public struct EncodedShare: Equatable, Hashable {
     public var text: String
     public var index: UInt8
     public var shareCount: UInt8
@@ -527,39 +546,15 @@ public struct EncodedShare {
         self.shareCount = shareCount
         self.setId = setId
     }
+
+
+
+
 }
 
 #if compiler(>=6)
 extension EncodedShare: Sendable {}
 #endif
-
-
-extension EncodedShare: Equatable, Hashable {
-    public static func ==(lhs: EncodedShare, rhs: EncodedShare) -> Bool {
-        if lhs.text != rhs.text {
-            return false
-        }
-        if lhs.index != rhs.index {
-            return false
-        }
-        if lhs.shareCount != rhs.shareCount {
-            return false
-        }
-        if lhs.setId != rhs.setId {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(text)
-        hasher.combine(index)
-        hasher.combine(shareCount)
-        hasher.combine(setId)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -599,7 +594,7 @@ public func FfiConverterTypeEncodedShare_lower(_ value: EncodedShare) -> RustBuf
 }
 
 
-public struct Inspection {
+public struct Inspection: Equatable, Hashable {
     public var detectedEncoding: ShareEncoding
     public var threshold: UInt8
     public var shareCount: UInt8
@@ -621,55 +616,15 @@ public struct Inspection {
         self.consistent = consistent
         self.ready = ready
     }
+
+
+
+
 }
 
 #if compiler(>=6)
 extension Inspection: Sendable {}
 #endif
-
-
-extension Inspection: Equatable, Hashable {
-    public static func ==(lhs: Inspection, rhs: Inspection) -> Bool {
-        if lhs.detectedEncoding != rhs.detectedEncoding {
-            return false
-        }
-        if lhs.threshold != rhs.threshold {
-            return false
-        }
-        if lhs.shareCount != rhs.shareCount {
-            return false
-        }
-        if lhs.providedCount != rhs.providedCount {
-            return false
-        }
-        if lhs.encrypted != rhs.encrypted {
-            return false
-        }
-        if lhs.indexes != rhs.indexes {
-            return false
-        }
-        if lhs.consistent != rhs.consistent {
-            return false
-        }
-        if lhs.ready != rhs.ready {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(detectedEncoding)
-        hasher.combine(threshold)
-        hasher.combine(shareCount)
-        hasher.combine(providedCount)
-        hasher.combine(encrypted)
-        hasher.combine(indexes)
-        hasher.combine(consistent)
-        hasher.combine(ready)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -717,7 +672,7 @@ public func FfiConverterTypeInspection_lower(_ value: Inspection) -> RustBuffer 
 }
 
 
-public struct Recovery {
+public struct Recovery: Equatable, Hashable {
     public var bytes: Data
     public var detectedEncoding: ShareEncoding
     public var threshold: UInt8
@@ -737,51 +692,15 @@ public struct Recovery {
         self.indexes = indexes
         self.setId = setId
     }
+
+
+
+
 }
 
 #if compiler(>=6)
 extension Recovery: Sendable {}
 #endif
-
-
-extension Recovery: Equatable, Hashable {
-    public static func ==(lhs: Recovery, rhs: Recovery) -> Bool {
-        if lhs.bytes != rhs.bytes {
-            return false
-        }
-        if lhs.detectedEncoding != rhs.detectedEncoding {
-            return false
-        }
-        if lhs.threshold != rhs.threshold {
-            return false
-        }
-        if lhs.shareCount != rhs.shareCount {
-            return false
-        }
-        if lhs.encrypted != rhs.encrypted {
-            return false
-        }
-        if lhs.indexes != rhs.indexes {
-            return false
-        }
-        if lhs.setId != rhs.setId {
-            return false
-        }
-        return true
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(bytes)
-        hasher.combine(detectedEncoding)
-        hasher.combine(threshold)
-        hasher.combine(shareCount)
-        hasher.combine(encrypted)
-        hasher.combine(indexes)
-        hasher.combine(setId)
-    }
-}
-
-
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -827,7 +746,7 @@ public func FfiConverterTypeRecovery_lower(_ value: Recovery) -> RustBuffer {
 }
 
 
-public enum BridgeError: Swift.Error {
+public enum BridgeError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
 
 
@@ -842,8 +761,21 @@ public enum BridgeError: Swift.Error {
     case IncorrectPassphrase
     case IntegrityFailure
     case Internal
+
+
+
+
+
+
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+
 }
 
+#if compiler(>=6)
+extension BridgeError: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -943,33 +875,22 @@ public func FfiConverterTypeBridgeError_lower(_ value: BridgeError) -> RustBuffe
     return FfiConverterTypeBridgeError.lower(value)
 }
 
-
-extension BridgeError: Equatable, Hashable {}
-
-
-
-
-extension BridgeError: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-
-
-
-
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 
-public enum ShareEncoding {
+public enum ShareEncoding: Equatable, Hashable {
 
     case auto
     case base64url
     case base58check
     case mnemoWords
     case mnemoBip39
-}
 
+
+
+
+
+}
 
 #if compiler(>=6)
 extension ShareEncoding: Sendable {}
@@ -1042,13 +963,6 @@ public func FfiConverterTypeShareEncoding_lower(_ value: ShareEncoding) -> RustB
 }
 
 
-extension ShareEncoding: Equatable, Hashable {}
-
-
-
-
-
-
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1099,7 +1013,7 @@ fileprivate struct FfiConverterSequenceTypeEncodedShare: FfiConverterRustBuffer 
 }
 public func combineShareInput(input: String, selected: ShareEncoding, passphrase: String?)throws  -> Recovery  {
     return try  FfiConverterTypeRecovery_lift(try rustCallWithError(FfiConverterTypeBridgeError_lift) {
-    uniffi_safeparts_swift_fn_func_combine_share_input(
+    uniffi_safeparts_uniffi_fn_func_combine_share_input(
         FfiConverterString.lower(input),
         FfiConverterTypeShareEncoding_lower(selected),
         FfiConverterOptionString.lower(passphrase),$0
@@ -1108,7 +1022,7 @@ public func combineShareInput(input: String, selected: ShareEncoding, passphrase
 }
 public func inspectShareInput(input: String, selected: ShareEncoding)throws  -> Inspection  {
     return try  FfiConverterTypeInspection_lift(try rustCallWithError(FfiConverterTypeBridgeError_lift) {
-    uniffi_safeparts_swift_fn_func_inspect_share_input(
+    uniffi_safeparts_uniffi_fn_func_inspect_share_input(
         FfiConverterString.lower(input),
         FfiConverterTypeShareEncoding_lower(selected),$0
     )
@@ -1116,7 +1030,7 @@ public func inspectShareInput(input: String, selected: ShareEncoding)throws  -> 
 }
 public func splitSecret(secret: Data, threshold: UInt8, shareCount: UInt8, selected: ShareEncoding, passphrase: String?)throws  -> [EncodedShare]  {
     return try  FfiConverterSequenceTypeEncodedShare.lift(try rustCallWithError(FfiConverterTypeBridgeError_lift) {
-    uniffi_safeparts_swift_fn_func_split_secret(
+    uniffi_safeparts_uniffi_fn_func_split_secret(
         FfiConverterData.lower(secret),
         FfiConverterUInt8.lower(threshold),
         FfiConverterUInt8.lower(shareCount),
@@ -1135,19 +1049,19 @@ private enum InitializationResult {
 // the code inside is only computed once.
 private let initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
-    let bindings_contract_version = 29
+    let bindings_contract_version = 30
     // Get the scaffolding contract version by calling the into the dylib
-    let scaffolding_contract_version = ffi_safeparts_swift_uniffi_contract_version()
+    let scaffolding_contract_version = ffi_safeparts_uniffi_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_safeparts_swift_checksum_func_combine_share_input() != 5825) {
+    if (uniffi_safeparts_uniffi_checksum_func_combine_share_input() != 62916) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_safeparts_swift_checksum_func_inspect_share_input() != 49328) {
+    if (uniffi_safeparts_uniffi_checksum_func_inspect_share_input() != 2438) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_safeparts_swift_checksum_func_split_secret() != 25138) {
+    if (uniffi_safeparts_uniffi_checksum_func_split_secret() != 21893) {
         return InitializationResult.apiChecksumMismatch
     }
 
@@ -1156,7 +1070,7 @@ private let initializationResult: InitializationResult = {
 
 // Make the ensure init function public so that other modules which have external type references to
 // our types can call it.
-public func uniffiEnsureSafepartsSwiftInitialized() {
+public func uniffiEnsureSafepartsUniffiInitialized() {
     switch initializationResult {
     case .ok:
         break

@@ -57,7 +57,7 @@ for ARCH in arm64 x86_64; do
 
   LINKED="$WORK/linked-$ARCH.txt"
   otool -L "$THIN" | tail -n +2 >"$LINKED"
-  if grep -q 'libsafeparts_swift[.]dylib' "$LINKED"; then
+  if grep -q 'libsafeparts_uniffi[.]dylib' "$LINKED"; then
     fail "$ARCH slice dynamically links the Rust bridge"
   fi
   if grep -Eq '(@rpath|/Users/|/opt/homebrew/|/usr/local/|/runner/)' "$LINKED"; then
@@ -66,7 +66,7 @@ for ARCH in arm64 x86_64; do
 
   SYMBOLS="$WORK/symbols-$ARCH.txt"
   nm "$THIN" >"$SYMBOLS"
-  grep -q 'uniffi_safeparts_swift' "$SYMBOLS" || fail "$ARCH slice lacks UniFFI bridge symbols"
+  grep -q 'uniffi_safeparts_uniffi' "$SYMBOLS" || fail "$ARCH slice lacks UniFFI bridge symbols"
 done
 
 if find "$APP" -type f -name '*.dylib' -print -quit | grep -q .; then

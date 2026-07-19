@@ -47,7 +47,7 @@ for TARGET in "${RUST_TARGETS[@]}"; do
   echo "Building Rust bridge for $TARGET..."
   MACOSX_DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET" \
     CARGO_TARGET_DIR="$WORK/cargo" \
-    cargo build --locked --release -p safeparts_swift --target "$TARGET"
+    cargo build --locked --release -p safeparts_uniffi --target "$TARGET"
 done
 
 HOST_TARGET="$(rustc -vV | awk '/^host: / { print $2 }')"
@@ -59,13 +59,13 @@ case "$HOST_TARGET" in
     ;;
 esac
 
-HOST_DYLIB="$WORK/cargo/$HOST_TARGET/release/libsafeparts_swift.dylib"
-CARGO_TARGET_DIR="$WORK/tools" cargo run --locked -q -p safeparts_swift --bin uniffi-bindgen -- \
+HOST_DYLIB="$WORK/cargo/$HOST_TARGET/release/libsafeparts_uniffi.dylib"
+CARGO_TARGET_DIR="$WORK/tools" cargo run --locked -q -p safeparts_uniffi --bin uniffi-bindgen -- \
   generate \
   --library "$HOST_DYLIB" \
   --language swift \
   --out-dir "$WORK/generated"
-cp "$WORK/generated/safeparts_swiftFFI.modulemap" "$WORK/generated/module.modulemap"
+cp "$WORK/generated/safeparts_uniffiFFI.modulemap" "$WORK/generated/module.modulemap"
 
 python3 - "$WORK/generated" <<'PY'
 from pathlib import Path
@@ -82,10 +82,10 @@ for path in root.iterdir():
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 PY
 
-for FILE in safeparts_swift.swift safeparts_swiftFFI.h safeparts_swiftFFI.modulemap module.modulemap; do
+for FILE in safeparts_uniffi.swift safeparts_uniffiFFI.h safeparts_uniffiFFI.modulemap module.modulemap; do
   cmp "$WORK/generated/$FILE" "$MACOS/Generated/$FILE"
 done
-cmp "$WORK/generated/safeparts_swift.swift" "$MACOS/Sources/SafepartsKit/Generated.swift"
+cmp "$WORK/generated/safeparts_uniffi.swift" "$MACOS/Sources/SafepartsKit/Generated.swift"
 
 BINARIES=()
 RESOURCE_BUNDLES=()
@@ -101,7 +101,7 @@ for INDEX in 0 1; do
   ditto "$MACOS/Generated" "$PACKAGE_STAGE/Generated"
   ditto "$MACOS/Sources" "$PACKAGE_STAGE/Sources"
   ditto "$MACOS/Tests" "$PACKAGE_STAGE/Tests"
-  cp "$WORK/cargo/$RUST_TARGET/release/libsafeparts_swift.a" "$PACKAGE_STAGE/Native/"
+  cp "$WORK/cargo/$RUST_TARGET/release/libsafeparts_uniffi.a" "$PACKAGE_STAGE/Native/"
 
   echo "Building Swift app for $SWIFT_ARCH..."
   MACOSX_DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET" swift build \

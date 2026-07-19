@@ -34,7 +34,6 @@ cargo test -p safeparts --test e2e explicit_dash_paths_use_stdin_and_stdout
 cargo test -p safeparts_tui app::tests
 cargo test -p safeparts_wasm
 cargo test -p safeparts_desktop --lib
-cargo test -p safeparts_swift
 cargo test -p safeparts_uniffi
 ```
 

@@ -17,7 +17,7 @@ Generated files should be easy to refresh and easy to review. Do not hand-edit g
 | `desktop/dist/` | Vite | No | Desktop frontend build output. Never commit. |
 | `desktop/src-tauri/gen/schemas/` | Tauri | Partially tracked today | Treat as generated. Refresh intentionally and review schema diffs. |
 | `macos/Generated/` | `macos/scripts/prepare.sh` / UniFFI | Yes | Canonical generated Swift, header, and module maps. Review and commit them together. |
-| `macos/Sources/SafepartsKit/Generated.swift` | `macos/scripts/prepare.sh` / UniFFI | Yes | Compiled mirror of `macos/Generated/safeparts_swift.swift`; the prepare script verifies an exact match. |
+| `macos/Sources/SafepartsKit/Generated.swift` | `macos/scripts/prepare.sh` / UniFFI | Yes | Compiled mirror of `macos/Generated/safeparts_uniffi.swift`; the prepare script verifies an exact match. |
 | `macos/Native/` and `macos/.build/` | Cargo and SwiftPM | No | Compiled host output. Never commit. |
 | `windows/Generated/safeparts_uniffi.cs` | `windows/scripts/prepare.py` / UniFFI C# | Yes | Canonical generated C# binding. Regenerate with the pinned tool and review the diff. |
 | `windows/**/bin/` and `windows/**/obj/` | .NET | No | Compiled managed output. Never commit. |
@@ -58,7 +58,7 @@ Native macOS bindings:
 
 ```bash
 mise run macos:prepare
-cmp macos/Generated/safeparts_swift.swift macos/Sources/SafepartsKit/Generated.swift
+cmp macos/Generated/safeparts_uniffi.swift macos/Sources/SafepartsKit/Generated.swift
 ```
 
 The preparation script targets macOS 14 by default and strips trailing whitespace from generated text. You may set `MACOSX_DEPLOYMENT_TARGET` to a newer version for diagnostics. The script rejects versions older than 14.0.
