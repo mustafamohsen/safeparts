@@ -10,7 +10,7 @@ name = "safeparts-tui"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1"
+anyhow = "1.0.103"
 arboard = "3.4.1"
 base64 = "0.22"
 crossterm = "0.27"
