@@ -183,6 +183,17 @@ fn detect_encoding_from_lines(
     nonempty_lines: &[&str],
     full_input: &str,
 ) -> CoreResult<Option<Encoding>> {
+    if decode_share_packets_known(full_input, Encoding::Base64url, MnemonicLineMode::Shares).is_ok()
+    {
+        return Ok(Some(Encoding::Base64url));
+    }
+
+    if decode_share_packets_known(full_input, Encoding::Base58check, MnemonicLineMode::Shares)
+        .is_ok()
+    {
+        return Ok(Some(Encoding::Base58check));
+    }
+
     let looks_mnemonic = nonempty_lines
         .iter()
         .any(|line| line.contains('/') || line.split_whitespace().count() > 1);
@@ -194,17 +205,6 @@ fn detect_encoding_from_lines(
         } else {
             Encoding::MnemoWords
         }));
-    }
-
-    if decode_share_packets_known(full_input, Encoding::Base64url, MnemonicLineMode::Shares).is_ok()
-    {
-        return Ok(Some(Encoding::Base64url));
-    }
-
-    if decode_share_packets_known(full_input, Encoding::Base58check, MnemonicLineMode::Shares)
-        .is_ok()
-    {
-        return Ok(Some(Encoding::Base58check));
     }
 
     Ok(None)
@@ -352,5 +352,20 @@ mod tests {
 
         let parsed = parse_share_packets_wrapped_mnemonics(&wrapped, Encoding::MnemoWords).unwrap();
         assert_eq!(parsed.packets, vec![packet()]);
+    }
+
+    #[test]
+    fn auto_detects_same_line_compact_shares_with_mixed_whitespace() {
+        let packets = crate::split_secret(b"synthetic compact whitespace", 2, 3, None).unwrap();
+
+        for encoding in [Encoding::Base64url, Encoding::Base58check] {
+            let first = encode_packet(&packets[0], encoding).unwrap();
+            let second = encode_packet(&packets[1], encoding).unwrap();
+            let parsed =
+                parse_share_packets(&format!("{first} \t {second}"), Encoding::Auto).unwrap();
+
+            assert_eq!(parsed.encoding, encoding);
+            assert_eq!(parsed.packets, packets[..2]);
+        }
     }
 }

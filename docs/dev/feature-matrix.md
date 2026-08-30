@@ -23,7 +23,7 @@ Status keys:
 | `base58check` share encoding | Yes | Yes, alias `base58` | Yes | Yes | Core | Core | Yes | Yes | Yes | Core, native bridges, Windows smoke, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
 | `mnemo-words` share encoding | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core canonical framing, native bridges, Windows smoke, CLI e2e, web smoke, desktop command tests | Encoding docs and UI choices |
 | `mnemo-bip39` share encoding | Yes | Yes | Yes | Yes | Core | Core | Yes | Yes | Yes | Core, native bridges, Windows smoke, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
-| Auto encoding parse | Yes | Yes for combine | Yes for combine | Yes | Yes for combine | Yes for combine | Yes | Yes | Yes | Core, native bridges, Windows smoke, CLI e2e, web smoke, desktop command tests | Encoding parser docs and UI guidance |
+| Auto encoding parse | Yes | Yes for combine | Yes for combine | Yes | Yes for combine | Yes for combine | Yes | Yes | Yes | Core whitespace cases, native bridges, Windows smoke, CLI e2e, web smoke, desktop command tests | Encoding parser docs and UI guidance |
 | Web local-only workflow | N/A | N/A | N/A | Yes | Yes | N/A | N/A | N/A | Yes | Web build and smoke tests | Web surface guide |
 | Desktop local-only Tauri workflow | N/A | N/A | N/A | N/A | Mirrored UI source | Yes | N/A | N/A | Yes | Desktop build, Tauri command tests | Desktop surface guide |
 | Native macOS local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | N/A | Rust bridge and Swift model tests | Native macOS surface guide |

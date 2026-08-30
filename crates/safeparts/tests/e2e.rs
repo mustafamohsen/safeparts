@@ -98,6 +98,23 @@ fn e2e_round_trip_base64() {
 }
 
 #[test]
+fn auto_encoding_accepts_same_line_compact_shares() {
+    for encoding in ["base64url", "base58check"] {
+        let input = format!("synthetic same-line {encoding}");
+        let shares = run_split(encoding, 2, 3, input.as_bytes(), None);
+        let stdin = format!("{} \t {}", shares[0], shares[1]);
+        let mut command = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
+
+        command
+            .arg("combine")
+            .write_stdin(stdin)
+            .assert()
+            .success()
+            .stdout(input);
+    }
+}
+
+#[test]
 fn e2e_round_trip_mnemo_words() {
     let input = b"hello e2e mnemo words";
     let shares = run_split("mnemo-words", 2, 3, input, None);
