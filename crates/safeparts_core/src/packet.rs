@@ -73,12 +73,7 @@ impl SharePacket {
     pub fn encode_binary(&self) -> CoreResult<Vec<u8>> {
         crate::sss::validate_share_metadata(self.k, self.n, self.x)?;
         let flags = if let Some(params) = self.crypto_params {
-            // Validate params are sane.
-            if params.mem_cost_kib == 0 || params.time_cost == 0 || params.parallelism == 0 {
-                return Err(CoreError::InvalidPacket(
-                    "invalid crypto params".to_string(),
-                ));
-            }
+            params.validate_policy()?;
             FLAG_ENCRYPTED
         } else {
             0
@@ -164,13 +159,15 @@ impl SharePacket {
                             )?);
                         offset += 4;
 
-                        Some(CryptoParams {
+                        let params = CryptoParams {
                             salt,
                             nonce,
                             mem_cost_kib,
                             time_cost,
                             parallelism,
-                        })
+                        };
+                        params.validate_policy()?;
+                        Some(params)
                     } else {
                         None
                     };
@@ -291,7 +288,7 @@ mod tests {
             crypto_params: Some(CryptoParams {
                 salt: [1u8; 16],
                 nonce: [2u8; 12],
-                mem_cost_kib: 1024,
+                mem_cost_kib: 8 * 1024,
                 time_cost: 1,
                 parallelism: 1,
             }),
@@ -360,5 +357,24 @@ mod tests {
             pkt.to_raw_share(),
             Err(CoreError::InvalidKAndN { .. })
         ));
+    }
+
+    #[test]
+    fn binary_decode_rejects_unsupported_work_factors() {
+        let pkt = SharePacket {
+            set_id: SetId([8u8; 16]),
+            k: 1,
+            n: 1,
+            x: 1,
+            payload: vec![9, 9, 9],
+            crypto_params: Some(CryptoParams::random_default()),
+        };
+        let mut encoded = pkt.encode_binary().unwrap();
+        let mem_cost_offset = BASE_HEADER_LEN + 16 + 12;
+        encoded[mem_cost_offset..mem_cost_offset + 4]
+            .copy_from_slice(&(crate::crypto::MAX_MEM_COST_KIB + 1).to_be_bytes());
+
+        let err = SharePacket::decode_binary(&encoded).unwrap_err();
+        assert!(matches!(err, CoreError::UnsupportedCryptoParams { .. }));
     }
 }

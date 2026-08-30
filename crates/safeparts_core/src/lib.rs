@@ -163,3 +163,32 @@ pub fn combine_shares(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::crypto::{CryptoParams, MAX_MEM_COST_KIB};
+    use crate::packet::SharePacket;
+    use crate::sss::SetId;
+
+    #[test]
+    fn combine_rejects_unsupported_work_factors_before_key_derivation() {
+        let mut payload = b"crafted ciphertext".to_vec();
+        let tag = blake3::hash(&payload);
+        payload.extend_from_slice(tag.as_bytes());
+        let packet = SharePacket {
+            set_id: SetId([1; 16]),
+            k: 1,
+            n: 1,
+            x: 1,
+            payload,
+            crypto_params: Some(CryptoParams {
+                mem_cost_kib: MAX_MEM_COST_KIB + 1,
+                ..CryptoParams::random_default()
+            }),
+        };
+
+        let err = combine_shares(&[packet], Some(b"passphrase")).unwrap_err();
+        assert!(matches!(err, CoreError::UnsupportedCryptoParams { .. }));
+    }
+}

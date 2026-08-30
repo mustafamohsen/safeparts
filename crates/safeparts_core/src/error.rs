@@ -67,6 +67,15 @@ pub enum CoreError {
     #[error("passphrase required")]
     PassphraseRequired,
 
+    #[error(
+        "unsupported crypto parameters: memory={mem_cost_kib} KiB, time={time_cost}, parallelism={parallelism}"
+    )]
+    UnsupportedCryptoParams {
+        mem_cost_kib: u32,
+        time_cost: u32,
+        parallelism: u32,
+    },
+
     #[error("crypto params mismatch")]
     CryptoParamsMismatch,
 }

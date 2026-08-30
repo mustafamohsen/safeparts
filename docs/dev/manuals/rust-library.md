@@ -91,7 +91,7 @@ fn parse_wrapped_mnemonic(input: &str) -> CoreResult<usize> {
 
 ## Add passphrase protection
 
-Passphrase protection encrypts the secret before splitting. Recovery then requires both enough shares and the same passphrase.
+Passphrase protection encrypts the secret before splitting. Recovery then requires both enough shares and the same passphrase. Core rejects share packets whose Argon2 settings fall outside the supported policy: 8,192 to 262,144 KiB of memory, 1 to 10 iterations, and parallelism from 1 to 4.
 
 ```rust
 use safeparts_core::{combine_shares, split_secret, CoreResult};
@@ -228,6 +228,7 @@ These modules are public because the crate is still small, but most applications
 | `IntegrityCheckFailed` | Reconstructed bytes did not match the internal BLAKE3 tag. |
 | `PassphraseRequired` | Encrypted shares were combined without a passphrase. |
 | `DecryptFailed` | Wrong passphrase or tampered encrypted data. |
+| `UnsupportedCryptoParams` | Passphrase-protection work factors fall outside the supported resource policy. |
 | `CryptoParamsMismatch` | Encrypted packet metadata does not match across shares. |
 
 ## Integration checklist

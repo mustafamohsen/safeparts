@@ -137,6 +137,7 @@ fn map_error(error: CoreError) -> BridgeError {
         | CoreError::InvalidShareIndex { .. }
         | CoreError::TooManyShares { .. }
         | CoreError::UnsupportedPacketFlags { .. }
+        | CoreError::UnsupportedCryptoParams { .. }
         | CoreError::Encoding(_)
         | CoreError::CouldNotDetectEncoding
         | CoreError::UnknownEncoding(_) => BridgeError::MalformedShares,
