@@ -56,6 +56,7 @@ impl SharePacket {
     }
 
     pub fn to_raw_share(&self) -> CoreResult<RawShare> {
+        crate::sss::validate_share_metadata(self.k, self.n, self.x)?;
         Ok(RawShare {
             set_id: self.set_id,
             k: self.k,
@@ -70,6 +71,7 @@ impl SharePacket {
     /// Most applications should prefer the text encoders in [`crate::encoding`]
     /// unless they control a binary storage format.
     pub fn encode_binary(&self) -> CoreResult<Vec<u8>> {
+        crate::sss::validate_share_metadata(self.k, self.n, self.x)?;
         let flags = if let Some(params) = self.crypto_params {
             // Validate params are sane.
             if params.mem_cost_kib == 0 || params.time_cost == 0 || params.parallelism == 0 {
@@ -207,11 +209,17 @@ pub fn binary_total_len(bytes: &[u8]) -> CoreResult<usize> {
     }
 
     let version = bytes[4];
+    let flags = bytes[5];
+    let k = bytes[6];
+    let n = bytes[7];
+    let x = bytes[8];
+
+    crate::sss::validate_share_metadata(k, n, x)?;
+    validate_flags(version, flags)?;
 
     let payload_len_offset = match version {
         VERSION_V1 => 25,
         VERSION_V2 => {
-            let flags = bytes[5];
             let mut offset = BASE_HEADER_LEN;
             if (flags & FLAG_ENCRYPTED) != 0 {
                 offset = offset
@@ -236,6 +244,20 @@ pub fn binary_total_len(bytes: &[u8]) -> CoreResult<usize> {
         .checked_add(PAYLOAD_LEN_FIELD_LEN)
         .and_then(|v| v.checked_add(payload_len))
         .ok_or_else(|| CoreError::InvalidPacket("length overflow".to_string()))
+}
+
+fn validate_flags(version: u8, flags: u8) -> CoreResult<()> {
+    let supported = match version {
+        VERSION_V1 => 0,
+        VERSION_V2 => FLAG_ENCRYPTED,
+        _ => return Err(CoreError::InvalidPacket("unsupported version".to_string())),
+    };
+
+    if flags & !supported != 0 {
+        return Err(CoreError::UnsupportedPacketFlags { version, flags });
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -278,5 +300,65 @@ mod tests {
         let enc = pkt.encode_binary().unwrap();
         let dec = SharePacket::decode_binary(&enc).unwrap();
         assert_eq!(dec, pkt);
+    }
+
+    #[test]
+    fn binary_decode_rejects_invalid_share_metadata() {
+        let pkt = SharePacket {
+            set_id: SetId([7u8; 16]),
+            k: 2,
+            n: 3,
+            x: 1,
+            payload: vec![1, 2, 3],
+            crypto_params: None,
+        };
+        let encoded = pkt.encode_binary().unwrap();
+
+        for (offset, value) in [(6, 0), (7, 0), (6, 4), (8, 0), (8, 4)] {
+            let mut malformed = encoded.clone();
+            malformed[offset] = value;
+            assert!(
+                SharePacket::decode_binary(&malformed).is_err(),
+                "offset {offset} accepted value {value}"
+            );
+        }
+    }
+
+    #[test]
+    fn binary_decode_rejects_reserved_flags() {
+        let pkt = SharePacket {
+            set_id: SetId([7u8; 16]),
+            k: 1,
+            n: 1,
+            x: 1,
+            payload: vec![1, 2, 3],
+            crypto_params: None,
+        };
+        let mut encoded = pkt.encode_binary().unwrap();
+        encoded[5] = 0b1000_0000;
+
+        let err = SharePacket::decode_binary(&encoded).unwrap_err();
+        assert!(matches!(err, CoreError::UnsupportedPacketFlags { .. }));
+    }
+
+    #[test]
+    fn binary_encode_rejects_directly_constructed_invalid_metadata() {
+        let pkt = SharePacket {
+            set_id: SetId([7u8; 16]),
+            k: 0,
+            n: 1,
+            x: 1,
+            payload: vec![1, 2, 3],
+            crypto_params: None,
+        };
+
+        assert!(matches!(
+            pkt.encode_binary(),
+            Err(CoreError::InvalidKAndN { .. })
+        ));
+        assert!(matches!(
+            pkt.to_raw_share(),
+            Err(CoreError::InvalidKAndN { .. })
+        ));
     }
 }

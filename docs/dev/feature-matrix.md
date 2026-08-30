@@ -15,7 +15,7 @@ Status keys:
 | Feature | Core | CLI | TUI | WASM | Web | Desktop | Native macOS | Native Windows | Help docs | Tests | Update when changed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Split/combine bytes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Rust, native bridges, Windows model/launch smoke, CLI e2e, web smoke, desktop command tests | All surface guides |
-| Threshold range `1 <= k <= n <= 255` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, Windows model, and native-bridge negative tests | Core, CLI, TUI, WASM, web, desktop, native apps |
+| Threshold range `1 <= k <= n <= 255` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core packet metadata, Windows model, and native-bridge negative tests | Core, CLI, TUI, WASM, web, desktop, native apps |
 | BLAKE3 integrity tag | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core | Yes | Core corruption tests | Core and technical docs |
 | Passphrase protection | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, native bridges, Windows model, CLI e2e, web smoke, desktop command tests | Security docs and every exposed UI |
 | `base64url` share encoding | Yes | Yes, alias `base64` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, native bridges, Windows smoke, CLI e2e, desktop command tests | Encoding lists and UI choices |

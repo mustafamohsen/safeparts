@@ -19,6 +19,15 @@ pub enum CoreError {
     #[error("invalid x coordinate 0")]
     InvalidX,
 
+    #[error("share index {x} exceeds declared share count {n}")]
+    InvalidShareIndex { x: u8, n: u8 },
+
+    #[error("received more shares than declared: share count {n}, got {m}")]
+    TooManyShares { n: u8, m: usize },
+
+    #[error("unsupported packet flags 0x{flags:02x} for version {version}")]
+    UnsupportedPacketFlags { version: u8, flags: u8 },
+
     #[error("cannot invert zero")]
     DivisionByZero,
 

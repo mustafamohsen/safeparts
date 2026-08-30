@@ -41,7 +41,7 @@ fn main() -> CoreResult<()> {
 }
 ```
 
-Parameter rules are enforced by core: `1 <= k <= n <= 255`.
+Core enforces `1 <= k <= n <= 255`. Decoded and directly constructed share packets must also use an index in `1..=n`; recovery rejects reserved packet flags and inputs larger than the declared share count.
 
 ## Encode shares for storage
 
@@ -216,6 +216,9 @@ These modules are public because the crate is still small, but most applications
 | `NotEnoughShares` | Combine input has fewer than the threshold. |
 | `InconsistentMetadata` | Shares do not belong to the same set or have incompatible metadata. |
 | `DuplicateX` | The same share coordinate was supplied more than once. |
+| `InvalidX` / `InvalidShareIndex` | A share index is zero or exceeds the declared share count. |
+| `TooManyShares` | Recovery received more packets than the declared share count. |
+| `UnsupportedPacketFlags` | A packet uses flag bits that its version does not define. |
 | `InvalidPacket` | Binary packet parsing failed. |
 | `Encoding` | Text decoding failed for the selected encoding. |
 | `UnknownEncoding` | A provided encoding name is not recognized. |
