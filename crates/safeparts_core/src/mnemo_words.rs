@@ -30,7 +30,7 @@ pub fn decode_packet(s: &str) -> CoreResult<SharePacket> {
         return Err(CoreError::Encoding("no words provided".to_string()));
     }
 
-    let bytes = words_to_bytes(&words)?;
+    let (bytes, final_word_index) = words_to_bytes(&words)?;
     if bytes.len() < 4 + 2 {
         return Err(CoreError::Encoding(
             "mnemo-words payload too short".to_string(),
@@ -50,6 +50,31 @@ pub fn decode_packet(s: &str) -> CoreResult<SharePacket> {
 
     if bytes.len() < expected_total {
         return Err(CoreError::Encoding("mnemo-words truncated".to_string()));
+    }
+
+    let encoded_bits = expected_total
+        .checked_mul(8)
+        .ok_or_else(|| CoreError::Encoding("mnemo-words length overflow".to_string()))?;
+    let expected_word_count = encoded_bits
+        .checked_add(10)
+        .ok_or_else(|| CoreError::Encoding("mnemo-words length overflow".to_string()))?
+        / 11;
+    if words.len() != expected_word_count {
+        return Err(CoreError::Encoding(
+            "mnemo-words has trailing or missing words".to_string(),
+        ));
+    }
+
+    let padding_bits = expected_word_count * 11 - encoded_bits;
+    if padding_bits != 0 && (final_word_index & ((1u16 << padding_bits) - 1)) != 0 {
+        return Err(CoreError::Encoding(
+            "mnemo-words has nonzero padding".to_string(),
+        ));
+    }
+    if bytes[expected_total..].iter().any(|byte| *byte != 0) {
+        return Err(CoreError::Encoding(
+            "mnemo-words has trailing data".to_string(),
+        ));
     }
 
     let framed = &bytes[..expected_total];
@@ -97,7 +122,7 @@ fn bytes_to_words(bytes: &[u8]) -> Vec<String> {
     out
 }
 
-fn words_to_bytes(words: &[&str]) -> CoreResult<Vec<u8>> {
+fn words_to_bytes(words: &[&str]) -> CoreResult<(Vec<u8>, u16)> {
     let word_indices: HashMap<_, _> = Language::English
         .word_list()
         .iter()
@@ -108,9 +133,11 @@ fn words_to_bytes(words: &[&str]) -> CoreResult<Vec<u8>> {
     let mut out = Vec::new();
     let mut acc: u32 = 0;
     let mut acc_bits: u8 = 0;
+    let mut final_word_index = 0;
 
     for &word in words {
         let index = word_index(word, &word_indices)?;
+        final_word_index = index;
 
         acc = (acc << 11) | u32::from(index);
         acc_bits += 11;
@@ -132,7 +159,7 @@ fn words_to_bytes(words: &[&str]) -> CoreResult<Vec<u8>> {
         out.push(byte);
     }
 
-    Ok(out)
+    Ok((out, final_word_index))
 }
 
 fn word_index(word: &str, indices: &HashMap<&str, u16>) -> CoreResult<u16> {
@@ -238,6 +265,49 @@ mod tests {
 
         let corrupted = words.join(" ");
         let err = decode_packet(&corrupted).unwrap_err();
+        assert!(matches!(err, CoreError::Encoding(_)));
+    }
+
+    #[test]
+    fn appended_words_are_rejected() {
+        let pkt = SharePacket {
+            set_id: SetId([2u8; 16]),
+            k: 1,
+            n: 1,
+            x: 1,
+            payload: vec![1, 2, 3, 4, 5],
+            crypto_params: None,
+        };
+        let encoded = encode_packet(&pkt).unwrap();
+
+        for appended in ["abandon", "zoo"] {
+            let err = decode_packet(&format!("{encoded} {appended}")).unwrap_err();
+            assert!(matches!(err, CoreError::Encoding(_)));
+        }
+    }
+
+    #[test]
+    fn nonzero_final_word_padding_is_rejected() {
+        let pkt = SharePacket {
+            set_id: SetId([2u8; 16]),
+            k: 1,
+            n: 1,
+            x: 1,
+            payload: vec![1, 2, 3, 4, 5],
+            crypto_params: None,
+        };
+        let mut words = encode_packet(&pkt)
+            .unwrap()
+            .split_whitespace()
+            .map(str::to_string)
+            .collect::<Vec<_>>();
+        let word_list = Language::English.word_list();
+        let last = words.last_mut().unwrap();
+        let index = word_list.iter().position(|word| word == last).unwrap();
+        assert_eq!(index & 1, 0);
+        *last = word_list[index | 1].to_string();
+
+        let err = decode_packet(&words.join(" ")).unwrap_err();
         assert!(matches!(err, CoreError::Encoding(_)));
     }
 }

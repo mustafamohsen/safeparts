@@ -202,7 +202,7 @@ These modules are public because the crate is still small, but most applications
 | Module | Public items | When to use |
 | --- | --- | --- |
 | `ascii` | `Encoding`, `encode_packet`, `decode_packet` | Direct base64url or base58check handling. Prefer `encoding` for new code. |
-| `mnemo_words` | `encode_packet`, `decode_packet` | Direct word-list encoding. Prefer `encoding` for new code. |
+| `mnemo_words` | `encode_packet`, `decode_packet` | Direct word-list encoding with strict word-count and padding checks. Prefer `encoding` for new code. |
 | `mnemo_bip39` | `encode_packet`, `decode_packet` | Direct BIP-39 phrase encoding. Prefer `encoding` for new code. |
 | `crypto` | `CryptoParams`, `CryptoParams::random_default`, `encrypt`, `decrypt` | Low-level encrypt/decrypt. Prefer passphrase arguments on `split_secret` and `combine_shares`. |
 | `sss` | `SetId`, `SetId::random`, `RawShare`, `split`, `combine` | Low-level Shamir shares without packet, encoding, integrity, or passphrase policy. Use only for focused tests or internals. |
