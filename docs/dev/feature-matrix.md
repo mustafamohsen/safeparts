@@ -16,6 +16,7 @@ Status keys:
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Split/combine bytes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Rust, native bridges, Windows model/launch smoke, CLI e2e, web smoke, desktop command tests | All surface guides |
 | CLI/TUI private atomic file output | N/A | Yes | Yes | N/A | N/A | N/A | N/A | N/A | N/A | CLI e2e and TUI file tests | CLI and TUI guides |
+| TUI terminal-state restoration | N/A | N/A | Yes | N/A | N/A | N/A | N/A | N/A | N/A | Injected setup, cleanup, and panic-path tests | TUI guide |
 | Threshold range `1 <= k <= n <= 255` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core packet metadata, Windows model, and native-bridge negative tests | Core, CLI, TUI, WASM, web, desktop, native apps |
 | BLAKE3 integrity tag | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core | Yes | Core corruption tests | Core and technical docs |
 | Recovery-share error redaction | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | N/A | CLI, TUI, WASM, desktop, and native-bridge sentinel tests | Core and surface error mappings |
