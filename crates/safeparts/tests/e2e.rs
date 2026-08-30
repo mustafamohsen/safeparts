@@ -179,6 +179,20 @@ fn combine_with_insufficient_shares_fails() {
         .stderr(predicate::str::contains("need at least k shares"));
 }
 
+#[test]
+fn malformed_share_errors_do_not_echo_input() {
+    let sensitive = "SECRET-SHARE-TEXT";
+    let mut command = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
+
+    command
+        .args(["combine", "-e", "mnemo-words"])
+        .write_stdin(sensitive)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(sensitive).not())
+        .stderr(predicate::str::contains("could not be decoded"));
+}
+
 #[cfg(unix)]
 #[test]
 fn sensitive_output_files_are_owner_only_even_when_overwritten() {

@@ -123,6 +123,7 @@ fn main() -> Result<()> {
             let passphrase_bytes = passphrase.as_ref().map(|p| p.as_slice());
 
             let packets = safeparts_core::split_secret(input.as_slice(), k, n, passphrase_bytes)
+                .map_err(|error| anyhow!(error.user_message()))
                 .with_context(|| format!("split failed (k={k}, n={n})"))?;
 
             let encoded: Vec<String> = packets
@@ -149,7 +150,7 @@ fn main() -> Result<()> {
             let packets = parse_share_packets(&input_str, encoding)?;
 
             let secret = safeparts_core::combine_shares(&packets, passphrase_bytes)
-                .map_err(|e| anyhow!(e))
+                .map_err(|error| anyhow!(error.user_message()))
                 .context("combine failed")?;
 
             write_output_bytes(out, &secret)?;
@@ -185,7 +186,7 @@ fn encode_packet_cli(
     packet: &safeparts_core::packet::SharePacket,
     encoding: CliEncoding,
 ) -> Result<String> {
-    encoding::encode_packet(packet, encoding.into()).map_err(|e| anyhow!(e))
+    encoding::encode_packet(packet, encoding.into()).map_err(|error| anyhow!(error.user_message()))
 }
 
 fn parse_share_packets(
@@ -193,7 +194,8 @@ fn parse_share_packets(
     encoding: Option<CliEncoding>,
 ) -> Result<Vec<safeparts_core::packet::SharePacket>> {
     let encoding = encoding.map_or(Encoding::Auto, Into::into);
-    let parsed = encoding::parse_share_packets(input, encoding).map_err(|e| anyhow!(e))?;
+    let parsed = encoding::parse_share_packets(input, encoding)
+        .map_err(|error| anyhow!(error.user_message()))?;
     Ok(parsed.packets)
 }
 

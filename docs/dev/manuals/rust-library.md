@@ -117,7 +117,7 @@ Do not accept passphrases through logs, URLs, panic messages, analytics, or requ
 
 ## Handle errors by class
 
-Core errors are typed. Match the cases that affect user guidance and log only the failure class.
+Core errors are typed. Match the cases that affect user guidance and log only the failure class. For a generic boundary, `CoreError::user_message()` returns a redacted message that does not repeat recovery-share input.
 
 ```rust
 use safeparts_core::encoding::{self, Encoding};
@@ -157,7 +157,7 @@ Avoid adding the pasted share text to error context. The text itself is sensitiv
 | `combine_shares` | `fn combine_shares(packets: &[SharePacket], passphrase: Option<&[u8]>) -> CoreResult<Vec<u8>>` | Main API for recovering secret bytes. |
 | `tag_and_split` | `fn tag_and_split(secret: &[u8], k: u8, n: u8) -> CoreResult<Vec<SharePacket>>` | Compatibility wrapper for unprotected splits. Prefer `split_secret`. |
 | `combine_and_verify` | `fn combine_and_verify(packets: &[SharePacket]) -> CoreResult<Vec<u8>>` | Compatibility wrapper for unprotected combine. Prefer `combine_shares`. |
-| `CoreError` | enum | Typed error cases. Match this at UI or service boundaries. |
+| `CoreError` | enum | Typed error cases. Match this at UI or service boundaries; use `user_message()` for redacted generic output. |
 | `CoreResult<T>` | `Result<T, CoreError>` | Convenience result alias. |
 | `INTEGRITY_TAG_LEN` | `usize` | Length of the internal BLAKE3 tag. Most integrations do not need it. |
 

@@ -174,7 +174,7 @@ fn word_index(word: &str, indices: &HashMap<&str, u16>) -> CoreResult<u16> {
         }
     }
 
-    Err(CoreError::Encoding(format!("unknown word: {word}")))
+    Err(CoreError::Encoding("unknown mnemonic word".to_string()))
 }
 
 fn crc16_ccitt_false(bytes: &[u8]) -> u16 {

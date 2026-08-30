@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use js_sys::{Array, Object, Reflect, Uint8Array};
+use safeparts_core::CoreError;
 use safeparts_core::encoding::{self, Encoding};
 use safeparts_core::packet::SharePacket;
 use wasm_bindgen::prelude::*;
@@ -21,7 +22,8 @@ pub fn split_secret(
 ) -> Result<Array, JsValue> {
     let passphrase_bytes = passphrase.as_deref().map(str::as_bytes);
 
-    let packets = safeparts_core::split_secret(secret, k, n, passphrase_bytes).map_err(js_error)?;
+    let packets =
+        safeparts_core::split_secret(secret, k, n, passphrase_bytes).map_err(js_core_error)?;
 
     let out = Array::new();
     for packet in packets {
@@ -59,9 +61,9 @@ pub fn combine_share_input(
     passphrase: Option<String>,
 ) -> Result<Uint8Array, JsValue> {
     let passphrase_bytes = passphrase.as_deref().map(str::as_bytes);
-    let encoding = Encoding::parse_name(encoding).map_err(js_error)?;
+    let encoding = Encoding::parse_name(encoding).map_err(js_core_error)?;
     let parsed =
-        encoding::parse_share_packets_wrapped_mnemonics(input, encoding).map_err(js_error)?;
+        encoding::parse_share_packets_wrapped_mnemonics(input, encoding).map_err(js_core_error)?;
 
     combine_packets(&parsed.packets, passphrase_bytes)
 }
@@ -69,15 +71,15 @@ pub fn combine_share_input(
 #[wasm_bindgen]
 pub fn inspect_share(share: &str, encoding: &str) -> Result<JsValue, JsValue> {
     let packet = decode_packet(share, encoding).map_err(js_error)?;
-    let encoding = Encoding::parse_name(encoding).map_err(js_error)?;
+    let encoding = Encoding::parse_name(encoding).map_err(js_core_error)?;
     packet_info(&packet, encoding, 1)
 }
 
 #[wasm_bindgen]
 pub fn inspect_share_input(input: &str, encoding: &str) -> Result<JsValue, JsValue> {
-    let encoding = Encoding::parse_name(encoding).map_err(js_error)?;
+    let encoding = Encoding::parse_name(encoding).map_err(js_core_error)?;
     let parsed =
-        encoding::parse_share_packets_wrapped_mnemonics(input, encoding).map_err(js_error)?;
+        encoding::parse_share_packets_wrapped_mnemonics(input, encoding).map_err(js_core_error)?;
     let first = parsed
         .packets
         .first()
@@ -90,7 +92,7 @@ fn combine_packets(
     packets: &[SharePacket],
     passphrase: Option<&[u8]>,
 ) -> Result<Uint8Array, JsValue> {
-    let secret = safeparts_core::combine_shares(packets, passphrase).map_err(js_error)?;
+    let secret = safeparts_core::combine_shares(packets, passphrase).map_err(js_core_error)?;
 
     Ok(Uint8Array::from(secret.as_slice()))
 }
@@ -139,14 +141,18 @@ fn js_error(error: impl Display) -> JsValue {
     JsValue::from_str(&error.to_string())
 }
 
+fn js_core_error(error: CoreError) -> JsValue {
+    JsValue::from_str(&error.user_message())
+}
+
 fn encode_packet(packet: &SharePacket, encoding: &str) -> Result<String, String> {
-    let encoding = Encoding::parse_name(encoding).map_err(|e| e.to_string())?;
-    encoding::encode_packet(packet, encoding).map_err(|e| e.to_string())
+    let encoding = Encoding::parse_name(encoding).map_err(|error| error.user_message())?;
+    encoding::encode_packet(packet, encoding).map_err(|error| error.user_message())
 }
 
 fn decode_packet(s: &str, encoding: &str) -> Result<SharePacket, String> {
-    let encoding = Encoding::parse_name(encoding).map_err(|e| e.to_string())?;
-    encoding::decode_packet(s, encoding).map_err(|e| e.to_string())
+    let encoding = Encoding::parse_name(encoding).map_err(|error| error.user_message())?;
+    encoding::decode_packet(s, encoding).map_err(|error| error.user_message())
 }
 
 #[cfg(test)]
@@ -166,5 +172,14 @@ mod tests {
 
         let err = encode_packet(&pkt, "nope").unwrap_err();
         assert!(err.contains("unknown encoding"));
+    }
+
+    #[test]
+    fn malformed_share_errors_do_not_echo_input() {
+        let sensitive = "SECRET-SHARE-TEXT";
+        let error = decode_packet(sensitive, "mnemo-words").unwrap_err();
+
+        assert!(!error.contains(sensitive));
+        assert!(error.contains("could not be decoded"));
     }
 }

@@ -79,3 +79,22 @@ pub enum CoreError {
     #[error("crypto params mismatch")]
     CryptoParamsMismatch,
 }
+
+impl CoreError {
+    /// Return a user-facing message that does not include recovery-share input.
+    pub fn user_message(&self) -> String {
+        match self {
+            Self::InvalidPacket(_)
+            | Self::Encoding(_)
+            | Self::InvalidX
+            | Self::InvalidShareIndex { .. }
+            | Self::TooManyShares { .. }
+            | Self::UnsupportedPacketFlags { .. }
+            | Self::UnsupportedCryptoParams { .. } => {
+                "recovery shares could not be decoded".to_string()
+            }
+            Self::Crypto(_) => "cryptographic operation failed".to_string(),
+            other => other.to_string(),
+        }
+    }
+}
