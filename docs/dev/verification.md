@@ -36,6 +36,14 @@ This is the same production-only line metric used by Rust CI. It stops counting 
 
 Reports are written to `target/coverage/`: `production-summary.json` is the floor result, `rust.lcov` is machine-readable coverage, and `html/index.html` is the browsable report. CI uploads the directory as the `rust-coverage` artifact and runs the headless Chrome WASM suite separately.
 
+Dependency audit:
+
+```bash
+mise run audit
+```
+
+The audit fails on vulnerabilities, unexpected unsound or unmaintained advisories, stale exceptions, and expired reviews. `rustsec-policy.toml` is the exception source of truth. Each entry names the dependency path, practical exposure, upstream constraint, owner, and review date. The scheduled `rustsec audit` workflow also runs on every pull request, so a new advisory cannot wait for a lockfile change.
+
 Targeted examples:
 
 ```bash

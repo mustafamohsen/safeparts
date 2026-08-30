@@ -8,6 +8,7 @@ bun = "1.3.11"
 "cargo:wasm-pack" = "0.15.0"
 "cargo:wasm-bindgen-cli" = "0.2.108"
 "cargo:cargo-llvm-cov" = "0.9.0"
+"cargo:cargo-audit" = "0.22.2"
 
 [env]
 # Keep tool output readable in local terminals and CI logs.
@@ -49,6 +50,10 @@ run = "cargo test --all-features"
 [tasks.coverage]
 description = "Generate and enforce production-only Rust line coverage."
 run = "python3 scripts/dev/rust_coverage.py"
+
+[tasks.audit]
+description = "Enforce the reviewed RustSec dependency policy."
+run = "python3 scripts/dev/rustsec_audit.py"
 
 [tasks.check]
 description = "Run Rust format, lint, and tests."

@@ -12,6 +12,7 @@ Source of truth:
 - Rust gate: `mise run verify:rust`
 - Full local gate: `mise run verify`
 - Production-only Rust coverage: `mise run coverage`
+- Reviewed RustSec policy: `mise run audit`
 
 ## Rust (Cargo)
 
@@ -57,6 +58,12 @@ Source of truth:
 - Reproduce CI metric and artifacts: `mise run coverage`
 - Coverage filter tests: `python3 scripts/dev/test_rust_coverage.py`
 - Reports: `target/coverage/production-summary.json`, `target/coverage/rust.lcov`, and `target/coverage/html/index.html`
+
+**Dependency audit**
+
+- Enforce policy: `mise run audit`
+- Audit classifier tests: `python3 scripts/dev/test_rustsec_audit.py`
+- Exception source of truth: `rustsec-policy.toml`
 
 **Benchmarks (only if added)**
 
