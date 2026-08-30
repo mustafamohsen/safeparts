@@ -30,6 +30,7 @@ pub mod packet;
 pub mod sss;
 
 pub use crate::error::{CoreError, CoreResult};
+use zeroize::Zeroizing;
 
 pub const INTEGRITY_TAG_LEN: usize = 32;
 
@@ -81,9 +82,9 @@ pub fn split_secret(
 ) -> CoreResult<Vec<packet::SharePacket>> {
     let (mut data_to_split, crypto_params) = if let Some(passphrase) = passphrase {
         let (ciphertext, params) = crypto::encrypt(secret, passphrase)?;
-        (ciphertext, Some(params))
+        (Zeroizing::new(ciphertext), Some(params))
     } else {
-        (secret.to_vec(), None)
+        (Zeroizing::new(secret.to_vec()), None)
     };
 
     let tag = blake3::hash(&data_to_split);
@@ -142,7 +143,7 @@ pub fn combine_shares(
         .map(packet::SharePacket::to_raw_share)
         .collect::<CoreResult<_>>()?;
 
-    let combined = sss::combine(&shares)?;
+    let combined = Zeroizing::new(sss::combine(&shares)?);
     if combined.len() < INTEGRITY_TAG_LEN {
         return Err(CoreError::InvalidCombinedLength {
             len: combined.len(),

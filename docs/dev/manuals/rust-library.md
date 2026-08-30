@@ -2,7 +2,7 @@
 
 Use `safeparts_core` when another Rust program needs to create or recover Safeparts recovery shares without shelling out to the CLI.
 
-The core crate works on bytes. Your application owns storage, operator identity, audit policy, UI wording, and the lifetime of recovered secret bytes.
+The core crate works on bytes. It zeroizes temporary secret, reconstruction, and Shamir coefficient buffers when they leave scope. Your application still owns storage, operator identity, audit policy, UI wording, and the lifetime of returned secret and recovery-share bytes.
 
 ## Add the crate
 

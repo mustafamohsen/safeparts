@@ -2,6 +2,7 @@ use crate::error::{CoreError, CoreResult};
 use crate::gf256::Gf256;
 use rand::RngCore;
 use rand::rngs::OsRng;
+use zeroize::Zeroizing;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SetId(pub [u8; 16]);
@@ -53,7 +54,7 @@ pub fn split(secret: &[u8], k: u8, n: u8, set_id: SetId) -> CoreResult<Vec<RawSh
         })
         .collect();
 
-    let mut coeffs = vec![0u8; k.saturating_sub(1) as usize];
+    let mut coeffs = Zeroizing::new(vec![0u8; k.saturating_sub(1) as usize]);
 
     for (idx, &byte) in secret.iter().enumerate() {
         // Random coefficients a1..a_{k-1}
@@ -66,7 +67,7 @@ pub fn split(secret: &[u8], k: u8, n: u8, set_id: SetId) -> CoreResult<Vec<RawSh
             let mut y = Gf256(byte);
             let mut x_pow = Gf256(1);
 
-            for &coef in &coeffs {
+            for &coef in coeffs.iter() {
                 x_pow = x_pow * x;
                 y = y + (Gf256(coef) * x_pow);
             }
