@@ -11,8 +11,10 @@ It should:
 
 - delegate split/combine, packet parsing, and encoding behavior to `safeparts_core`
 - return browser-friendly values
+- report the detected concrete encoding when an inspection request uses `auto`
 - route Rust failures through one shared `Display` to `JsValue` conversion so exports use the same string mapping
 - keep error messages useful without including share text or secrets
+- zeroize Rust-owned passphrase, encoded-share, and recovered-secret copies when they leave scope
 - preserve the API shape consumed by `web/src/wasm.ts`
 - type the browser loader with `typeof import(...)` from the generated module, then cache that typed module
 
@@ -27,13 +29,18 @@ bun run build:wasm
 
 Output goes to `web/src/wasm_pkg/` and is ignored by git.
 
+The bindings clear Rust-owned passphrase, encoded-share, and recovered-secret copies when they leave scope. JavaScript strings, arrays, and engine-managed copies remain owned by the browser and cannot be zeroized from Rust.
+
 ## Useful checks
 
 ```bash
 cargo test -p safeparts_wasm
+cd web && bun run test:wasm
 cd web && bun run build:wasm
 cd web && bun run typecheck
 ```
+
+If automatic ChromeDriver selection does not match the installed Chrome version, set `CHROMEDRIVER` to a compatible driver before running `test:wasm`.
 
 ## When WASM changes
 

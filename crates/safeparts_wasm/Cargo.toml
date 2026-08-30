@@ -12,9 +12,13 @@ crate-type = ["cdylib", "rlib"]
 js-sys = "0.3"
 wasm-bindgen = "0.2"
 safeparts_core = { path = "../safeparts_core" }
+zeroize = "1"
 
 # Required for rand/getrandom on wasm32-unknown-unknown.
 getrandom = { version = "0.2", features = ["js"] }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
 
 [lints]
 workspace = true

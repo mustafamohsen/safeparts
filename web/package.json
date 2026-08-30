@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build:wasm": "bash scripts/build-wasm.sh",
+    "test:wasm": "bash scripts/test-wasm.sh",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "build": "vite build",

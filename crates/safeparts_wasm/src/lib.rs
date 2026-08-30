@@ -5,6 +5,7 @@ use safeparts_core::CoreError;
 use safeparts_core::encoding::{self, Encoding};
 use safeparts_core::packet::SharePacket;
 use wasm_bindgen::prelude::*;
+use zeroize::Zeroizing;
 
 #[wasm_bindgen]
 pub fn share_threshold(share: &str, encoding: &str) -> Result<u8, JsValue> {
@@ -20,15 +21,16 @@ pub fn split_secret(
     encoding: &str,
     passphrase: Option<String>,
 ) -> Result<Array, JsValue> {
-    let passphrase_bytes = passphrase.as_deref().map(str::as_bytes);
+    let passphrase = passphrase.map(Zeroizing::new);
+    let passphrase_bytes = passphrase.as_ref().map(|value| value.as_bytes());
 
     let packets =
         safeparts_core::split_secret(secret, k, n, passphrase_bytes).map_err(js_core_error)?;
 
     let out = Array::new();
     for packet in packets {
-        let s = encode_packet(&packet, encoding).map_err(js_error)?;
-        out.push(&JsValue::from_str(&s));
+        let encoded = Zeroizing::new(encode_packet(&packet, encoding).map_err(js_error)?);
+        out.push(&JsValue::from_str(&encoded));
     }
 
     Ok(out)
@@ -40,13 +42,16 @@ pub fn combine_shares(
     encoding: &str,
     passphrase: Option<String>,
 ) -> Result<Uint8Array, JsValue> {
-    let passphrase_bytes = passphrase.as_deref().map(str::as_bytes);
+    let passphrase = passphrase.map(Zeroizing::new);
+    let passphrase_bytes = passphrase.as_ref().map(|value| value.as_bytes());
 
     let mut packets = Vec::with_capacity(shares.length() as usize);
     for share in shares.iter() {
-        let share_str = share
-            .as_string()
-            .ok_or_else(|| JsValue::from_str("share must be a string"))?;
+        let share_str = Zeroizing::new(
+            share
+                .as_string()
+                .ok_or_else(|| JsValue::from_str("share must be a string"))?,
+        );
         let packet = decode_packet(&share_str, encoding).map_err(js_error)?;
         packets.push(packet);
     }
@@ -60,7 +65,8 @@ pub fn combine_share_input(
     encoding: &str,
     passphrase: Option<String>,
 ) -> Result<Uint8Array, JsValue> {
-    let passphrase_bytes = passphrase.as_deref().map(str::as_bytes);
+    let passphrase = passphrase.map(Zeroizing::new);
+    let passphrase_bytes = passphrase.as_ref().map(|value| value.as_bytes());
     let encoding = Encoding::parse_name(encoding).map_err(js_core_error)?;
     let parsed =
         encoding::parse_share_packets_wrapped_mnemonics(input, encoding).map_err(js_core_error)?;
@@ -70,9 +76,8 @@ pub fn combine_share_input(
 
 #[wasm_bindgen]
 pub fn inspect_share(share: &str, encoding: &str) -> Result<JsValue, JsValue> {
-    let packet = decode_packet(share, encoding).map_err(js_error)?;
-    let encoding = Encoding::parse_name(encoding).map_err(js_core_error)?;
-    packet_info(&packet, encoding, 1)
+    let (packet, detected) = decode_packet_with_encoding(share, encoding).map_err(js_error)?;
+    packet_info(&packet, detected, 1)
 }
 
 #[wasm_bindgen]
@@ -92,7 +97,8 @@ fn combine_packets(
     packets: &[SharePacket],
     passphrase: Option<&[u8]>,
 ) -> Result<Uint8Array, JsValue> {
-    let secret = safeparts_core::combine_shares(packets, passphrase).map_err(js_core_error)?;
+    let secret =
+        Zeroizing::new(safeparts_core::combine_shares(packets, passphrase).map_err(js_core_error)?);
 
     Ok(Uint8Array::from(secret.as_slice()))
 }
@@ -151,8 +157,26 @@ fn encode_packet(packet: &SharePacket, encoding: &str) -> Result<String, String>
 }
 
 fn decode_packet(s: &str, encoding: &str) -> Result<SharePacket, String> {
-    let encoding = Encoding::parse_name(encoding).map_err(|error| error.user_message())?;
-    encoding::decode_packet(s, encoding).map_err(|error| error.user_message())
+    decode_packet_with_encoding(s, encoding).map(|(packet, _)| packet)
+}
+
+fn decode_packet_with_encoding(
+    input: &str,
+    requested: &str,
+) -> Result<(SharePacket, Encoding), String> {
+    let requested = Encoding::parse_name(requested).map_err(|error| error.user_message())?;
+    if requested.is_auto() {
+        let parsed = encoding::parse_share_packets(input, requested)
+            .map_err(|error| error.user_message())?;
+        if parsed.packets.len() != 1 {
+            return Err("expected one recovery share".to_string());
+        }
+        let mut packets = parsed.packets;
+        return Ok((packets.remove(0), parsed.encoding));
+    }
+
+    let packet = encoding::decode_packet(input, requested).map_err(|error| error.user_message())?;
+    Ok((packet, requested))
 }
 
 #[cfg(test)]
