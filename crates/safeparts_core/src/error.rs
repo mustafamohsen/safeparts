@@ -84,17 +84,23 @@ impl CoreError {
     /// Return a user-facing message that does not include recovery-share input.
     pub fn user_message(&self) -> String {
         match self {
-            Self::InvalidPacket(_)
-            | Self::Encoding(_)
-            | Self::InvalidX
-            | Self::InvalidShareIndex { .. }
-            | Self::TooManyShares { .. }
-            | Self::UnsupportedPacketFlags { .. }
-            | Self::UnsupportedCryptoParams { .. } => {
+            Self::InvalidPacket(_) | Self::Encoding(_) => {
                 "recovery shares could not be decoded".to_string()
             }
             Self::Crypto(_) => "cryptographic operation failed".to_string(),
             other => other.to_string(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::CoreError;
+
+    #[test]
+    fn user_message_preserves_safe_structured_diagnostics() {
+        let error = CoreError::InvalidShareIndex { x: 4, n: 3 };
+
+        assert_eq!(error.user_message(), error.to_string());
     }
 }
