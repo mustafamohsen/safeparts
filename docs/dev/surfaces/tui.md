@@ -21,7 +21,7 @@ It owns:
 - Treat clipboard contents as sensitive.
 - Avoid writing share text or recovered secrets to logs.
 - Save recovery shares and reconstructed secrets through atomic private-file output. On Unix, exported files must be owner-only.
-- Add app-state tests for focus wrapping, modal and status transitions, keyboard shortcuts, and cyclic settings.
+- Add headless app-state tests for split/recovery workflows, recovery failures, focus wrapping, modal and status transitions, keyboard shortcuts, cyclic settings, and rendering.
 - Use manual terminal smoke tests for rendering, clipboard integration, and other host behavior.
 - Keep terminal setup behind an RAII session guard so raw mode, alternate-screen state, and cursor visibility are restored on every exit path.
 

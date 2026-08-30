@@ -14,18 +14,18 @@ Status keys:
 
 | Feature | Core | CLI | TUI | WASM | Web | Desktop | Native macOS | Native Windows | Help docs | Tests | Update when changed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Split/combine bytes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Rust, WASM-target, native bridges, Windows model/launch smoke, CLI e2e, web smoke, desktop command tests | All surface guides |
+| Split/combine bytes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Rust, headless TUI, WASM-target, native bridges, Windows model/launch smoke, CLI e2e, web smoke, desktop command tests | All surface guides |
 | CLI/TUI private atomic file output | N/A | Yes | Yes | N/A | N/A | N/A | N/A | N/A | N/A | CLI e2e and TUI file tests | CLI and TUI guides |
 | TUI terminal-state restoration | N/A | N/A | Yes | N/A | N/A | N/A | N/A | N/A | N/A | Injected setup, cleanup, and panic-path tests | TUI guide |
 | Threshold range `1 <= k <= n <= 255` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core packet metadata, Windows model, and native-bridge negative tests | Core, CLI, TUI, WASM, web, desktop, native apps |
 | BLAKE3 integrity tag | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core | Yes | Core corruption tests | Core and technical docs |
 | Recovery-share error redaction | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | N/A | CLI, TUI, WASM, desktop, and native-bridge sentinel tests | Core and surface error mappings |
-| Passphrase protection | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, WASM-target, native bridges, Windows model, CLI e2e, web smoke, desktop command tests | Security docs and every exposed UI |
+| Passphrase protection | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, headless TUI, WASM-target, native bridges, Windows model, CLI e2e, web smoke, desktop command tests | Security docs and every exposed UI |
 | `base64url` share encoding | Yes | Yes, alias `base64` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core, WASM-target, native bridges, Windows smoke, CLI e2e, desktop command tests | Encoding lists and UI choices |
 | `base58check` share encoding | Yes | Yes, alias `base58` | Yes | Yes | Core | Core | Yes | Yes | Yes | Core, WASM-target, native bridges, Windows smoke, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
 | `mnemo-words` share encoding | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core canonical framing, WASM-target, native bridges, Windows smoke, CLI e2e, web smoke, desktop command tests | Encoding docs and UI choices |
 | `mnemo-bip39` share encoding | Yes | Yes | Yes | Yes | Core | Core | Yes | Yes | Yes | Core, WASM-target, native bridges, Windows smoke, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
-| Auto encoding parse | Yes | Yes for combine | Yes for combine | Yes | Yes for combine | Yes for combine | Yes | Yes | Yes | Core whitespace cases, WASM-target inspection, native bridges, Windows smoke, CLI e2e, web smoke, desktop command tests | Encoding parser docs and UI guidance |
+| Auto encoding parse | Yes | Yes for combine | Yes for combine | Yes | Yes for combine | Yes for combine | Yes | Yes | Yes | Core whitespace cases, headless TUI recovery, WASM-target inspection, native bridges, Windows smoke, CLI e2e, web smoke, desktop command tests | Encoding parser docs and UI guidance |
 | Web local-only workflow | N/A | N/A | N/A | Yes | Yes | N/A | N/A | N/A | Yes | Web build and smoke tests | Web surface guide |
 | Desktop local-only Tauri workflow | N/A | N/A | N/A | N/A | Mirrored UI source | Yes | N/A | N/A | Yes | Desktop build, Tauri command tests | Desktop surface guide |
 | Native macOS local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | N/A | Rust bridge and Swift model tests | Native macOS surface guide |
