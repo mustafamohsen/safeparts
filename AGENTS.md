@@ -102,6 +102,20 @@ Default section order:
 Top-level files not covered by a child AGENTS.md remain owned here, including `README.md`, `PRD.md`, `CONTEXT.md`, `Cargo.toml`, lockfiles, and CI config under `.github/`.
 <!-- end DOX -->
 
+## Agent skills
+
+### Issue tracker
+
+Track work in GitHub Issues for this repository. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the five canonical triage roles mapped in `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Use the single-context domain model in `CONTEXT.md` and relevant records under `docs/adr/`. See `docs/agents/domain.md`.
+
 ## Repo snapshot
 
 - Rust Cargo workspace (edition 2024):
