@@ -564,8 +564,7 @@ impl App {
                     let i = idx + 1;
                     let filename = format!("safeparts-{set_id}-share-{i}-of-{n}.txt");
                     let path = dir.join(filename);
-                    fs::write(&path, format!("{share}\n"))
-                        .with_context(|| format!("write {}", path.display()))?;
+                    crate::private_file::write(&path, format!("{share}\n").as_bytes())?;
                 }
 
                 self.set_ok(format!("saved {n} share files"));
@@ -582,8 +581,7 @@ impl App {
                 }
 
                 let path = PathBuf::from(text);
-                fs::write(&path, bytes.as_slice())
-                    .with_context(|| format!("write {}", path.display()))?;
+                crate::private_file::write(&path, bytes.as_slice())?;
                 self.set_ok("saved recovered secret");
             }
         }
@@ -1330,6 +1328,57 @@ mod tests {
         assert_eq!(
             cycle_encoding(Encoding::MnemoBip39, 1, Encoding::SPLIT),
             Encoding::Base64url
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn saved_recovery_shares_and_secret_are_owner_only() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let directory = tempfile::tempdir().unwrap();
+        let mut app = App::new();
+        let (packets, shares) = crate::domain::split_secret(
+            b"synthetic private TUI output",
+            1,
+            1,
+            Encoding::Base64url,
+            None,
+        )
+        .unwrap();
+        app.split_packets = packets;
+        app.split_shares = shares;
+        app.apply_modal(
+            ModalKind::SaveSharesDir,
+            directory.path().display().to_string(),
+        )
+        .unwrap();
+
+        let share_path = fs::read_dir(directory.path())
+            .unwrap()
+            .next()
+            .unwrap()
+            .unwrap()
+            .path();
+        assert_eq!(
+            fs::metadata(share_path).unwrap().permissions().mode() & 0o077,
+            0
+        );
+
+        let secret_path = directory.path().join("recovered.bin");
+        fs::write(&secret_path, b"old").unwrap();
+        fs::set_permissions(&secret_path, fs::Permissions::from_mode(0o644)).unwrap();
+        app.combine_recovered = Some(Zeroizing::new(b"synthetic private TUI output".to_vec()));
+        app.apply_modal(ModalKind::SaveSecretFile, secret_path.display().to_string())
+            .unwrap();
+
+        assert_eq!(
+            fs::metadata(&secret_path).unwrap().permissions().mode() & 0o077,
+            0
+        );
+        assert_eq!(
+            fs::read(secret_path).unwrap(),
+            b"synthetic private TUI output"
         );
     }
 }

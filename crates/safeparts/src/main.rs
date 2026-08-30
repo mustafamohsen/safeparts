@@ -7,6 +7,8 @@ use clap::{Parser, Subcommand};
 use safeparts_core::encoding::{self, Encoding};
 use zeroize::Zeroizing;
 
+mod private_file;
+
 #[derive(Debug, Parser)]
 #[command(name = "safeparts")]
 #[command(version)]
@@ -214,9 +216,7 @@ fn read_input(path: Option<PathBuf>) -> Result<Vec<u8>> {
 
 fn write_output_text(path: Option<PathBuf>, text: &str) -> Result<()> {
     match path.as_deref() {
-        Some(path) if !is_dash_path(path) => {
-            fs::write(path, text).with_context(|| format!("write output {}", path.display()))
-        }
+        Some(path) if !is_dash_path(path) => private_file::write(path, text.as_bytes()),
         _ => {
             io::stdout()
                 .write_all(text.as_bytes())
@@ -228,9 +228,7 @@ fn write_output_text(path: Option<PathBuf>, text: &str) -> Result<()> {
 
 fn write_output_bytes(path: Option<PathBuf>, bytes: &[u8]) -> Result<()> {
     match path.as_deref() {
-        Some(path) if !is_dash_path(path) => {
-            fs::write(path, bytes).with_context(|| format!("write output {}", path.display()))
-        }
+        Some(path) if !is_dash_path(path) => private_file::write(path, bytes),
         _ => {
             io::stdout().write_all(bytes).context("write stdout")?;
             Ok(())

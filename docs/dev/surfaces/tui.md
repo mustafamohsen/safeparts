@@ -20,6 +20,7 @@ It owns:
 - Keep keyboard operation reliable before adding mouse-only affordances.
 - Treat clipboard contents as sensitive.
 - Avoid writing share text or recovered secrets to logs.
+- Save recovery shares and reconstructed secrets through atomic private-file output. On Unix, exported files must be owner-only.
 - Add app-state tests for focus wrapping, modal and status transitions, keyboard shortcuts, and cyclic settings.
 - Use manual terminal smoke tests for rendering, clipboard integration, and other host behavior.
 

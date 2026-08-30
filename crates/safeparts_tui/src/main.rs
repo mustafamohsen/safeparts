@@ -9,6 +9,7 @@ use ratatui::backend::CrosstermBackend;
 mod app;
 mod clipboard;
 mod domain;
+mod private_file;
 
 fn main() -> Result<()> {
     let mut stdout = io::stdout();

@@ -3352,6 +3352,7 @@ dependencies = [
  "clap",
  "predicates",
  "safeparts_core",
+ "tempfile",
  "zeroize",
 ]
 
@@ -3392,6 +3393,7 @@ dependencies = [
  "crossterm",
  "ratatui",
  "safeparts_core",
+ "tempfile",
  "tui-textarea",
  "zeroize",
 ]

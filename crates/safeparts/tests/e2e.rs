@@ -161,3 +161,56 @@ fn combine_with_insufficient_shares_fails() {
         .failure()
         .stderr(predicate::str::contains("need at least k shares"));
 }
+
+#[cfg(unix)]
+#[test]
+fn sensitive_output_files_are_owner_only_even_when_overwritten() {
+    use std::fs;
+    use std::os::unix::fs::PermissionsExt;
+
+    let dir = tempfile::tempdir().unwrap();
+    let shares_path = dir.path().join("shares.txt");
+    let secret_path = dir.path().join("secret.bin");
+    for path in [&shares_path, &secret_path] {
+        fs::write(path, b"old").unwrap();
+        fs::set_permissions(path, fs::Permissions::from_mode(0o644)).unwrap();
+    }
+
+    Command::new(assert_cmd::cargo::cargo_bin!("safeparts"))
+        .args([
+            "split",
+            "-k",
+            "1",
+            "-n",
+            "1",
+            "-e",
+            "base64url",
+            "-o",
+            shares_path.to_str().unwrap(),
+        ])
+        .write_stdin(b"synthetic private output")
+        .assert()
+        .success();
+    assert_eq!(
+        fs::metadata(&shares_path).unwrap().permissions().mode() & 0o077,
+        0
+    );
+
+    Command::new(assert_cmd::cargo::cargo_bin!("safeparts"))
+        .args([
+            "combine",
+            "-e",
+            "base64url",
+            "-i",
+            shares_path.to_str().unwrap(),
+            "-o",
+            secret_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+    assert_eq!(
+        fs::metadata(&secret_path).unwrap().permissions().mode() & 0o077,
+        0
+    );
+    assert_eq!(fs::read(secret_path).unwrap(), b"synthetic private output");
+}

@@ -10,7 +10,7 @@ This manual is for contributor and operator automation. It does not replace a se
 - Do not enable shell tracing with `set -x` around commands that touch secrets, shares, or passphrases.
 - Prefer files or stdin/stdout over command arguments for secret material.
 - Prefer `--passphrase-file` over `--passphrase`.
-- Write temporary files under a private directory with `umask 077`.
+- Write temporary files under a private directory with `umask 077`. When `--out` names a file, Safeparts writes through a temporary file and replaces the destination only after the write succeeds. On Unix, the resulting file is owner-only even if the process uses a broader umask.
 - Do not store enough shares together in one CI secret store, artifact bucket, or vault path.
 - Do not print recovered secrets. Compare files or pass bytes directly to the next controlled step.
 
