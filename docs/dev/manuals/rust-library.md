@@ -2,7 +2,7 @@
 
 Use `safeparts_core` when another Rust program needs to create or recover Safeparts recovery shares without shelling out to the CLI.
 
-The core crate works on bytes. Your application owns storage, operator identity, audit policy, UI wording, and the lifetime of recovered secret bytes.
+The core crate works on bytes. It zeroizes temporary secret, reconstruction, and Shamir coefficient buffers when they leave scope. Your application still owns storage, operator identity, audit policy, UI wording, and the lifetime of returned secret and recovery-share bytes.
 
 ## Add the crate
 
@@ -41,7 +41,7 @@ fn main() -> CoreResult<()> {
 }
 ```
 
-Parameter rules are enforced by core: `1 <= k <= n <= 255`.
+Core enforces `1 <= k <= n <= 255`. Decoded and directly constructed share packets must also use an index in `1..=n`; recovery rejects reserved packet flags and inputs larger than the declared share count.
 
 ## Encode shares for storage
 
@@ -91,7 +91,7 @@ fn parse_wrapped_mnemonic(input: &str) -> CoreResult<usize> {
 
 ## Add passphrase protection
 
-Passphrase protection encrypts the secret before splitting. Recovery then requires both enough shares and the same passphrase.
+Passphrase protection encrypts the secret before splitting. Recovery then requires both enough shares and the same passphrase. Core rejects share packets whose Argon2 settings fall outside the supported policy: 8,192 to 262,144 KiB of memory, 1 to 10 iterations, and parallelism from 1 to 4.
 
 ```rust
 use safeparts_core::{combine_shares, split_secret, CoreResult};
@@ -117,7 +117,7 @@ Do not accept passphrases through logs, URLs, panic messages, analytics, or requ
 
 ## Handle errors by class
 
-Core errors are typed. Match the cases that affect user guidance and log only the failure class.
+Core errors are typed. Match the cases that affect user guidance and log only the failure class. For a generic boundary, `CoreError::user_message()` returns a redacted message that does not repeat recovery-share input.
 
 ```rust
 use safeparts_core::encoding::{self, Encoding};
@@ -157,7 +157,7 @@ Avoid adding the pasted share text to error context. The text itself is sensitiv
 | `combine_shares` | `fn combine_shares(packets: &[SharePacket], passphrase: Option<&[u8]>) -> CoreResult<Vec<u8>>` | Main API for recovering secret bytes. |
 | `tag_and_split` | `fn tag_and_split(secret: &[u8], k: u8, n: u8) -> CoreResult<Vec<SharePacket>>` | Compatibility wrapper for unprotected splits. Prefer `split_secret`. |
 | `combine_and_verify` | `fn combine_and_verify(packets: &[SharePacket]) -> CoreResult<Vec<u8>>` | Compatibility wrapper for unprotected combine. Prefer `combine_shares`. |
-| `CoreError` | enum | Typed error cases. Match this at UI or service boundaries. |
+| `CoreError` | enum | Typed error cases. Match this at UI or service boundaries; use `user_message()` for redacted generic output. |
 | `CoreResult<T>` | `Result<T, CoreError>` | Convenience result alias. |
 | `INTEGRITY_TAG_LEN` | `usize` | Length of the internal BLAKE3 tag. Most integrations do not need it. |
 
@@ -202,7 +202,7 @@ These modules are public because the crate is still small, but most applications
 | Module | Public items | When to use |
 | --- | --- | --- |
 | `ascii` | `Encoding`, `encode_packet`, `decode_packet` | Direct base64url or base58check handling. Prefer `encoding` for new code. |
-| `mnemo_words` | `encode_packet`, `decode_packet` | Direct word-list encoding. Prefer `encoding` for new code. |
+| `mnemo_words` | `encode_packet`, `decode_packet` | Direct word-list encoding with strict word-count and padding checks. Prefer `encoding` for new code. |
 | `mnemo_bip39` | `encode_packet`, `decode_packet` | Direct BIP-39 phrase encoding. Prefer `encoding` for new code. |
 | `crypto` | `CryptoParams`, `CryptoParams::random_default`, `encrypt`, `decrypt` | Low-level encrypt/decrypt. Prefer passphrase arguments on `split_secret` and `combine_shares`. |
 | `sss` | `SetId`, `SetId::random`, `RawShare`, `split`, `combine` | Low-level Shamir shares without packet, encoding, integrity, or passphrase policy. Use only for focused tests or internals. |
@@ -216,6 +216,9 @@ These modules are public because the crate is still small, but most applications
 | `NotEnoughShares` | Combine input has fewer than the threshold. |
 | `InconsistentMetadata` | Shares do not belong to the same set or have incompatible metadata. |
 | `DuplicateX` | The same share coordinate was supplied more than once. |
+| `InvalidX` / `InvalidShareIndex` | A share index is zero or exceeds the declared share count. |
+| `TooManyShares` | Recovery received more packets than the declared share count. |
+| `UnsupportedPacketFlags` | A packet uses flag bits that its version does not define. |
 | `InvalidPacket` | Binary packet parsing failed. |
 | `Encoding` | Text decoding failed for the selected encoding. |
 | `UnknownEncoding` | A provided encoding name is not recognized. |
@@ -225,6 +228,7 @@ These modules are public because the crate is still small, but most applications
 | `IntegrityCheckFailed` | Reconstructed bytes did not match the internal BLAKE3 tag. |
 | `PassphraseRequired` | Encrypted shares were combined without a passphrase. |
 | `DecryptFailed` | Wrong passphrase or tampered encrypted data. |
+| `UnsupportedCryptoParams` | Passphrase-protection work factors fall outside the supported resource policy. |
 | `CryptoParamsMismatch` | Encrypted packet metadata does not match across shares. |
 
 ## Integration checklist

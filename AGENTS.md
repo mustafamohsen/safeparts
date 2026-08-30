@@ -102,6 +102,20 @@ Default section order:
 Top-level files not covered by a child AGENTS.md remain owned here, including `README.md`, `PRD.md`, `CONTEXT.md`, `Cargo.toml`, lockfiles, and CI config under `.github/`.
 <!-- end DOX -->
 
+## Agent skills
+
+### Issue tracker
+
+Track work in GitHub Issues for this repository. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the five canonical triage roles mapped in `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Use the single-context domain model in `CONTEXT.md` and relevant records under `docs/adr/`. See `docs/agents/domain.md`.
+
 ## Repo snapshot
 
 - Rust Cargo workspace (edition 2024):
@@ -128,7 +142,8 @@ Top-level files not covered by a child AGENTS.md remain owned here, including `R
 ## Checks (mirrors CI)
 
 - Build / lint / test commands: `docs/agents/checks.md`, `docs/dev/verification.md`
-- CI workflows (source of truth): `.github/workflows/rust-ci.yml`, `.github/workflows/web-ci.yml`, `.github/workflows/cloudflare-workers.yml`, `.github/workflows/release.yml`
+- CI workflows (source of truth): `.github/workflows/rust-ci.yml`, `.github/workflows/rustsec.yml`, `.github/workflows/web-ci.yml`, `.github/workflows/cloudflare-workers.yml`, `.github/workflows/release.yml`
+- Dependency audit policy: `rustsec-policy.toml`; run `mise run audit`, and record owner, exposure, upstream constraint, and review date for every exception.
 - For browser-based Web UI checks, use the `browser` skill / `browse` CLI in local mode (`browse env local`) instead of Playwright. Do not use Playwright for local smoke testing unless the user explicitly asks for it.
 
 ## Standards (do not change)

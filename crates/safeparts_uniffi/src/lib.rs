@@ -133,6 +133,11 @@ fn map_error(error: CoreError) -> BridgeError {
         CoreError::IntegrityCheckFailed => BridgeError::IntegrityFailure,
         CoreError::AutoEncodingForOutput => BridgeError::InvalidEncoding,
         CoreError::InvalidPacket(_)
+        | CoreError::InvalidX
+        | CoreError::InvalidShareIndex { .. }
+        | CoreError::TooManyShares { .. }
+        | CoreError::UnsupportedPacketFlags { .. }
+        | CoreError::UnsupportedCryptoParams { .. }
         | CoreError::Encoding(_)
         | CoreError::CouldNotDetectEncoding
         | CoreError::UnknownEncoding(_) => BridgeError::MalformedShares,

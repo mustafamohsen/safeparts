@@ -98,6 +98,23 @@ fn e2e_round_trip_base64() {
 }
 
 #[test]
+fn auto_encoding_accepts_same_line_compact_shares() {
+    for encoding in ["base64url", "base58check"] {
+        let input = format!("synthetic same-line {encoding}");
+        let shares = run_split(encoding, 2, 3, input.as_bytes(), None);
+        let stdin = format!("{} \t {}", shares[0], shares[1]);
+        let mut command = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
+
+        command
+            .arg("combine")
+            .write_stdin(stdin)
+            .assert()
+            .success()
+            .stdout(input);
+    }
+}
+
+#[test]
 fn e2e_round_trip_mnemo_words() {
     let input = b"hello e2e mnemo words";
     let shares = run_split("mnemo-words", 2, 3, input, None);
@@ -160,4 +177,71 @@ fn combine_with_insufficient_shares_fails() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("need at least k shares"));
+}
+
+#[test]
+fn malformed_share_errors_do_not_echo_input() {
+    let sensitive = "SECRET-SHARE-TEXT";
+    let mut command = Command::new(assert_cmd::cargo::cargo_bin!("safeparts"));
+
+    command
+        .args(["combine", "-e", "mnemo-words"])
+        .write_stdin(sensitive)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(sensitive).not())
+        .stderr(predicate::str::contains("could not be decoded"));
+}
+
+#[cfg(unix)]
+#[test]
+fn sensitive_output_files_are_owner_only_even_when_overwritten() {
+    use std::fs;
+    use std::os::unix::fs::PermissionsExt;
+
+    let dir = tempfile::tempdir().unwrap();
+    let shares_path = dir.path().join("shares.txt");
+    let secret_path = dir.path().join("secret.bin");
+    for path in [&shares_path, &secret_path] {
+        fs::write(path, b"old").unwrap();
+        fs::set_permissions(path, fs::Permissions::from_mode(0o644)).unwrap();
+    }
+
+    Command::new(assert_cmd::cargo::cargo_bin!("safeparts"))
+        .args([
+            "split",
+            "-k",
+            "1",
+            "-n",
+            "1",
+            "-e",
+            "base64url",
+            "-o",
+            shares_path.to_str().unwrap(),
+        ])
+        .write_stdin(b"synthetic private output")
+        .assert()
+        .success();
+    assert_eq!(
+        fs::metadata(&shares_path).unwrap().permissions().mode() & 0o077,
+        0
+    );
+
+    Command::new(assert_cmd::cargo::cargo_bin!("safeparts"))
+        .args([
+            "combine",
+            "-e",
+            "base64url",
+            "-i",
+            shares_path.to_str().unwrap(),
+            "-o",
+            secret_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+    assert_eq!(
+        fs::metadata(&secret_path).unwrap().permissions().mode() & 0o077,
+        0
+    );
+    assert_eq!(fs::read(secret_path).unwrap(), b"synthetic private output");
 }

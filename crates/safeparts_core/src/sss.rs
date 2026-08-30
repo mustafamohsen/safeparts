@@ -2,6 +2,7 @@ use crate::error::{CoreError, CoreResult};
 use crate::gf256::Gf256;
 use rand::RngCore;
 use rand::rngs::OsRng;
+use zeroize::Zeroizing;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SetId(pub [u8; 16]);
@@ -23,6 +24,19 @@ pub struct RawShare {
     pub y: Vec<u8>,
 }
 
+pub(crate) fn validate_share_metadata(k: u8, n: u8, x: u8) -> CoreResult<()> {
+    if k == 0 || n == 0 || k > n {
+        return Err(CoreError::InvalidKAndN { k, n });
+    }
+    if x == 0 {
+        return Err(CoreError::InvalidX);
+    }
+    if x > n {
+        return Err(CoreError::InvalidShareIndex { x, n });
+    }
+    Ok(())
+}
+
 pub fn split(secret: &[u8], k: u8, n: u8, set_id: SetId) -> CoreResult<Vec<RawShare>> {
     if k == 0 || n == 0 || k > n {
         return Err(CoreError::InvalidKAndN { k, n });
@@ -40,7 +54,7 @@ pub fn split(secret: &[u8], k: u8, n: u8, set_id: SetId) -> CoreResult<Vec<RawSh
         })
         .collect();
 
-    let mut coeffs = vec![0u8; k.saturating_sub(1) as usize];
+    let mut coeffs = Zeroizing::new(vec![0u8; k.saturating_sub(1) as usize]);
 
     for (idx, &byte) in secret.iter().enumerate() {
         // Random coefficients a1..a_{k-1}
@@ -53,7 +67,7 @@ pub fn split(secret: &[u8], k: u8, n: u8, set_id: SetId) -> CoreResult<Vec<RawSh
             let mut y = Gf256(byte);
             let mut x_pow = Gf256(1);
 
-            for &coef in &coeffs {
+            for &coef in coeffs.iter() {
                 x_pow = x_pow * x;
                 y = y + (Gf256(coef) * x_pow);
             }
@@ -75,17 +89,19 @@ pub fn combine(shares: &[RawShare]) -> CoreResult<Vec<u8>> {
     let n = shares[0].n;
     let y_len = shares[0].y.len();
 
+    validate_share_metadata(k, n, shares[0].x)?;
+    if shares.len() > n as usize {
+        return Err(CoreError::TooManyShares { n, m: shares.len() });
+    }
     if shares.len() < k as usize {
         return Err(CoreError::NotEnoughShares { k, m: shares.len() });
     }
 
     let mut seen = [false; 256];
     for s in shares {
+        validate_share_metadata(s.k, s.n, s.x)?;
         if s.set_id != set_id || s.k != k || s.n != n || s.y.len() != y_len {
             return Err(CoreError::InconsistentMetadata);
-        }
-        if s.x == 0 {
-            return Err(CoreError::InvalidX);
         }
         if seen[s.x as usize] {
             return Err(CoreError::DuplicateX { x: s.x });
@@ -156,5 +172,56 @@ mod tests {
         let shares = split(secret, 3, 5, set_id).unwrap();
         let err = combine(&shares[0..2]).unwrap_err();
         assert!(matches!(err, CoreError::NotEnoughShares { .. }));
+    }
+
+    #[test]
+    fn combine_rejects_directly_constructed_invalid_metadata() {
+        let base = RawShare {
+            set_id: SetId([1; 16]),
+            k: 1,
+            n: 1,
+            x: 1,
+            y: vec![42],
+        };
+
+        for malformed in [
+            RawShare {
+                k: 0,
+                ..base.clone()
+            },
+            RawShare {
+                n: 0,
+                ..base.clone()
+            },
+            RawShare {
+                k: 2,
+                n: 1,
+                ..base.clone()
+            },
+            RawShare {
+                x: 0,
+                ..base.clone()
+            },
+            RawShare {
+                x: 2,
+                ..base.clone()
+            },
+        ] {
+            assert!(combine(&[malformed]).is_err());
+        }
+    }
+
+    #[test]
+    fn combine_rejects_more_inputs_than_declared_share_count() {
+        let base = RawShare {
+            set_id: SetId([1; 16]),
+            k: 1,
+            n: 1,
+            x: 1,
+            y: vec![42],
+        };
+
+        let err = combine(&[base.clone(), base]).unwrap_err();
+        assert!(matches!(err, CoreError::TooManyShares { n: 1, m: 2 }));
     }
 }

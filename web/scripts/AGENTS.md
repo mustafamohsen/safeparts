@@ -7,6 +7,7 @@ Owns web-specific helper scripts.
 ## Ownership
 
 - `build-wasm.sh`: builds `crates/safeparts_wasm` into the generated browser package under `web/src/wasm_pkg/`.
+- `test-wasm.sh`: runs the WASM binding suite in headless Chrome; set `CHROMEDRIVER` when automatic driver selection does not match the installed browser.
 
 ## Local Contracts
 
@@ -22,6 +23,7 @@ Owns web-specific helper scripts.
 ## Verification
 
 - `cd web && bun run build:wasm`
+- `cd web && bun run test:wasm`
 - `cd web && bun run typecheck`
 - `mise run dx:verify` when generated artifact policy changes
 

@@ -11,6 +11,8 @@ Source of truth:
 - DX structure checks: `mise run dx:verify`
 - Rust gate: `mise run verify:rust`
 - Full local gate: `mise run verify`
+- Production-only Rust coverage: `mise run coverage`
+- Reviewed RustSec policy: `mise run audit`
 
 ## Rust (Cargo)
 
@@ -43,11 +45,25 @@ Source of truth:
 - Exact module path: `cargo test gf256::tests::mul_matches_aes_vectors`
 - Single test with output: `cargo test <pattern> -- --nocapture`
 - Single crate (workspace): `cargo test -p safeparts_core <pattern>`
+- Deterministic core security properties: `cargo test -p safeparts_core --test security_properties`
 - Single file/module (common approach): `cargo test -p safeparts_core gf256::`
 - Explicit CLI stdin/stdout paths: `cargo test -p safeparts --test e2e explicit_dash_paths_use_stdin_and_stdout`
 - TUI app state: `cargo test -p safeparts_tui app::tests`
-- WASM boundary: `cargo test -p safeparts_wasm`
+- WASM native boundary: `cargo test -p safeparts_wasm`
+- WASM browser boundary (from `web/`): `bun run test:wasm`
 - Single e2e test (CLI): `cargo test -p safeparts --test e2e <pattern>`
+
+**Coverage**
+
+- Reproduce CI metric and artifacts: `mise run coverage`
+- Coverage filter tests: `python3 scripts/dev/test_rust_coverage.py`
+- Reports: `target/coverage/production-summary.json`, `target/coverage/rust.lcov`, and `target/coverage/html/index.html`
+
+**Dependency audit**
+
+- Enforce policy: `mise run audit`
+- Audit classifier tests: `python3 scripts/dev/test_rustsec_audit.py`
+- Exception source of truth: `rustsec-policy.toml`
 
 **Benchmarks (only if added)**
 

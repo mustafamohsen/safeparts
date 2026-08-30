@@ -7,6 +7,8 @@ use clap::{Parser, Subcommand};
 use safeparts_core::encoding::{self, Encoding};
 use zeroize::Zeroizing;
 
+mod private_file;
+
 #[derive(Debug, Parser)]
 #[command(name = "safeparts")]
 #[command(version)]
@@ -121,6 +123,7 @@ fn main() -> Result<()> {
             let passphrase_bytes = passphrase.as_ref().map(|p| p.as_slice());
 
             let packets = safeparts_core::split_secret(input.as_slice(), k, n, passphrase_bytes)
+                .map_err(|error| anyhow!(error.user_message()))
                 .with_context(|| format!("split failed (k={k}, n={n})"))?;
 
             let encoded: Vec<String> = packets
@@ -147,7 +150,7 @@ fn main() -> Result<()> {
             let packets = parse_share_packets(&input_str, encoding)?;
 
             let secret = safeparts_core::combine_shares(&packets, passphrase_bytes)
-                .map_err(|e| anyhow!(e))
+                .map_err(|error| anyhow!(error.user_message()))
                 .context("combine failed")?;
 
             write_output_bytes(out, &secret)?;
@@ -183,7 +186,7 @@ fn encode_packet_cli(
     packet: &safeparts_core::packet::SharePacket,
     encoding: CliEncoding,
 ) -> Result<String> {
-    encoding::encode_packet(packet, encoding.into()).map_err(|e| anyhow!(e))
+    encoding::encode_packet(packet, encoding.into()).map_err(|error| anyhow!(error.user_message()))
 }
 
 fn parse_share_packets(
@@ -191,7 +194,8 @@ fn parse_share_packets(
     encoding: Option<CliEncoding>,
 ) -> Result<Vec<safeparts_core::packet::SharePacket>> {
     let encoding = encoding.map_or(Encoding::Auto, Into::into);
-    let parsed = encoding::parse_share_packets(input, encoding).map_err(|e| anyhow!(e))?;
+    let parsed = encoding::parse_share_packets(input, encoding)
+        .map_err(|error| anyhow!(error.user_message()))?;
     Ok(parsed.packets)
 }
 
@@ -214,9 +218,7 @@ fn read_input(path: Option<PathBuf>) -> Result<Vec<u8>> {
 
 fn write_output_text(path: Option<PathBuf>, text: &str) -> Result<()> {
     match path.as_deref() {
-        Some(path) if !is_dash_path(path) => {
-            fs::write(path, text).with_context(|| format!("write output {}", path.display()))
-        }
+        Some(path) if !is_dash_path(path) => private_file::write(path, text.as_bytes()),
         _ => {
             io::stdout()
                 .write_all(text.as_bytes())
@@ -228,9 +230,7 @@ fn write_output_text(path: Option<PathBuf>, text: &str) -> Result<()> {
 
 fn write_output_bytes(path: Option<PathBuf>, bytes: &[u8]) -> Result<()> {
     match path.as_deref() {
-        Some(path) if !is_dash_path(path) => {
-            fs::write(path, bytes).with_context(|| format!("write output {}", path.display()))
-        }
+        Some(path) if !is_dash_path(path) => private_file::write(path, bytes),
         _ => {
             io::stdout().write_all(bytes).context("write stdout")?;
             Ok(())

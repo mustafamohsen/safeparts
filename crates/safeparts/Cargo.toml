@@ -6,9 +6,10 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-anyhow = "1"
+anyhow = "1.0.103"
 clap = { version = "4", features = ["derive"] }
 safeparts_core = { path = "../safeparts_core" }
+tempfile = "3"
 zeroize = "1"
 
 [dev-dependencies]

@@ -177,7 +177,9 @@ impl App {
 
     pub fn run<B: ratatui::backend::Backend>(mut self, terminal: &mut Terminal<B>) -> Result<()> {
         loop {
-            terminal.draw(|f| self.render(f))?;
+            terminal
+                .draw(|f| self.render(f))
+                .map_err(|error| anyhow::anyhow!("draw terminal: {error}"))?;
 
             if crossterm::event::poll(Duration::from_millis(50))? {
                 match crossterm::event::read()? {
@@ -564,8 +566,7 @@ impl App {
                     let i = idx + 1;
                     let filename = format!("safeparts-{set_id}-share-{i}-of-{n}.txt");
                     let path = dir.join(filename);
-                    fs::write(&path, format!("{share}\n"))
-                        .with_context(|| format!("write {}", path.display()))?;
+                    crate::private_file::write(&path, format!("{share}\n").as_bytes())?;
                 }
 
                 self.set_ok(format!("saved {n} share files"));
@@ -582,8 +583,7 @@ impl App {
                 }
 
                 let path = PathBuf::from(text);
-                fs::write(&path, bytes.as_slice())
-                    .with_context(|| format!("write {}", path.display()))?;
+                crate::private_file::write(&path, bytes.as_slice())?;
                 self.set_ok("saved recovered secret");
             }
         }
@@ -714,7 +714,7 @@ impl App {
     }
 
     fn render(&mut self, f: &mut Frame) {
-        let area = f.size();
+        let area = f.area();
 
         let outer = Layout::default()
             .direction(Direction::Vertical)
@@ -1271,7 +1271,20 @@ fn list_state(selected: usize) -> ratatui::widgets::ListState {
 
 #[cfg(test)]
 mod tests {
+    use ratatui::backend::TestBackend;
+
     use super::*;
+
+    fn status_message(app: &App) -> &str {
+        app.status
+            .as_ref()
+            .map(|status| status.msg.as_str())
+            .unwrap_or("")
+    }
+
+    fn combine_input(shares: &[String]) -> String {
+        shares.join("\n\n")
+    }
 
     #[test]
     fn focus_navigation_wraps_within_each_tab() {
@@ -1330,6 +1343,302 @@ mod tests {
         assert_eq!(
             cycle_encoding(Encoding::MnemoBip39, 1, Encoding::SPLIT),
             Encoding::Base64url
+        );
+    }
+
+    #[test]
+    fn split_and_recover_workflows_cover_encodings_and_passphrases() {
+        let cases = [
+            (Encoding::Base64url, None),
+            (Encoding::MnemoWords, Some("synthetic passphrase")),
+            (Encoding::MnemoBip39, None),
+        ];
+
+        for (encoding, passphrase) in cases {
+            let secret = format!("synthetic TUI workflow for {}", encoding.label());
+            let mut app = App::new();
+            app.split_secret_text.insert_str(&secret);
+            app.split_k = 2;
+            app.split_n = 3;
+            app.split_encoding = encoding;
+            if let Some(passphrase) = passphrase {
+                app.split_passphrase.push_str(passphrase);
+            }
+
+            app.do_split().unwrap();
+            assert_eq!(app.split_shares.len(), 3);
+            assert_eq!(app.focus, Focus::SplitShares);
+            assert_eq!(status_message(&app), "split ok");
+
+            let recovery_input = combine_input(&app.split_shares[..2]);
+            app.next_tab();
+            app.combine_shares_text.insert_str(recovery_input);
+            if let Some(passphrase) = passphrase {
+                app.combine_passphrase.push_str(passphrase);
+            }
+
+            app.do_combine().unwrap();
+            assert_eq!(
+                app.combine_recovered.as_deref().map(Vec::as_slice),
+                Some(secret.as_bytes())
+            );
+            assert_eq!(app.combine_used_encoding, Some(encoding));
+            assert!(status_message(&app).starts_with("combined ok"));
+        }
+    }
+
+    #[test]
+    fn recovery_failures_are_sanitized_and_clear_previous_output() {
+        let (_, shares) = crate::domain::split_secret(
+            b"synthetic error-path secret",
+            2,
+            3,
+            Encoding::Base64url,
+            Some(b"correct passphrase"),
+        )
+        .unwrap();
+        let (_, other_set) = crate::domain::split_secret(
+            b"different synthetic secret",
+            2,
+            3,
+            Encoding::Base64url,
+            Some(b"correct passphrase"),
+        )
+        .unwrap();
+
+        let cases = [
+            (
+                combine_input(&shares[..1]),
+                "correct passphrase",
+                "combine failed",
+            ),
+            (
+                combine_input(&[shares[0].clone(), shares[0].clone()]),
+                "correct passphrase",
+                "combine failed",
+            ),
+            (
+                combine_input(&[shares[0].clone(), other_set[1].clone()]),
+                "correct passphrase",
+                "combine failed",
+            ),
+            (
+                combine_input(&shares[..2]),
+                "wrong passphrase",
+                "combine failed",
+            ),
+            (
+                "SECRET-SHARE-TEXT".to_string(),
+                "correct passphrase",
+                "could not detect share encoding",
+            ),
+        ];
+
+        for (input, passphrase, expected) in cases {
+            let mut app = App::new();
+            app.next_tab();
+            app.combine_recovered = Some(Zeroizing::new(b"stale output".to_vec()));
+            app.combine_recovered_text = Some(Zeroizing::new("stale output".to_string()));
+            app.combine_used_encoding = Some(Encoding::Base64url);
+            app.combine_shares_text.insert_str(&input);
+            app.combine_passphrase.push_str(passphrase);
+
+            app.do_combine().unwrap();
+
+            let status = status_message(&app);
+            assert!(
+                status.contains(expected),
+                "unexpected failure class: {status}"
+            );
+            assert_eq!(
+                app.status.as_ref().map(|status| status.kind),
+                Some(StatusKind::Error)
+            );
+            for sensitive in shares.iter().chain(other_set.iter()) {
+                assert!(!status.contains(sensitive));
+            }
+            for sensitive in [
+                "SECRET-SHARE-TEXT",
+                "synthetic error-path secret",
+                "different synthetic secret",
+                "correct passphrase",
+                "wrong passphrase",
+            ] {
+                assert!(!status.contains(sensitive));
+            }
+            assert!(app.combine_recovered.is_none());
+            assert!(app.combine_recovered_text.is_none());
+            assert!(app.combine_used_encoding.is_none());
+        }
+    }
+
+    #[test]
+    fn file_loading_and_saving_supports_a_headless_round_trip() {
+        let directory = tempfile::tempdir().unwrap();
+        let secret_path = directory.path().join("input.bin");
+        let recovered_path = directory.path().join("recovered.bin");
+        let secret = b"synthetic file-backed TUI secret\0\xff";
+        fs::write(&secret_path, secret).unwrap();
+
+        let mut app = App::new();
+        app.apply_modal(ModalKind::LoadSecretFile, secret_path.display().to_string())
+            .unwrap();
+        app.split_encoding = Encoding::MnemoWords;
+        app.do_split().unwrap();
+
+        let share_paths = app
+            .split_shares
+            .iter()
+            .take(2)
+            .enumerate()
+            .map(|(index, share)| {
+                let path = directory.path().join(format!("share-{index}.txt"));
+                fs::write(&path, format!("{share}\n")).unwrap();
+                path
+            })
+            .collect::<Vec<_>>();
+
+        app.next_tab();
+        app.apply_modal(
+            ModalKind::LoadShareFiles,
+            share_paths
+                .iter()
+                .map(|path| path.display().to_string())
+                .collect::<Vec<_>>()
+                .join("\n"),
+        )
+        .unwrap();
+        app.do_combine().unwrap();
+        app.apply_modal(
+            ModalKind::SaveSecretFile,
+            recovered_path.display().to_string(),
+        )
+        .unwrap();
+
+        assert_eq!(fs::read(recovered_path).unwrap(), secret);
+        assert_eq!(status_message(&app), "saved recovered secret");
+    }
+
+    #[test]
+    fn keyboard_modal_status_and_render_paths_are_headless() {
+        let mut app = App::new();
+        assert!(
+            !app.on_key(KeyEvent::new(KeyCode::Char('x'), KeyModifiers::NONE))
+                .unwrap()
+        );
+        assert_eq!(app.split_secret_text.lines(), ["x"]);
+
+        app.focus = Focus::SplitPassphrase;
+        app.on_key(KeyEvent::new(KeyCode::Char('a'), KeyModifiers::NONE))
+            .unwrap();
+        app.on_key(KeyEvent::new(KeyCode::Backspace, KeyModifiers::NONE))
+            .unwrap();
+        app.split_passphrase.push_str("clear me");
+        app.on_key(KeyEvent::new(KeyCode::Char('u'), KeyModifiers::CONTROL))
+            .unwrap();
+        assert!(app.split_passphrase.is_empty());
+
+        app.on_key(KeyEvent::new(KeyCode::Char('?'), KeyModifiers::NONE))
+            .unwrap();
+        assert!(app.show_help);
+        app.on_key(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE))
+            .unwrap();
+        assert!(!app.show_help);
+
+        app.on_load();
+        app.on_modal_key(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE))
+            .unwrap();
+        assert!(app.modal.is_none());
+
+        app.set_info("expiring status");
+        app.status.as_mut().unwrap().at = Instant::now() - Duration::from_secs(4);
+        app.expire_status();
+        assert!(app.status.is_none());
+
+        assert!(
+            app.on_key(KeyEvent::new(KeyCode::Char('q'), KeyModifiers::CONTROL))
+                .unwrap()
+        );
+
+        let backend = TestBackend::new(120, 40);
+        let mut terminal = Terminal::new(backend).unwrap();
+        terminal.draw(|frame| app.render(frame)).unwrap();
+
+        app.split_secret_text.insert_str("rendered secret");
+        app.do_split().unwrap();
+        app.show_help = true;
+        terminal.draw(|frame| app.render(frame)).unwrap();
+        app.show_help = false;
+
+        for kind in [
+            ModalKind::LoadSecretFile,
+            ModalKind::LoadShareFiles,
+            ModalKind::SaveSharesDir,
+            ModalKind::SaveSecretFile,
+        ] {
+            app.modal = Some(Modal::new(kind, "synthetic path"));
+            terminal.draw(|frame| app.render(frame)).unwrap();
+        }
+        app.modal = None;
+
+        let input = combine_input(&app.split_shares[..2]);
+        app.next_tab();
+        app.combine_shares_text.insert_str(input);
+        app.do_combine().unwrap();
+        terminal.draw(|frame| app.render(frame)).unwrap();
+        app.combine_recovered = Some(Zeroizing::new(vec![0xff, 0x00]));
+        app.combine_recovered_text = None;
+        terminal.draw(|frame| app.render(frame)).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn saved_recovery_shares_and_secret_are_owner_only() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let directory = tempfile::tempdir().unwrap();
+        let mut app = App::new();
+        let (packets, shares) = crate::domain::split_secret(
+            b"synthetic private TUI output",
+            1,
+            1,
+            Encoding::Base64url,
+            None,
+        )
+        .unwrap();
+        app.split_packets = packets;
+        app.split_shares = shares;
+        app.apply_modal(
+            ModalKind::SaveSharesDir,
+            directory.path().display().to_string(),
+        )
+        .unwrap();
+
+        let share_path = fs::read_dir(directory.path())
+            .unwrap()
+            .next()
+            .unwrap()
+            .unwrap()
+            .path();
+        assert_eq!(
+            fs::metadata(share_path).unwrap().permissions().mode() & 0o077,
+            0
+        );
+
+        let secret_path = directory.path().join("recovered.bin");
+        fs::write(&secret_path, b"old").unwrap();
+        fs::set_permissions(&secret_path, fs::Permissions::from_mode(0o644)).unwrap();
+        app.combine_recovered = Some(Zeroizing::new(b"synthetic private TUI output".to_vec()));
+        app.apply_modal(ModalKind::SaveSecretFile, secret_path.display().to_string())
+            .unwrap();
+
+        assert_eq!(
+            fs::metadata(&secret_path).unwrap().permissions().mode() & 0o077,
+            0
+        );
+        assert_eq!(
+            fs::read(secret_path).unwrap(),
+            b"synthetic private TUI output"
         );
     }
 }

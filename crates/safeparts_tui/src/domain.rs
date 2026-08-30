@@ -61,12 +61,15 @@ pub fn split_secret(
     passphrase: Option<&[u8]>,
 ) -> Result<(Vec<SharePacket>, Vec<String>)> {
     let packets = safeparts_core::split_secret(secret, k, n, passphrase)
-        .map_err(|e| anyhow!(e))
+        .map_err(|error| anyhow!(error.user_message()))
         .with_context(|| format!("split failed (k={k}, n={n})"))?;
 
     let shares = packets
         .iter()
-        .map(|packet| core_encoding::encode_packet(packet, encoding.core()).map_err(|e| anyhow!(e)))
+        .map(|packet| {
+            core_encoding::encode_packet(packet, encoding.core())
+                .map_err(|error| anyhow!(error.user_message()))
+        })
         .collect::<Result<Vec<_>>>()?;
 
     Ok((packets, shares))
@@ -78,9 +81,9 @@ pub fn combine_shares(
     passphrase: Option<&[u8]>,
 ) -> Result<(Vec<SharePacket>, Vec<u8>, Encoding)> {
     let parsed = core_encoding::parse_share_packets_wrapped_mnemonics(input, encoding.core())
-        .map_err(|e| anyhow!(e))?;
+        .map_err(|error| anyhow!(error.user_message()))?;
     let secret = safeparts_core::combine_shares(&parsed.packets, passphrase)
-        .map_err(|e| anyhow!(e))
+        .map_err(|error| anyhow!(error.user_message()))
         .context("combine failed")?;
 
     Ok((parsed.packets, secret, Encoding::from_core(parsed.encoding)))
@@ -103,5 +106,16 @@ mod tests {
     fn labels_use_core_canonical_names() {
         assert_eq!(Encoding::Base64url.label(), "base64url");
         assert_eq!(Encoding::Base58check.label(), "base58check");
+    }
+
+    #[test]
+    fn malformed_share_errors_do_not_echo_input() {
+        let sensitive = "SECRET-SHARE-TEXT";
+        let error = combine_shares(sensitive, Encoding::MnemoWords, None)
+            .unwrap_err()
+            .to_string();
+
+        assert!(!error.contains(sensitive));
+        assert!(error.contains("could not be decoded"));
     }
 }

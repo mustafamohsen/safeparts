@@ -30,6 +30,7 @@ pub mod packet;
 pub mod sss;
 
 pub use crate::error::{CoreError, CoreResult};
+use zeroize::Zeroizing;
 
 pub const INTEGRITY_TAG_LEN: usize = 32;
 
@@ -81,9 +82,9 @@ pub fn split_secret(
 ) -> CoreResult<Vec<packet::SharePacket>> {
     let (mut data_to_split, crypto_params) = if let Some(passphrase) = passphrase {
         let (ciphertext, params) = crypto::encrypt(secret, passphrase)?;
-        (ciphertext, Some(params))
+        (Zeroizing::new(ciphertext), Some(params))
     } else {
-        (secret.to_vec(), None)
+        (Zeroizing::new(secret.to_vec()), None)
     };
 
     let tag = blake3::hash(&data_to_split);
@@ -142,7 +143,7 @@ pub fn combine_shares(
         .map(packet::SharePacket::to_raw_share)
         .collect::<CoreResult<_>>()?;
 
-    let combined = sss::combine(&shares)?;
+    let combined = Zeroizing::new(sss::combine(&shares)?);
     if combined.len() < INTEGRITY_TAG_LEN {
         return Err(CoreError::InvalidCombinedLength {
             len: combined.len(),
@@ -161,5 +162,34 @@ pub fn combine_shares(
             let passphrase = passphrase.ok_or(CoreError::PassphraseRequired)?;
             crypto::decrypt(data, passphrase, params)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::crypto::{CryptoParams, MAX_MEM_COST_KIB};
+    use crate::packet::SharePacket;
+    use crate::sss::SetId;
+
+    #[test]
+    fn combine_rejects_unsupported_work_factors_before_key_derivation() {
+        let mut payload = b"crafted ciphertext".to_vec();
+        let tag = blake3::hash(&payload);
+        payload.extend_from_slice(tag.as_bytes());
+        let packet = SharePacket {
+            set_id: SetId([1; 16]),
+            k: 1,
+            n: 1,
+            x: 1,
+            payload,
+            crypto_params: Some(CryptoParams {
+                mem_cost_kib: MAX_MEM_COST_KIB + 1,
+                ..CryptoParams::random_default()
+            }),
+        };
+
+        let err = combine_shares(&[packet], Some(b"passphrase")).unwrap_err();
+        assert!(matches!(err, CoreError::UnsupportedCryptoParams { .. }));
     }
 }
