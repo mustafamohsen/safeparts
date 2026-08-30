@@ -26,6 +26,16 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 ```
 
+Coverage:
+
+```bash
+mise run coverage
+```
+
+This is the same production-only line metric used by Rust CI. It stops counting a source file at its first `#[cfg(test)]` section and excludes generated-binding tools and trivial launch shims. The gate requires 70% overall, with floors of 90% for core, 75% for CLI, 50% for TUI, 85% for UniFFI, and 90% for desktop. WASM line coverage remains informational because its browser tests do not currently produce a stable LLVM profile.
+
+Reports are written to `target/coverage/`: `production-summary.json` is the floor result, `rust.lcov` is machine-readable coverage, and `html/index.html` is the browsable report. CI uploads the directory as the `rust-coverage` artifact and runs the headless Chrome WASM suite separately.
+
 Targeted examples:
 
 ```bash
@@ -33,6 +43,7 @@ cargo test -p safeparts_core encoding::
 cargo test -p safeparts --test e2e explicit_dash_paths_use_stdin_and_stdout
 cargo test -p safeparts_tui app::tests
 cargo test -p safeparts_wasm
+(cd web && bun run test:wasm)
 cargo test -p safeparts_desktop --lib
 cargo test -p safeparts_uniffi
 ```

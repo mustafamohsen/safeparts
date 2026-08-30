@@ -1,7 +1,10 @@
 #![cfg(target_arch = "wasm32")]
 
 use js_sys::{Array, Reflect, Uint8Array};
-use safeparts_wasm::{combine_share_input, combine_shares, inspect_share, split_secret};
+use safeparts_wasm::{
+    combine_share_input, combine_shares, inspect_share, inspect_share_input, share_threshold,
+    split_secret,
+};
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_test::*;
 
@@ -77,8 +80,10 @@ fn passphrase_failures_and_success_are_reported() {
 
 #[wasm_bindgen_test]
 fn auto_inspection_reports_the_concrete_encoding() {
-    let shares = split_secret(b"inspect wasm share", 1, 1, "base58check", None).unwrap();
+    let shares = split_secret(b"inspect wasm share", 2, 3, "base58check", None).unwrap();
     let share = shares.get(0).as_string().unwrap();
+    assert_eq!(share_threshold(&share, "auto").unwrap(), 2);
+
     let info = inspect_share(&share, "auto").unwrap();
     let encoding = Reflect::get(&info, &JsValue::from_str("encoding"))
         .unwrap()
@@ -86,6 +91,14 @@ fn auto_inspection_reports_the_concrete_encoding() {
         .unwrap();
 
     assert_eq!(encoding, "base58check");
+
+    let combined_input = format!("{}\n{}", share, shares.get(1).as_string().unwrap());
+    let combined_info = inspect_share_input(&combined_input, "auto").unwrap();
+    let share_count = Reflect::get(&combined_info, &JsValue::from_str("shareCount"))
+        .unwrap()
+        .as_f64()
+        .unwrap();
+    assert_eq!(share_count, 2.0);
 }
 
 #[wasm_bindgen_test]

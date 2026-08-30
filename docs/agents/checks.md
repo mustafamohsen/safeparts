@@ -11,6 +11,7 @@ Source of truth:
 - DX structure checks: `mise run dx:verify`
 - Rust gate: `mise run verify:rust`
 - Full local gate: `mise run verify`
+- Production-only Rust coverage: `mise run coverage`
 
 ## Rust (Cargo)
 
@@ -50,6 +51,12 @@ Source of truth:
 - WASM native boundary: `cargo test -p safeparts_wasm`
 - WASM browser boundary (from `web/`): `bun run test:wasm`
 - Single e2e test (CLI): `cargo test -p safeparts --test e2e <pattern>`
+
+**Coverage**
+
+- Reproduce CI metric and artifacts: `mise run coverage`
+- Coverage filter tests: `python3 scripts/dev/test_rust_coverage.py`
+- Reports: `target/coverage/production-summary.json`, `target/coverage/rust.lcov`, and `target/coverage/html/index.html`
 
 **Benchmarks (only if added)**
 
