@@ -17,7 +17,7 @@ Front-ends should call core APIs instead of reimplementing rules. For external R
 
 - Keep security-sensitive logic clear and tested.
 - During byte-wise Shamir reconstruction, compute interpolation weights once for the selected share coordinates and reuse them for every payload byte. Keep field division fallible.
-- Add deterministic round-trip tests and negative tests for threshold, packet, encoding, crypto, and integrity behavior.
+- Add deterministic round-trip and bounded mutation tests for threshold, packet, encoding, crypto, framing, and integrity behavior.
 - Avoid logging or formatting share text, passphrases, or recovered secrets.
 - Keep public API changes explicit in docs and downstream surfaces.
 - Update the library manual when public functions, packet fields, errors, or integration guidance changes.
@@ -26,6 +26,7 @@ Front-ends should call core APIs instead of reimplementing rules. For external R
 
 ```bash
 cargo test -p safeparts_core
+cargo test -p safeparts_core --test security_properties
 cargo test -p safeparts_core encoding::
 cargo fmt --all -- --check
 cargo clippy --all-targets --all-features -- -D warnings

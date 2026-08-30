@@ -43,10 +43,12 @@ Source of truth:
 - Exact module path: `cargo test gf256::tests::mul_matches_aes_vectors`
 - Single test with output: `cargo test <pattern> -- --nocapture`
 - Single crate (workspace): `cargo test -p safeparts_core <pattern>`
+- Deterministic core security properties: `cargo test -p safeparts_core --test security_properties`
 - Single file/module (common approach): `cargo test -p safeparts_core gf256::`
 - Explicit CLI stdin/stdout paths: `cargo test -p safeparts --test e2e explicit_dash_paths_use_stdin_and_stdout`
 - TUI app state: `cargo test -p safeparts_tui app::tests`
-- WASM boundary: `cargo test -p safeparts_wasm`
+- WASM native boundary: `cargo test -p safeparts_wasm`
+- WASM browser boundary (from `web/`): `bun run test:wasm`
 - Single e2e test (CLI): `cargo test -p safeparts --test e2e <pattern>`
 
 **Benchmarks (only if added)**
