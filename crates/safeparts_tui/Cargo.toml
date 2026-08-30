@@ -13,11 +13,11 @@ path = "src/main.rs"
 anyhow = "1.0.103"
 arboard = "3.4.1"
 base64 = "0.22"
-crossterm = "0.27"
-ratatui = "0.27.0"
+crossterm = "0.29"
+ratatui = "0.30.2"
 safeparts_core = { path = "../safeparts_core" }
 tempfile = "3"
-tui-textarea = "0.5.0"
+tui-textarea = { package = "tui-textarea-2", version = "0.13.2" }
 zeroize = "1"
 
 [lints]

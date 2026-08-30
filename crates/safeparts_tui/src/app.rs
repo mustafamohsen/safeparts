@@ -177,7 +177,9 @@ impl App {
 
     pub fn run<B: ratatui::backend::Backend>(mut self, terminal: &mut Terminal<B>) -> Result<()> {
         loop {
-            terminal.draw(|f| self.render(f))?;
+            terminal
+                .draw(|f| self.render(f))
+                .map_err(|error| anyhow::anyhow!("draw terminal: {error}"))?;
 
             if crossterm::event::poll(Duration::from_millis(50))? {
                 match crossterm::event::read()? {
@@ -712,7 +714,7 @@ impl App {
     }
 
     fn render(&mut self, f: &mut Frame) {
-        let area = f.size();
+        let area = f.area();
 
         let outer = Layout::default()
             .direction(Direction::Vertical)
