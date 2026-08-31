@@ -45,8 +45,13 @@ async function copyToClipboard(text: string) {
 
   document.body.appendChild(textarea);
   textarea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textarea);
+  try {
+    if (!document.execCommand("copy")) {
+      throw new Error("clipboard write failed");
+    }
+  } finally {
+    document.body.removeChild(textarea);
+  }
 }
 
 function extractEncryptedTextPlaintext(container: HTMLElement): string | null {
@@ -61,18 +66,6 @@ function extractEncryptedTextPlaintext(container: HTMLElement): string | null {
 
   const innerText = container.innerText.trim();
   return innerText.length > 0 ? innerText : null;
-}
-
-function collectSplitSharesText(): string | null {
-  const panel = document.getElementById("split-panel");
-  if (!panel) return null;
-
-  const shareBlocks = Array.from(panel.querySelectorAll<HTMLDivElement>('div[dir="ltr"].input'))
-    .map((el) => extractEncryptedTextPlaintext(el))
-    .filter((text): text is string => Boolean(text));
-
-  if (shareBlocks.length === 0) return null;
-  return shareBlocks.join("\n\n");
 }
 
 function collectCombineResultText(): string | null {
@@ -164,16 +157,19 @@ export function useKeyboardShortcuts({
         return;
       }
 
-      // Copy result
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "C" || e.key === "c")) {
-        const text = tab === "split" ? collectSplitSharesText() : collectCombineResultText();
+      // Copy the recovered Secret. Split Recovery shares are copied individually.
+      if (
+        tab === "combine" &&
+        (e.ctrlKey || e.metaKey) &&
+        e.shiftKey &&
+        (e.key === "C" || e.key === "c")
+      ) {
+        const text = collectCombineResultText();
         if (!text) return;
         e.preventDefault();
         copyToClipboard(text)
           .then(() => announce(strings.copied, "polite"))
-          .catch(() => {
-            // ignore
-          });
+          .catch(() => announce(strings.copyFailed, "assertive"));
       }
     }
 
@@ -209,6 +205,7 @@ export function useKeyboardShortcuts({
     setTab,
     showKeytips,
     strings.copied,
+    strings.copyFailed,
     tab,
   ]);
 }

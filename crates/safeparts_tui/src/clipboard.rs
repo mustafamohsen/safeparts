@@ -11,12 +11,31 @@ pub enum CopyMethod {
 
 pub struct Clipboard {
     inner: Option<arboard::Clipboard>,
+    #[cfg(test)]
+    writes: Option<Vec<String>>,
 }
 
 impl Clipboard {
     pub fn new() -> Self {
         let inner = arboard::Clipboard::new().ok();
-        Self { inner }
+        Self {
+            inner,
+            #[cfg(test)]
+            writes: None,
+        }
+    }
+
+    #[cfg(test)]
+    pub fn recording() -> Self {
+        Self {
+            inner: None,
+            writes: Some(Vec::new()),
+        }
+    }
+
+    #[cfg(test)]
+    pub fn writes(&self) -> &[String] {
+        self.writes.as_deref().unwrap_or_default()
     }
 
     pub fn get_text(&mut self) -> Result<String> {
@@ -27,6 +46,12 @@ impl Clipboard {
     }
 
     pub fn set_text(&mut self, text: &str) -> Result<CopyMethod> {
+        #[cfg(test)]
+        if let Some(writes) = self.writes.as_mut() {
+            writes.push(text.to_string());
+            return Ok(CopyMethod::System);
+        }
+
         if let Some(clipboard) = self.inner.as_mut() {
             clipboard
                 .set_text(text.to_string())

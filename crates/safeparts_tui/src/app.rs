@@ -441,14 +441,15 @@ impl App {
                     return Ok(());
                 }
 
-                if self.focus == Focus::SplitShares {
-                    self.split_shares
-                        .get(self.split_selected_share)
-                        .cloned()
-                        .unwrap_or_default()
-                } else {
-                    self.split_shares.join("\n") + "\n"
+                if self.focus != Focus::SplitShares {
+                    self.set_info("focus Recovery shares to copy one");
+                    return Ok(());
                 }
+
+                self.split_shares
+                    .get(self.split_selected_share)
+                    .cloned()
+                    .unwrap_or_default()
             }
             TabId::Combine => {
                 if let Some(text) = self.combine_recovered_text.as_ref() {
@@ -774,7 +775,7 @@ impl App {
     fn render_footer(&self, f: &mut Frame, area: Rect) {
         let shortcuts = match self.tab {
             TabId::Split => {
-                "Enter split • Ctrl+L load • Ctrl+S export • Ctrl+C copy • Tab focus • ? help • Ctrl+Q quit"
+                "Enter split • Ctrl+L load • Ctrl+S export • Ctrl+C copy selected share • Tab focus • ? help • Ctrl+Q quit"
             }
             TabId::Combine => {
                 "Enter combine • Ctrl+L load • Ctrl+S save • Ctrl+C copy • Tab focus • ? help • Ctrl+Q quit"
@@ -853,7 +854,7 @@ impl App {
             ]),
             Line::from(vec![
                 Span::styled("Copy: ", Style::default().fg(self.theme.dim)),
-                Span::raw("Ctrl+C copies selected share; focus elsewhere copies all."),
+                Span::raw("Ctrl+C copies only the selected Recovery share."),
             ]),
         ];
 
@@ -1098,7 +1099,7 @@ impl App {
             Line::from("  Enter: run split/combine"),
             Line::from("  Ctrl+L: load secret/share file(s)"),
             Line::from("  Ctrl+S: save/export"),
-            Line::from("  Ctrl+C: copy (UTF-8 if possible, else base64)"),
+            Line::from("  Ctrl+C: copy selected Recovery share or recovered Secret"),
             Line::from("  Ctrl+V: paste into focused editor"),
             Line::from("  Ctrl+U: clear passphrase"),
             Line::from("  Ctrl+Q: quit"),
@@ -1332,6 +1333,44 @@ mod tests {
             Some("no shares to save")
         );
         assert!(app.modal.is_none());
+    }
+
+    #[test]
+    fn copy_shortcut_keeps_split_shares_individual_and_copies_recovered_secret() {
+        let mut app = App::new();
+        app.clipboard = Clipboard::recording();
+        app.split_shares = vec![
+            "synthetic Recovery share one".to_string(),
+            "synthetic Recovery share two".to_string(),
+            "synthetic Recovery share three".to_string(),
+        ];
+
+        app.focus = Focus::SplitSecret;
+        app.on_key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL))
+            .unwrap();
+        assert!(app.clipboard.writes().is_empty());
+        assert_eq!(status_message(&app), "focus Recovery shares to copy one");
+
+        app.focus = Focus::SplitShares;
+        app.split_selected_share = 1;
+        app.on_key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL))
+            .unwrap();
+        assert_eq!(
+            app.clipboard.writes(),
+            &["synthetic Recovery share two".to_string()]
+        );
+
+        app.next_tab();
+        app.combine_recovered_text = Some(Zeroizing::new("synthetic recovered Secret".to_string()));
+        app.on_key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL))
+            .unwrap();
+        assert_eq!(
+            app.clipboard.writes(),
+            &[
+                "synthetic Recovery share two".to_string(),
+                "synthetic recovered Secret".to_string(),
+            ]
+        );
     }
 
     #[test]

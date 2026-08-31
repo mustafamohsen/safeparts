@@ -495,6 +495,8 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
               value={secret}
               copyLabel={strings.copy}
               copiedLabel={strings.copied}
+              copyFailedLabel={strings.copyFailed}
+              accessibleLabel={strings.copyRecovered}
               className="shrink-0"
             />
           </div>

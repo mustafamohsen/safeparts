@@ -15,6 +15,7 @@ Status keys:
 | Feature | Core | CLI | TUI | WASM | Web | Desktop | Native macOS | Native Windows | Help docs | Tests | Update when changed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Split/combine bytes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Rust, headless TUI, WASM-target, native bridges, Windows model/launch smoke, CLI e2e, web smoke, desktop command tests | All surface guides |
+| Split clipboard copy is one Recovery share at a time | N/A | N/A | Yes | N/A | Yes | Yes | Yes | Yes | Yes | Headless TUI clipboard writes, web browser clipboard writes, native app copy seams | TUI, web, desktop, native apps, and help docs |
 | CLI/TUI private atomic file output | N/A | Yes | Yes | N/A | N/A | N/A | N/A | N/A | N/A | CLI e2e and TUI file tests | CLI and TUI guides |
 | TUI terminal-state restoration | N/A | N/A | Yes | N/A | N/A | N/A | N/A | N/A | N/A | Injected setup, cleanup, and panic-path tests | TUI guide |
 | Threshold range `1 <= k <= n <= 255` | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Core packet metadata and mutation properties, Windows model, and native-bridge negative tests | Core, CLI, TUI, WASM, web, desktop, native apps |

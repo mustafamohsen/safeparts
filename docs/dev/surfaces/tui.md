@@ -18,7 +18,7 @@ It owns:
 
 - Keep secret-sharing behavior in core.
 - Keep keyboard operation reliable before adding mouse-only affordances.
-- Treat clipboard contents as sensitive.
+- Treat clipboard contents as sensitive. Split clipboard actions copy only the selected Recovery share; they never gather multiple Recovery shares.
 - Avoid writing share text or recovered secrets to logs.
 - Save recovery shares and reconstructed secrets through atomic private-file output. On Unix, exported files must be owner-only.
 - Add headless app-state tests for split/recovery workflows, recovery failures, focus wrapping, modal and status transitions, keyboard shortcuts, cyclic settings, and rendering.

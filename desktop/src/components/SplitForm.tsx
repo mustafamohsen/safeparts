@@ -393,6 +393,8 @@ export function SplitForm({ strings }: SplitFormProps) {
                     value={s}
                     copyLabel={strings.copy}
                     copiedLabel={strings.copied}
+                    copyFailedLabel={strings.copyFailed}
+                    accessibleLabel={strings.copyShare.replace("{number}", String(i + 1))}
                   />
                 </div>
 
