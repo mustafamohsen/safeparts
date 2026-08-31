@@ -91,6 +91,76 @@ class DeployArtifactTests(unittest.TestCase):
             )
             self.assertIn("content manifest does not match", failure.stdout)
 
+    def test_verify_rejects_an_extra_file_under_the_evidence_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            site = root / "site"
+            evidence = root / "evidence"
+            site.mkdir()
+            (site / "index.html").write_text("<h1>Safeparts</h1>\n", encoding="utf-8")
+            self.run_tool(
+                "prepare",
+                "--site",
+                str(site),
+                "--evidence",
+                str(evidence),
+                "--source-commit",
+                SOURCE_COMMIT,
+                "--rust-version",
+                "1.93.0",
+                "--bun-version",
+                "1.3.11",
+                "--node-version",
+                "22.12.0",
+                "--wasm-pack-version",
+                "0.15.0",
+                "--wasm-bindgen-version",
+                "0.2.108",
+            )
+
+            (site / "safeparts-build" / "unexpected.txt").write_text(
+                "unexpected deployable content\n", encoding="utf-8"
+            )
+            failure = self.run_tool(
+                "verify", "--site", str(site), "--evidence", str(evidence), expected=1
+            )
+            self.assertIn("content manifest does not match", failure.stdout)
+
+    def test_verify_rejects_a_symlink_under_the_evidence_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            site = root / "site"
+            evidence = root / "evidence"
+            site.mkdir()
+            (site / "index.html").write_text("<h1>Safeparts</h1>\n", encoding="utf-8")
+            self.run_tool(
+                "prepare",
+                "--site",
+                str(site),
+                "--evidence",
+                str(evidence),
+                "--source-commit",
+                SOURCE_COMMIT,
+                "--rust-version",
+                "1.93.0",
+                "--bun-version",
+                "1.3.11",
+                "--node-version",
+                "22.12.0",
+                "--wasm-pack-version",
+                "0.15.0",
+                "--wasm-bindgen-version",
+                "0.2.108",
+            )
+
+            deployed_metadata = site / "safeparts-build" / "metadata.json"
+            deployed_metadata.unlink()
+            deployed_metadata.symlink_to(evidence / "metadata.json")
+            failure = self.run_tool(
+                "verify", "--site", str(site), "--evidence", str(evidence), expected=1
+            )
+            self.assertIn("must not contain symlinks", failure.stdout)
+
     def test_remote_verification_checks_identity_encoded_served_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

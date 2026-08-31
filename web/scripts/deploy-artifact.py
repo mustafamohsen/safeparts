@@ -17,6 +17,10 @@ from pathlib import Path
 METADATA_DIRECTORY = "safeparts-build"
 METADATA_FILE = "metadata.json"
 MANIFEST_FILE = "content-manifest.sha256"
+SELF_REFERENTIAL_EVIDENCE = {
+    f"{METADATA_DIRECTORY}/{MANIFEST_FILE}",
+    f"{METADATA_DIRECTORY}/{METADATA_FILE}",
+}
 COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
 
 
@@ -39,10 +43,11 @@ def content_files(site: Path) -> list[Path]:
     files: list[Path] = []
     for path in site.rglob("*"):
         relative = path.relative_to(site)
-        if relative.parts and relative.parts[0] == METADATA_DIRECTORY:
-            continue
+        relative_name = relative.as_posix()
         if path.is_symlink():
-            raise ArtifactError(f"deployment content must not contain symlinks: {relative.as_posix()}")
+            raise ArtifactError(f"deployment content must not contain symlinks: {relative_name}")
+        if relative_name in SELF_REFERENTIAL_EVIDENCE:
+            continue
         if path.is_file():
             files.append(path)
     if not files:

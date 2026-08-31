@@ -27,7 +27,7 @@ Owns web-specific helper scripts.
 - `cd web && bun run build:wasm`
 - `cd web && bun run test:wasm`
 - `cd web && bun run typecheck`
-- `python3 scripts/dev/test_web_deploy.py`
+- From `web/`: `python3 ../scripts/dev/test_web_deploy.py`
 - `mise run dx:verify` when generated artifact policy changes
 
 ## Child DOX Index
