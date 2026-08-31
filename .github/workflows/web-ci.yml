@@ -132,7 +132,7 @@ jobs:
 
           echo "Waiting for desktop frontend..."
           for i in {1..30}; do
-            if curl -s http://localhost:1420 > /dev/null 2>&1; then
+            if curl -s http://127.0.0.1:1420 > /dev/null 2>&1; then
               echo "Desktop frontend ready"
               break
             fi
@@ -142,7 +142,7 @@ jobs:
           # Verify all are accessible
           curl --fail --silent --output /dev/null http://localhost:5173
           curl --fail --silent --output /dev/null http://localhost:4321
-          curl --fail --silent --output /dev/null http://localhost:1420
+          curl --fail --silent --output /dev/null http://127.0.0.1:1420
         working-directory: web
 
       - name: Run smoke web tests
@@ -241,7 +241,7 @@ jobs:
 
           echo "Waiting for desktop frontend..."
           for i in {1..30}; do
-            if curl -s http://localhost:1420 > /dev/null 2>&1; then
+            if curl -s http://127.0.0.1:1420 > /dev/null 2>&1; then
               echo "Desktop frontend ready"
               break
             fi
@@ -251,7 +251,7 @@ jobs:
           # Verify all are accessible
           curl --fail --silent --output /dev/null http://localhost:5173
           curl --fail --silent --output /dev/null http://localhost:4321
-          curl --fail --silent --output /dev/null http://localhost:1420
+          curl --fail --silent --output /dev/null http://127.0.0.1:1420
         working-directory: web
 
       - name: Run full web tests

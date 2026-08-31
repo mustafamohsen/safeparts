@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-const desktopUrl = process.env.DESKTOP_BASE_URL ?? 'http://localhost:1420'
+const desktopUrl = process.env.DESKTOP_BASE_URL ?? 'http://127.0.0.1:1420'
 const splitPanel = (page: Page) => page.locator('#split-panel')
 const combinePanel = (page: Page) => page.locator('#combine-panel')
 
