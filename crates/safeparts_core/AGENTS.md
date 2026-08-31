@@ -18,6 +18,8 @@ Owns the core library for secret splitting, combining, packets, encodings, integ
 - Keep cryptographic and encoding rules here; front-ends adapt IO and presentation only.
 - Do not log or fixture real secrets, share packets, passphrases, or reconstructed secrets.
 - Preserve strict validation and typed errors for malformed input.
+- Retain decoding for every released Share packet version unless an explicit migration decision changes the policy.
+- Treat `tests/fixtures/share_compatibility/` as immutable evidence: add new versioned fixtures without regenerating released expected data.
 - Workspace lint policy forbids `unsafe`; do not weaken it.
 
 ## Work Guidance
@@ -29,6 +31,7 @@ Owns the core library for secret splitting, combining, packets, encodings, integ
 ## Verification
 
 - `cargo test -p safeparts_core`
+- `cargo test -p safeparts_core --test share_compatibility`
 - `cargo test --all-features`
 - `cargo fmt --all -- --check`
 - `cargo clippy --all-targets --all-features -- -D warnings`
