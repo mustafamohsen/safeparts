@@ -1,5 +1,8 @@
+import { readFile } from 'node:fs/promises'
+
 import { expect, test, type Page } from '@playwright/test'
 
+import initWasm, { split_secret as splitSecret } from '../src/wasm_pkg/safeparts_wasm.js'
 import { waitForWasmReady } from './a11y-utils'
 
 async function instrumentClipboard(page: Page, shouldFail = false): Promise<void> {
@@ -27,34 +30,17 @@ async function clipboardWrites(page: Page): Promise<string[]> {
   })
 }
 
-type BrowserWasmModule = {
-  default?: () => Promise<unknown>
-  split_secret: (
-    secret: Uint8Array,
-    threshold: number,
-    shareCount: number,
-    encoding: string,
-  ) => Iterable<string>
-}
+let nodeWasmReady: Promise<unknown> | undefined
 
 async function splitSyntheticBytes(
-  page: Page,
   secret: number[],
   encoding = 'base64url',
 ): Promise<string[]> {
-  return page.evaluate(
-    async ({ bytes, shareEncoding }) => {
-      const dynamicImport = new Function('path', 'return import(path)') as (
-        path: string,
-      ) => Promise<BrowserWasmModule>
-      const wasm = await dynamicImport('/src/wasm_pkg/safeparts_wasm.js')
-      if (typeof wasm.default === 'function') await wasm.default()
-      return Array.from(
-        wasm.split_secret(new Uint8Array(bytes), 2, 3, shareEncoding),
-      )
-    },
-    { bytes: secret, shareEncoding: encoding },
-  )
+  nodeWasmReady ??= readFile(
+    new URL('../src/wasm_pkg/safeparts_wasm_bg.wasm', import.meta.url),
+  ).then((bytes) => initWasm({ module_or_path: Uint8Array.from(bytes) }))
+  await nodeWasmReady
+  return Array.from(splitSecret(new Uint8Array(secret), 2, 3, encoding)).map(String)
 }
 
 async function splitAndCollectShares(
@@ -145,7 +131,6 @@ test.describe('Web App E2E Smoke @smoke', () => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     const secret = '\uFEFF \tSafeparts العربية עברית 🌍\u0000after-nul \n'
     const shares = await splitSyntheticBytes(
-      page,
       Array.from(new TextEncoder().encode(secret)),
     )
 
@@ -201,7 +186,6 @@ test.describe('Web App E2E Smoke @smoke', () => {
 
   test('discards recovery that finishes after a Recovery share changes', async ({ page }) => {
     const shares = await splitSyntheticBytes(
-      page,
       Array.from(new TextEncoder().encode('pending-recovery-result')),
     )
     let releaseWasm: (() => void) | undefined
@@ -246,7 +230,7 @@ test.describe('Web App E2E Smoke @smoke', () => {
   test('refuses invalid UTF-8 without changing the clipboard', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     await page.evaluate(() => navigator.clipboard.writeText('clipboard-sentinel'))
-    const shares = await splitSyntheticBytes(page, [0xff, 0xfe, 0x41])
+    const shares = await splitSyntheticBytes([0xff, 0xfe, 0x41])
 
     await recoverShares(page, shares, 'base64url')
 
@@ -265,7 +249,7 @@ test.describe('Web App E2E Smoke @smoke', () => {
   })
 
   test('localizes invalid UTF-8 guidance in Arabic', async ({ page }) => {
-    const shares = await splitSyntheticBytes(page, [0x80, 0x41])
+    const shares = await splitSyntheticBytes([0x80, 0x41])
     await page.getByRole('button', { name: 'العربية' }).click()
 
     await recoverShares(page, shares, 'base64url')
