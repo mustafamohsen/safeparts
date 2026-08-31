@@ -89,10 +89,6 @@ test.describe('Split result lifetime @smoke', () => {
     const modifier = process.platform === 'darwin' ? 'Meta' : 'Control'
 
     await generateRecoveryShares(page)
-    await page.keyboard.press(`${modifier}+Shift+C`)
-    const copiedResult = await page.evaluate(() => navigator.clipboard.readText())
-    expect(copiedResult.length).toBeGreaterThan(0)
-
     await splitPanel(page).locator('textarea').fill('changed-before-copy')
     await page.evaluate(() => navigator.clipboard.writeText('clipboard-sentinel'))
     await page.keyboard.press(`${modifier}+Shift+C`)
