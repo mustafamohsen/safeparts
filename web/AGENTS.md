@@ -26,14 +26,14 @@ Owns the Vite + React browser UI, web packaging, WASM build integration, and loc
 
 ## Verification
 
-- Install: `bun install`
+- Install: `bun install --frozen-lockfile`
 - Build WASM: `bun run build:wasm`
 - Test WASM browser bindings: `bun run test:wasm`
 - Type check: `bun run typecheck`
 - Build app: `bun run build`
 - Dev server: `bun run dev`
 - Existing test scripts: `bun run test:e2e:smoke`, `bun run test:e2e:full`, `bun run test:container`
-- Deployment package policy: `python3 scripts/dev/test_web_deploy.py`
+- Deployment package policy: `python3 ../scripts/dev/test_web_deploy.py`
 
 ## Child DOX Index
 
