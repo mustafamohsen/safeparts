@@ -49,9 +49,10 @@ export const STRINGS = {
     combineCta: "Combine",
     working: "Working…",
 
-    sharesTitle: "Shares",
-    sharesHint: "Store shares separately. Never share all of them.",
-    shareNumber: "Share",
+    sharesTitle: "Recovery shares",
+    sharesHint:
+      "Keep fewer Recovery shares than the Threshold in every account, device, location, administrator domain, and transport channel.",
+    shareNumber: "Recovery share",
 
     sharesInputLabel: "Shares",
     sharesInputHint: "One share per box. You can add more as needed.",
@@ -65,6 +66,9 @@ export const STRINGS = {
 
     copy: "Copy",
     copied: "Copied",
+    copyFailed: "Could not copy to the clipboard.",
+    copyShare: "Copy Recovery share {number}",
+    copyRecovered: "Copy recovered Secret",
     increment: "Increase",
     decrement: "Decrease",
 
@@ -81,7 +85,7 @@ export const STRINGS = {
     shortcutGoToSplit: "Go to Split",
     shortcutGoToCombine: "Go to Combine",
     shortcutSubmitForm: "Split/Combine",
-    shortcutCopyResult: "Copy result",
+    shortcutCopyResult: "Copy recovered Secret (Combine only)",
     shortcutShowHelp: "Show shortcuts",
     shortcutShowKeytips: "Show keytips overlay",
   },
@@ -132,9 +136,10 @@ export const STRINGS = {
     combineCta: "استعادة",
     working: "جار العمل…",
 
-    sharesTitle: "الحصص",
-    sharesHint: "احفظ الحصص بشكل منفصل. لا تشاركها كلها.",
-    shareNumber: "حصة",
+    sharesTitle: "حصص الاسترداد",
+    sharesHint:
+      "احتفظ بعدد من حصص الاسترداد أقل من العتبة في كل حساب وجهاز وموقع ونطاق إدارة وقناة نقل.",
+    shareNumber: "حصة استرداد",
 
     sharesInputLabel: "الحصص",
     sharesInputHint: "حصة واحدة في كل مربع. أضف المزيد عند الحاجة.",
@@ -148,6 +153,9 @@ export const STRINGS = {
 
     copy: "نسخ",
     copied: "تم النسخ",
+    copyFailed: "تعذر النسخ إلى الحافظة.",
+    copyShare: "نسخ حصة الاسترداد {number}",
+    copyRecovered: "نسخ السر المستعاد",
     increment: "زيادة",
     decrement: "تقليل",
 
@@ -164,7 +172,7 @@ export const STRINGS = {
     shortcutGoToSplit: "الذهاب للتقسيم",
     shortcutGoToCombine: "الذهاب للاستعادة",
     shortcutSubmitForm: "إرسال النموذج",
-    shortcutCopyResult: "نسخ النتيجة",
+    shortcutCopyResult: "نسخ السر المستعاد (الاستعادة فقط)",
     shortcutShowHelp: "عرض الاختصارات",
     shortcutShowKeytips: "إظهار تلميحات الاختصارات",
   },

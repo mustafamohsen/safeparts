@@ -5,6 +5,8 @@ type CopyButtonProps = {
   value: string
   copyLabel: string
   copiedLabel: string
+  copyFailedLabel: string
+  accessibleLabel: string
   className?: string
   announceCopied?: string
   keytip?: string
@@ -61,11 +63,25 @@ async function copyToClipboard(text: string) {
 
   document.body.appendChild(textarea)
   textarea.select()
-  document.execCommand('copy')
-  document.body.removeChild(textarea)
+  try {
+    if (!document.execCommand('copy')) {
+      throw new Error('clipboard write failed')
+    }
+  } finally {
+    document.body.removeChild(textarea)
+  }
 }
 
-export function CopyButton({ value, copyLabel, copiedLabel, className, announceCopied, keytip }: CopyButtonProps) {
+export function CopyButton({
+  value,
+  copyLabel,
+  copiedLabel,
+  copyFailedLabel,
+  accessibleLabel,
+  className,
+  announceCopied,
+  keytip,
+}: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
   const { announce } = useAnnouncement()
 
@@ -83,7 +99,7 @@ export function CopyButton({ value, copyLabel, copiedLabel, className, announceC
         announce(announceCopied, 'polite')
       }
     } catch {
-      // ignore
+      announce(copyFailedLabel, 'assertive')
     }
   }
 
@@ -91,6 +107,7 @@ export function CopyButton({ value, copyLabel, copiedLabel, className, announceC
     <button
       type="button"
       data-keytip={keytip}
+      aria-label={accessibleLabel}
       className={`btn-secondary px-3 py-2.5 text-xs min-h-[44px] min-w-[44px] ${className ? className : ''}`}
       onClick={onCopy}
     >

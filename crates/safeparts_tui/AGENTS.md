@@ -16,6 +16,7 @@ Owns the `safeparts-tui` interactive terminal UI.
 - Keep split/combine and encoding rules in `safeparts_core`.
 - Keep the TUI keyboard-first.
 - Treat clipboard contents, shares, passphrases, and recovered secrets as sensitive.
+- Split clipboard actions must copy only the selected Recovery share, never a multi-share payload.
 - Do not add logging that includes secret material.
 
 ## Work Guidance

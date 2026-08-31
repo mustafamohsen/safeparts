@@ -5,7 +5,7 @@ description: Understand the Safeparts threat model, safe storage rules, and pass
 
 import { Steps } from '@astrojs/starlight/components';
 
-Safeparts reduces single points of failure. It does not choose safe holders, protect your storage locations, or prevent an approved quorum from recovering the secret.
+Safeparts reduces single points of failure. It does not choose safe holders, protect your storage locations, or stop anyone with enough Recovery shares from recovering the Secret.
 
 ## What to assume
 
@@ -18,14 +18,16 @@ In a 3-of-5 plan, for example, any three valid shares can recover. Two shares ar
 
 For support requests and audit records, use synthetic examples rather than live shares, passphrases, or recovered output.
 
-## Storage rules
+## Storage and transport rules
+
+Keep fewer Recovery shares than the Threshold in every account, device, location, administrator domain, and transport channel. Apply this rule both while storing Recovery shares and while moving them to their custodians. A single Recovery share still needs the same careful handling as the Secret.
 
 <Steps>
-1. Separate shares across independent people, accounts, devices, or physical locations.
-2. Avoid keeping enough shares to recover in one vault, safe, drive, ticket, repository, or CI secret store.
-3. Keep a custody record that names the holder or role for each share without storing the share text.
+1. Choose independent custodians and control boundaries before you split the Secret.
+2. Check that no vault, safe, drive, ticket, repository, CI secret store, administrator, or delivery channel can collect enough Recovery shares to meet the Threshold.
+3. Keep a custody record that names the holder or role for each Recovery share without storing its text.
 4. Practice recovery with synthetic data before relying on the plan.
-5. Rotate the underlying secret after any real recovery or suspected exposure.
+5. Rotate the underlying Secret after any real recovery or suspected exposure.
 </Steps>
 
 ## Passphrases

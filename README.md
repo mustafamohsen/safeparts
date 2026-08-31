@@ -64,10 +64,10 @@ Internally, Safeparts encrypts (optional), appends a BLAKE3 tag, then applies Sh
 
 ## Safety rules (please read)
 
-If you take one thing from this section: **shares are as sensitive as the secret**.
+If you take one thing from this section: **Recovery shares are as sensitive as the Secret**.
 
-- Don't paste real secrets/shares into chat, tickets, issues, logs, or screenshots.
-- Don't co-locate shares (two shares in the same vault is one compromise away from disclosure).
+- Don't paste real Secrets or Recovery shares into chat, tickets, issues, logs, or screenshots.
+- Keep fewer Recovery shares than the Threshold in every account, device, location, administrator domain, and transport channel. Apply this rule to storage and delivery: one provider or administrator must never be able to collect enough Recovery shares to recover the Secret.
 - Write down the runbook: who holds which share, and how to reach them.
 - Do a practice run with a synthetic secret before you rely on a real recovery plan.
 - After any "break-glass" recovery, assume the gathered shares were exposed. Rotate the underlying secret and re-split.

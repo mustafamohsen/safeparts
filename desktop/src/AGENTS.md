@@ -16,6 +16,7 @@ Owns the React UI source for the Tauri desktop app.
 - Keep the desktop UI aligned with `web/src` unless a task documents an intentional difference.
 - Do not expose desktop-only product features unless the web UI exposes them first.
 - Do not persist shares, passphrases, or recovered secrets in browser storage.
+- Split clipboard actions copy one Recovery share at a time; only Combine may copy its recovered Secret through the global result shortcut.
 - Keep Tauri command payloads typed and avoid `any` in new code.
 
 ## Work Guidance
