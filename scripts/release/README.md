@@ -12,6 +12,24 @@ Release artifacts include:
 
 The web UI is deployed separately and is not included as a release archive.
 
+## Release workflow controls
+
+Third-party actions in `.github/workflows/release.yml` are pinned to reviewed commit SHAs with version comments. The workflow also fixes Rust, Bun, .NET, Xcode, and hosted runner inputs. It defaults to read-only repository access; only the tag-only `publish` job receives `contents: write`.
+
+Before changing a release pin, follow the review and SHA-resolution steps in [`docs/dev/surfaces/release.md`](../../docs/dev/surfaces/release.md), then run:
+
+```bash
+mise run workflow:check
+```
+
+To exercise the complete multi-platform path without publishing a GitHub Release, dispatch the workflow from the branch that contains the proposed pins:
+
+```bash
+gh workflow run release.yml --ref <branch> -f version=v0.3.0
+```
+
+The dispatch uploads a seven-day `safeparts-release-dry-run-v0.3.0` artifact after all platform artifacts are downloaded and checksummed.
+
 ## CLI and TUI archives
 
 From the repository root:

@@ -11,6 +11,7 @@ node = "22.12.0"
 "cargo:wasm-bindgen-cli" = "0.2.108"
 "cargo:cargo-llvm-cov" = "0.9.0"
 "cargo:cargo-audit" = "0.22.2"
+"aqua:rhysd/actionlint" = "1.7.12"
 
 [env]
 # Keep tool output readable in local terminals and CI logs.
@@ -63,7 +64,22 @@ depends = ["verify:rust"]
 
 [tasks.verify]
 description = "Run the full local verification gate."
-depends = ["verify:rust", "web:build", "docs:build", "desktop:check", "macos:check", "dx:verify"]
+depends = ["verify:rust", "web:build", "docs:build", "desktop:check", "macos:check", "dx:verify", "workflow:check"]
+
+[tasks."workflow:check"]
+description = "Test release policy and lint GitHub Actions workflows."
+depends = ["workflow:policy", "workflow:lint"]
+
+[tasks."workflow:policy"]
+description = "Reject mutable release inputs and excessive permissions."
+run = [
+  "python3 scripts/dev/test_workflow_policy.py",
+  "python3 scripts/dev/workflow_policy.py",
+]
+
+[tasks."workflow:lint"]
+description = "Lint the release workflow and its policy-check CI seam."
+run = "actionlint -config-file .github/actionlint.yaml .github/workflows/release.yml .github/workflows/rust-ci.yml"
 
 [tasks."verify:rust"]
 description = "Run Rust format, lint, and tests."

@@ -13,6 +13,15 @@ Source of truth:
 - Full local gate: `mise run verify`
 - Production-only Rust coverage: `mise run coverage`
 - Reviewed RustSec policy: `mise run audit`
+- Release workflow policy and action lint: `mise run workflow:check`
+
+## Release workflow
+
+- Policy tests and repository check: `mise run workflow:policy`
+- Focused actionlint check: `mise run workflow:lint`
+- Combined gate: `mise run workflow:check`
+
+The policy gate rejects mutable action references, moving build inputs, and write permissions outside the tag-only publication job.
 
 ## Rust (Cargo)
 

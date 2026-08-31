@@ -8,7 +8,11 @@ on:
       - 'crates/**'
       - 'desktop/**'
       - 'scripts/dev/rust_coverage.py'
+      - 'scripts/dev/workflow_policy.py'
+      - 'scripts/dev/test_workflow_policy.py'
       - 'scripts/release/**'
+      - 'mise.toml'
+      - 'windows/global.json'
       - 'web/package.json'
       - 'web/scripts/test-wasm.sh'
       - '.github/workflows/rust-ci.yml'
@@ -20,7 +24,11 @@ on:
       - 'crates/**'
       - 'desktop/**'
       - 'scripts/dev/rust_coverage.py'
+      - 'scripts/dev/workflow_policy.py'
+      - 'scripts/dev/test_workflow_policy.py'
       - 'scripts/release/**'
+      - 'mise.toml'
+      - 'windows/global.json'
       - 'web/package.json'
       - 'web/scripts/test-wasm.sh'
       - '.github/workflows/rust-ci.yml'
@@ -31,6 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check release workflow policy
+        run: |
+          python3 scripts/dev/test_workflow_policy.py
+          python3 scripts/dev/workflow_policy.py
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
