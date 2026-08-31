@@ -193,7 +193,7 @@ test.describe('Web App E2E Smoke @smoke', () => {
       releaseWasm = resolve
     })
 
-    await page.route('**/safeparts_wasm_bg.wasm*', async (route) => {
+    await page.route('**/safeparts_wasm_bg*.wasm*', async (route) => {
       await wasmGate
       await route.continue()
     })
@@ -223,7 +223,7 @@ test.describe('Web App E2E Smoke @smoke', () => {
       ).toHaveCount(0)
     } finally {
       releaseWasm?.()
-      await page.unroute('**/safeparts_wasm_bg.wasm*')
+      await page.unroute('**/safeparts_wasm_bg*.wasm*')
     }
   })
 
