@@ -19,6 +19,7 @@ STRICT_FILES = [
     "components/KeyboardShortcutsHelp.tsx",
     "components/KeytipsOverlay.tsx",
     "components/LiveRegion.tsx",
+    "components/PassphraseInput.tsx",
     "components/PasteButton.tsx",
     "components/ui/encoding-selector.tsx",
     "components/ui/encrypted-text.tsx",

@@ -7,6 +7,7 @@ import { ensureWasm, recoveredSecretText } from "../wasm";
 import { ClearButton } from "./ClearButton";
 import { CopyButton } from "./CopyButton";
 import { PasteButton } from "./PasteButton";
+import { PassphraseInput } from "./PassphraseInput";
 import {
   EncodingSelector,
   type Encoding,
@@ -357,40 +358,33 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
           />
         </div>
 
-        <label className="block text-start">
-          <span className="field-label" id="passphrase-label">{strings.passphraseLabel}</span>
-          <div className="relative mt-2">
-            <input
-              value={passphrase}
-              onChange={(e) => {
-                invalidateRecoveryResult();
-                setPassphrase(e.target.value);
-              }}
-              className="input input-with-clear-compact"
-              autoComplete="new-password"
-              aria-labelledby="passphrase-label"
-            />
-            {passphrase.length === 0 ? (
-              <PasteButton
-                label={strings.pastePassphrase}
-                onPaste={(value) => {
-                  invalidateRecoveryResult();
-                  setPassphrase(value);
-                }}
-                className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
-              />
-            ) : (
-              <ClearButton
-                label={strings.clearPassphrase}
-                onClick={() => {
-                  invalidateRecoveryResult();
-                  setPassphrase("");
-                }}
-                className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
-              />
-            )}
-          </div>
-        </label>
+        <div className="block text-start">
+          <label
+            className="field-label"
+            id="recover-passphrase-label"
+            htmlFor="recover-passphrase"
+          >
+            {strings.passphraseLabel}
+          </label>
+          <p className="field-hint mt-1" id="recover-passphrase-hint">
+            {strings.passphraseHint}
+          </p>
+          <PassphraseInput
+            id="recover-passphrase"
+            value={passphrase}
+            onChange={(value) => {
+              invalidateRecoveryResult();
+              setPassphrase(value);
+            }}
+            autoComplete="current-password"
+            labelledBy="recover-passphrase-label"
+            describedBy="recover-passphrase-hint"
+            showLabel={strings.showPassphrase}
+            hideLabel={strings.hidePassphrase}
+            pasteLabel={strings.pastePassphrase}
+            clearLabel={strings.clearPassphrase}
+          />
+        </div>
 
         <div>
           <div className="dir-row items-start justify-between gap-3">

@@ -51,9 +51,9 @@
     padding-right: 3rem;
   }
 
-  /* Compact inline action spacing for single-line fields. */
-  .input-with-clear-compact {
-    padding-right: 2.5rem;
+  /* Space for reveal plus paste/clear actions on Passphrase protection fields. */
+  .input-with-passphrase-actions {
+    padding-right: 4.5rem;
   }
 
   :dir(rtl) .input-with-clear {
@@ -61,8 +61,8 @@
     padding-right: 0.75rem;
   }
 
-  :dir(rtl) .input-with-clear-compact {
-    padding-left: 2.5rem;
+  :dir(rtl) .input-with-passphrase-actions {
+    padding-left: 4.5rem;
     padding-right: 0.75rem;
   }
 

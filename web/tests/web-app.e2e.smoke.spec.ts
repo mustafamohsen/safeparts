@@ -66,9 +66,8 @@ async function splitAndCollectShares(
   await page.locator('#split-panel textarea').first().fill(secret)
 
   if (options?.passphrase) {
-    await page
-      .locator('#split-panel input[aria-labelledby="passphrase-label"]')
-      .fill(options.passphrase)
+    await page.getByLabel('Passphrase (optional)').fill(options.passphrase)
+    await page.getByLabel('Confirm passphrase').fill(options.passphrase)
   }
 
   await page.getByRole('button', { name: /^(split|قسم)$/i }).click()
@@ -312,6 +311,87 @@ test.describe('Web App E2E Smoke @smoke', () => {
     expect(padding).toEqual({ left: '12px', right: '48px' })
   })
 
+  test('passphrase fields are masked and reveal controls are keyboard operable', async ({ page }) => {
+    const splitPassphrase = page.getByLabel('Passphrase (optional)')
+    const splitReveal = page.getByRole('button', { name: 'Show passphrase' })
+
+    await expect(splitPassphrase).toHaveAttribute('type', 'password')
+    await expect(splitPassphrase).toHaveAttribute('spellcheck', 'false')
+    await expect(splitPassphrase).toHaveAttribute('autocorrect', 'off')
+    await expect(splitPassphrase).toHaveAttribute('autocapitalize', 'none')
+    await expect(splitReveal).toHaveAttribute('aria-pressed', 'false')
+
+    await splitReveal.focus()
+    await page.keyboard.press('Enter')
+    await expect(splitPassphrase).toHaveAttribute('type', 'text')
+    await expect(page.getByRole('button', { name: 'Hide passphrase' })).toHaveAttribute('aria-pressed', 'true')
+
+    await page.keyboard.press('Space')
+    await expect(splitPassphrase).toHaveAttribute('type', 'password')
+
+    await page.getByRole('tab', { name: /combine|استعادة/i }).click()
+    const recoverPassphrase = page.getByLabel('Passphrase (optional)')
+    await expect(recoverPassphrase).toHaveAttribute('type', 'password')
+    await expect(page.getByLabel('Confirm passphrase')).toHaveCount(0)
+  })
+
+  test('split requires an exact passphrase confirmation and invalidates old shares', async ({ page }) => {
+    const splitButton = page.getByRole('button', { name: /^(split|قسم)$/i })
+    await page.locator('#split-panel textarea').first().fill('confirmation-behavior-secret')
+    await page.getByLabel('Passphrase (optional)').fill('case-sensitive-passphrase')
+
+    await expect(page.getByLabel('Confirm passphrase')).toBeVisible()
+    await expect(splitButton).toBeDisabled()
+    await expect(page.getByText('Passphrases must match exactly.')).toBeVisible()
+
+    await page.getByLabel('Confirm passphrase').fill('Case-sensitive-passphrase')
+    await expect(splitButton).toBeDisabled()
+
+    await page.getByLabel('Confirm passphrase').fill('case-sensitive-passphrase')
+    await expect(splitButton).toBeEnabled()
+    await splitButton.click()
+    await expect(page.getByRole('heading', { name: 'Shares' })).toBeVisible()
+
+    await page.getByLabel('Passphrase (optional)').fill('changed-passphrase')
+    await expect(page.getByRole('heading', { name: 'Shares' })).toHaveCount(0)
+  })
+
+  test('passphrase paste and clear actions handle both split fields', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.reload()
+    await waitForWasmReady(page)
+    await page.evaluate(() => navigator.clipboard.writeText('pasted-synthetic-passphrase'))
+
+    await page.getByRole('button', { name: 'Paste passphrase' }).click()
+    await expect(page.getByLabel('Passphrase (optional)')).toHaveValue('pasted-synthetic-passphrase')
+    await expect(page.getByLabel('Confirm passphrase')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Paste passphrase confirmation' }).click()
+    await expect(page.getByLabel('Confirm passphrase')).toHaveValue('pasted-synthetic-passphrase')
+
+    await page.getByRole('button', { name: 'Clear passphrase confirmation' }).click()
+    await expect(page.getByLabel('Confirm passphrase')).toHaveValue('')
+
+    await page.getByRole('button', { name: 'Clear passphrase', exact: true }).click()
+    await expect(page.getByLabel('Confirm passphrase')).toHaveCount(0)
+  })
+
+  test('exact-match encrypted split and recovery round trip works', async ({ page }) => {
+    const secret = 'encrypted-browser-roundtrip-secret'
+    const passphrase = 'synthetic-exact-passphrase'
+    const shares = await splitAndCollectShares(page, secret, { passphrase })
+
+    await page.getByRole('tab', { name: /combine|استعادة/i }).click()
+    const shareFields = page.locator('#combine-panel textarea')
+    await shareFields.nth(0).fill(shares[0] ?? '')
+    await shareFields.nth(1).fill(shares[1] ?? '')
+    await page.getByLabel('Passphrase (optional)').fill(passphrase)
+
+    await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
+    await expect(page.getByRole('heading', { name: /recovered secret|السر المستعاد/i })).toBeVisible()
+    await expect(page.locator('#combine-panel div[dir="auto"].input .sr-only')).toHaveText(secret)
+  })
+
   test('wrong passphrase fails cleanly', async ({ page }) => {
     const shares = await splitAndCollectShares(page, 'smoke-passphrase-secret', { passphrase: 'correct-passphrase' })
 
@@ -319,7 +399,7 @@ test.describe('Web App E2E Smoke @smoke', () => {
     const shareFields = page.locator('#combine-panel textarea')
     await shareFields.nth(0).fill(shares[0] ?? '')
     await shareFields.nth(1).fill(shares[1] ?? '')
-    await page.locator('#combine-panel input[aria-labelledby="passphrase-label"]').fill('wrong-passphrase')
+    await page.getByLabel('Passphrase (optional)').fill('wrong-passphrase')
 
     await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
     await expect(page.locator('#combine-panel .alert-error')).toBeVisible()
@@ -393,6 +473,23 @@ test.describe('Web App E2E Smoke @smoke', () => {
     await page.keyboard.press(`${mod}+Shift+C`)
     await expect(errorRegion).toContainText('Could not copy to the clipboard.')
     await expect(errorRegion).not.toContainText('synthetic-clipboard-failure-secret')
+  })
+
+  test('passphrase controls preserve Arabic labels and RTL layout', async ({ page }) => {
+    await page.getByRole('button', { name: 'العربية' }).click()
+
+    const splitPassphrase = page.getByLabel('عبارة مرور (اختياري)')
+    await expect(splitPassphrase).toHaveAttribute('type', 'password')
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+    await expect(page.getByRole('button', { name: 'إظهار عبارة المرور' })).toBeVisible()
+
+    await splitPassphrase.fill('عبارة-اختبار')
+    await expect(page.getByRole('textbox', { name: 'تأكيد عبارة المرور', exact: true })).toBeVisible()
+    await expect(page.getByText('يجب أن تتطابق عبارتا المرور تماماً.')).toBeVisible()
+
+    await page.getByRole('tab', { name: 'استعادة' }).click()
+    await expect(page.getByLabel('عبارة مرور (اختياري)')).toHaveAttribute('type', 'password')
+    await expect(page.getByRole('textbox', { name: 'تأكيد عبارة المرور', exact: true })).toHaveCount(0)
   })
 
   test('keyboard shortcuts work for tab switch, help dialog, and submit', async ({ page }) => {
