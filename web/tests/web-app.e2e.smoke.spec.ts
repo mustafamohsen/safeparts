@@ -376,6 +376,90 @@ test.describe('Web App E2E Smoke @smoke', () => {
     await expect(page.getByLabel('Confirm passphrase')).toHaveCount(0)
   })
 
+  test('confirmation edit, paste, and clear invalidate generated shares', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.reload()
+    await waitForWasmReady(page)
+
+    const splitPanel = page.locator('#split-panel')
+    const splitButton = splitPanel.getByRole('button', { name: /^(split|قسم)$/i })
+    const confirmation = splitPanel.getByLabel('Confirm passphrase')
+    const passphrase = 'synthetic-confirmation-passphrase'
+    const expectNoShares = async () => {
+      await expect(splitPanel.getByRole('heading', { name: /^shares$/i })).toHaveCount(0)
+      await expect(splitPanel.getByRole('button', { name: /^copy$/i })).toHaveCount(0)
+    }
+    const generateShares = async () => {
+      await splitButton.click()
+      await expect(splitPanel.getByRole('heading', { name: /^shares$/i })).toBeVisible()
+    }
+
+    await splitPanel.locator('textarea').fill('synthetic-confirmation-invalidation-secret')
+    await splitPanel.getByLabel('Passphrase (optional)').fill(passphrase)
+    await confirmation.fill(passphrase)
+
+    await generateShares()
+    await confirmation.fill('synthetic-edited-confirmation')
+    await expectNoShares()
+
+    await confirmation.fill(passphrase)
+    await generateShares()
+    await page.evaluate(() => navigator.clipboard.writeText('synthetic-pasted-confirmation'))
+    await confirmation.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+A`)
+    await confirmation.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+V`)
+    await expect(confirmation).toHaveValue('synthetic-pasted-confirmation')
+    await expectNoShares()
+
+    await confirmation.fill(passphrase)
+    await generateShares()
+    await splitPanel.getByRole('button', { name: 'Clear passphrase confirmation' }).click()
+    await expectNoShares()
+  })
+
+  test('Recover passphrase edit, paste, and clear invalidate recovered output', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.reload()
+    await waitForWasmReady(page)
+
+    const passphrase = 'synthetic-recovery-invalidation-passphrase'
+    const shares = await splitAndCollectShares(page, 'synthetic-recovery-invalidation-secret', { passphrase })
+    await page.getByRole('tab', { name: /combine|استعادة/i }).click()
+
+    const combinePanel = page.locator('#combine-panel')
+    const shareFields = combinePanel.locator('textarea')
+    const recoverPassphrase = combinePanel.getByLabel('Passphrase (optional)')
+    const combineButton = combinePanel.getByRole('button', { name: /^(combine|استعادة)$/i })
+    const expectNoRecoveredSecret = async () => {
+      await expect(combinePanel.getByRole('heading', { name: /recovered secret|السر المستعاد/i })).toHaveCount(0)
+      await expect(combinePanel.getByRole('button', { name: /^copy$/i })).toHaveCount(0)
+    }
+    const recoverSecret = async () => {
+      await combineButton.click()
+      await expect(combinePanel.getByRole('heading', { name: /recovered secret|السر المستعاد/i })).toBeVisible()
+    }
+
+    await shareFields.nth(0).fill(shares[0] ?? '')
+    await shareFields.nth(1).fill(shares[1] ?? '')
+    await recoverPassphrase.fill(passphrase)
+
+    await recoverSecret()
+    await recoverPassphrase.fill('synthetic-edited-recovery-passphrase')
+    await expectNoRecoveredSecret()
+
+    await recoverPassphrase.fill(passphrase)
+    await recoverSecret()
+    await page.evaluate(() => navigator.clipboard.writeText('synthetic-pasted-recovery-passphrase'))
+    await recoverPassphrase.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+A`)
+    await recoverPassphrase.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+V`)
+    await expect(recoverPassphrase).toHaveValue('synthetic-pasted-recovery-passphrase')
+    await expectNoRecoveredSecret()
+
+    await recoverPassphrase.fill(passphrase)
+    await recoverSecret()
+    await combinePanel.getByRole('button', { name: 'Clear passphrase' }).click()
+    await expectNoRecoveredSecret()
+  })
+
   test('exact-match encrypted split and recovery round trip works', async ({ page }) => {
     const secret = 'encrypted-browser-roundtrip-secret'
     const passphrase = 'synthetic-exact-passphrase'
