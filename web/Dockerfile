@@ -59,6 +59,8 @@ RUN --mount=type=cache,target=/work/target \
 
 FROM ${BUN_IMAGE} AS web-builder
 
+ENV ASTRO_TELEMETRY_DISABLED=1
+
 WORKDIR /work/web
 
 COPY web/package.json web/bun.lock ./

@@ -25,6 +25,16 @@ print_diagnostics() {
 }
 trap print_diagnostics EXIT
 
+if ! awk '
+  /^FROM .* AS web-builder$/ { in_web_builder = 1; next }
+  /^FROM / && in_web_builder { exit !telemetry_disabled }
+  in_web_builder && $0 == "ENV ASTRO_TELEMETRY_DISABLED=1" { telemetry_disabled = 1 }
+  END { if (in_web_builder) exit !telemetry_disabled }
+' "$repo_root/web/Dockerfile"; then
+  echo "web-builder must disable Astro telemetry" >&2
+  exit 1
+fi
+
 if [[ "${CONTAINER_SMOKE_SKIP_BUILD:-0}" != "1" ]]; then
   docker build --pull --tag "$image" --file "$repo_root/web/Dockerfile" "$repo_root"
 fi
