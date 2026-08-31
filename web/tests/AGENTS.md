@@ -16,6 +16,7 @@ Owns browser smoke, end-to-end, docs route, and accessibility tests for the web 
 - Tests may use Playwright because CI owns these suites.
 - For manual browser smoke work, prefer the project browser skill or `browse` CLI unless the user asks for Playwright.
 - Keep test fixtures synthetic. Do not paste real secrets or real shares into tests.
+- Rendered Tauri tests mock the public command boundary, not React state or component internals.
 - Accessibility tests should fail on serious, critical, and total axe violations unless a task explicitly changes the policy.
 
 ## Work Guidance

@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - 'web/**'
+      - 'desktop/src/**'
+      - 'desktop/package.json'
+      - 'desktop/bun.lock'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_wasm/**'
       - 'Cargo.toml'
@@ -14,6 +17,9 @@ on:
   pull_request:
     paths:
       - 'web/**'
+      - 'desktop/src/**'
+      - 'desktop/package.json'
+      - 'desktop/bun.lock'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_wasm/**'
       - 'Cargo.toml'
@@ -74,6 +80,14 @@ jobs:
         run: bun run build
         working-directory: web
 
+      - name: Install desktop deps
+        run: bun install --frozen-lockfile
+        working-directory: desktop
+
+      - name: Build desktop frontend
+        run: bun run build
+        working-directory: desktop
+
       - name: Install docs deps
         run: bun install --frozen-lockfile
         working-directory: web/help
@@ -94,7 +108,10 @@ jobs:
           # Start Starlight dev server (docs on port 4321)
           cd help && bun run dev &
 
-          # Wait for both servers to be ready
+          # Start the Tauri frontend for rendered command-boundary tests (port 1420)
+          cd ../desktop && bun run dev &
+
+          # Wait for all servers to be ready
           echo "Waiting for Vite server..."
           for i in {1..30}; do
             if curl -s http://localhost:5173 > /dev/null 2>&1; then
@@ -113,11 +130,19 @@ jobs:
             sleep 1
           done
 
-          # Verify both are accessible
-          curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
-          echo " - Vite status"
-          curl -s -o /dev/null -w "%{http_code}" http://localhost:4321
-          echo " - Starlight status"
+          echo "Waiting for desktop frontend..."
+          for i in {1..30}; do
+            if curl -s http://localhost:1420 > /dev/null 2>&1; then
+              echo "Desktop frontend ready"
+              break
+            fi
+            sleep 1
+          done
+
+          # Verify all are accessible
+          curl --fail --silent --output /dev/null http://localhost:5173
+          curl --fail --silent --output /dev/null http://localhost:4321
+          curl --fail --silent --output /dev/null http://localhost:1420
         working-directory: web
 
       - name: Run smoke web tests
@@ -164,6 +189,14 @@ jobs:
         run: bun run build
         working-directory: web
 
+      - name: Install desktop deps
+        run: bun install --frozen-lockfile
+        working-directory: desktop
+
+      - name: Build desktop frontend
+        run: bun run build
+        working-directory: desktop
+
       - name: Install docs deps
         run: bun install --frozen-lockfile
         working-directory: web/help
@@ -184,7 +217,10 @@ jobs:
           # Start Starlight dev server (docs on port 4321)
           cd help && bun run dev &
 
-          # Wait for both servers to be ready
+          # Start the Tauri frontend for rendered command-boundary tests (port 1420)
+          cd ../desktop && bun run dev &
+
+          # Wait for all servers to be ready
           echo "Waiting for Vite server..."
           for i in {1..30}; do
             if curl -s http://localhost:5173 > /dev/null 2>&1; then
@@ -203,11 +239,19 @@ jobs:
             sleep 1
           done
 
-          # Verify both are accessible
-          curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
-          echo " - Vite status"
-          curl -s -o /dev/null -w "%{http_code}" http://localhost:4321
-          echo " - Starlight status"
+          echo "Waiting for desktop frontend..."
+          for i in {1..30}; do
+            if curl -s http://localhost:1420 > /dev/null 2>&1; then
+              echo "Desktop frontend ready"
+              break
+            fi
+            sleep 1
+          done
+
+          # Verify all are accessible
+          curl --fail --silent --output /dev/null http://localhost:5173
+          curl --fail --silent --output /dev/null http://localhost:4321
+          curl --fail --silent --output /dev/null http://localhost:1420
         working-directory: web
 
       - name: Run full web tests

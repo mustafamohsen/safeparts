@@ -39,6 +39,7 @@ function resizeTextarea(textarea: HTMLTextAreaElement) {
 
 export function SplitForm({ strings }: SplitFormProps) {
   const secretTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const splitOperationRef = useRef(0);
   const [secret, setSecret] = useState("");
   const [k, setK] = useState(2);
   const [n, setN] = useState(3);
@@ -125,10 +126,14 @@ export function SplitForm({ strings }: SplitFormProps) {
     secret.length > 0 && k >= 2 && n >= 2 && n <= 255 && passphrasesMatch;
 
   function updatePassphrase(value: string) {
+    if (value === passphrase) return;
+
+    splitOperationRef.current += 1;
     setPassphrase(value);
     if (value.length === 0) setPassphraseConfirmation("");
     setShares([]);
     setError(null);
+    setBusy(false);
   }
 
   async function onSplit() {
@@ -137,6 +142,8 @@ export function SplitForm({ strings }: SplitFormProps) {
       return;
     }
 
+    const operationId = splitOperationRef.current + 1;
+    splitOperationRef.current = operationId;
     setBusy(true);
     setError(null);
     setShares([]);
@@ -151,12 +158,18 @@ export function SplitForm({ strings }: SplitFormProps) {
         encoding,
         passphrase ? passphrase : undefined,
       );
+      if (operationId !== splitOperationRef.current) return;
+
       const outShares = Array.from(out).map((v) => String(v));
       setShares(outShares);
     } catch (e) {
-      setError(toErrorMessage(e, strings));
+      if (operationId === splitOperationRef.current) {
+        setError(toErrorMessage(e, strings));
+      }
     } finally {
-      setBusy(false);
+      if (operationId === splitOperationRef.current) {
+        setBusy(false);
+      }
     }
   }
 
