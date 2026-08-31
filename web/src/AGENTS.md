@@ -20,6 +20,7 @@ Owns the Vite + React browser application source and generated WASM package boun
 - Do not hand-edit `wasm_pkg/` unless the task explicitly targets generated artifacts.
 - Preserve accessibility, keyboard behavior, live-region feedback, and RTL support when changing UI.
 - Split clipboard actions copy one Recovery share at a time; only Combine may copy its recovered Secret through the global result shortcut.
+- Generated Recovery shares are valid only while the Secret, Threshold, Share count, Share encoding, and Passphrase protection match the completed Split operation; input changes must also reject late results.
 - Display and copy recovered output only when it is valid UTF-8, and invalidate it whenever Recovery shares, Share encoding, or Passphrase protection changes.
 - Desktop UI parity depends on copied files from this subtree.
 

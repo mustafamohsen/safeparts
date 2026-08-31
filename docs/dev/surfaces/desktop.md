@@ -21,7 +21,8 @@ It owns:
 - Wrap secret bytes and passphrase byte buffers in zeroizing storage before calling core.
 - Keep Tauri request and response types explicit in `commands.ts`. Keep `wasm.ts` as the typed adapter that matches the browser WASM call shape.
 - Do not expose desktop-only product features unless the web UI exposes them first.
-- Keep command errors useful without echoing share input.
+- Remove generated Recovery shares when any Split input changes, and reject a late Tauri Split result if its Secret, Threshold, Share count, Share encoding, or Passphrase protection no longer matches.
+- Keep command errors useful without echoing Recovery share input.
 - Run parity checks when copied UI files change.
 
 ## Useful checks

@@ -17,6 +17,7 @@ Owns the React UI source for the Tauri desktop app.
 - Do not expose desktop-only product features unless the web UI exposes them first.
 - Do not persist shares, passphrases, or recovered secrets in browser storage.
 - Split clipboard actions copy one Recovery share at a time; only Combine may copy its recovered Secret through the global result shortcut.
+- Generated Recovery shares must disappear when any Split input changes, and pending Tauri results must not restore stale output.
 - Preserve the Tauri command's UTF-8 metadata, refuse binary recovered output, and invalidate results whenever Recovery shares, Share encoding, or Passphrase protection changes.
 - Keep Tauri command payloads typed and avoid `any` in new code.
 
