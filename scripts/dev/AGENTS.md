@@ -14,7 +14,7 @@ Owns local developer-experience diagnostics and verification helpers.
 - `rustsec_audit.py`: Cargo audit runner and exact policy-exception gate.
 - `test_rustsec_audit.py`: unit tests for RustSec finding classification.
 - `test_web_deploy.py`: behavioral artifact and immutable Web workflow policy tests.
-- `workflow_policy.py`: release workflow input and permission policy gate.
+- `workflow_policy.py`: release workflow input, tag-only publication, and permission policy gate.
 - `test_workflow_policy.py`: public-behavior tests for the release workflow policy.
 - `README.md`: local script usage notes.
 

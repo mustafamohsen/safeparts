@@ -19,6 +19,9 @@ VERSION_COMMENT_PATTERN = re.compile(
 )
 EXACT_VERSION_PATTERN = re.compile(r"^\d+(?:\.\d+){1,2}$")
 REQUIRED_RUST_JOBS = {"test", "build", "desktop", "native-windows", "native-macos"}
+REQUIRED_PUBLISH_CONDITION = (
+    "github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')"
+)
 
 
 @dataclass(frozen=True)
@@ -71,7 +74,14 @@ def _step_inputs(lines: list[str], action_index: int, action_indent: int) -> dic
     return inputs
 
 
-def parse_workflow(text: str) -> tuple[list[str], list[ActionUse], dict[str, dict[str, str]]]:
+def parse_workflow(
+    text: str,
+) -> tuple[
+    list[str],
+    list[ActionUse],
+    dict[str, dict[str, str]],
+    dict[str, str],
+]:
     """Parse the policy-relevant subset of a GitHub Actions workflow."""
     lines = text.splitlines()
     job_starts = [
@@ -114,6 +124,7 @@ def parse_workflow(text: str) -> tuple[list[str], list[ActionUse], dict[str, dic
         )
 
     permissions: dict[str, dict[str, str]] = {"workflow": {}}
+    job_conditions: dict[str, str] = {}
     current_job: str | None = None
     in_jobs = False
     permission_scope: str | None = None
@@ -125,6 +136,9 @@ def parse_workflow(text: str) -> tuple[list[str], list[ActionUse], dict[str, dic
         job_match = re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line)
         if in_jobs and job_match:
             current_job = job_match.group(1)
+        condition_match = re.match(r"^    if:\s*(.*?)\s*$", line)
+        if current_job is not None and condition_match:
+            job_conditions[current_job] = _unquote(condition_match.group(1))
         indent = len(line) - len(line.lstrip())
         if line.strip() == "permissions:":
             permission_scope = current_job if indent == 4 else "workflow"
@@ -140,7 +154,7 @@ def parse_workflow(text: str) -> tuple[list[str], list[ActionUse], dict[str, dic
         if permission:
             permissions[permission_scope][permission.group(1)] = permission.group(2)
 
-    return lines, actions, permissions
+    return lines, actions, permissions, job_conditions
 
 
 def repository_versions(repo_root: Path) -> tuple[str, str, str]:
@@ -153,7 +167,7 @@ def repository_versions(repo_root: Path) -> tuple[str, str, str]:
 
 
 def validate_workflow(text: str, repo_root: Path = REPO_ROOT) -> list[str]:
-    lines, actions, permissions = parse_workflow(text)
+    lines, actions, permissions, job_conditions = parse_workflow(text)
     rust_version, bun_version, dotnet_version = repository_versions(repo_root)
     errors: list[str] = []
 
@@ -224,6 +238,8 @@ def validate_workflow(text: str, repo_root: Path = REPO_ROOT) -> list[str]:
         errors.append("workflow permissions must be exactly contents: read")
     if permissions.get("publish") != {"contents": "write"}:
         errors.append("publish permissions must be exactly contents: write")
+    if job_conditions.get("publish") != REQUIRED_PUBLISH_CONDITION:
+        errors.append("publish job must be restricted to tag pushes")
     for scope, grants in permissions.items():
         if scope in {"workflow", "publish"}:
             continue
