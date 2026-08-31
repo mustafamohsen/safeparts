@@ -115,6 +115,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
     recoveryInputVersionRef.current += 1;
     setSecret("");
     setError(null);
+    setBusy(false);
   }, []);
 
   const encodingOptions: EncodingOption[] = [
@@ -273,6 +274,13 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
     setInvalidShareBoxIds((prev) => prev.filter((v) => v !== id));
   }
 
+  function updatePassphrase(value: string) {
+    if (value === passphrase) return;
+
+    invalidateRecoveryResult();
+    setPassphrase(value);
+  }
+
   async function onCombine() {
     const recoveryVersion = recoveryInputVersionRef.current;
     setBusy(true);
@@ -327,7 +335,9 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
         }
       }
     } finally {
-      setBusy(false);
+      if (recoveryVersion === recoveryInputVersionRef.current) {
+        setBusy(false);
+      }
     }
   }
 
@@ -372,10 +382,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
           <PassphraseInput
             id="recover-passphrase"
             value={passphrase}
-            onChange={(value) => {
-              invalidateRecoveryResult();
-              setPassphrase(value);
-            }}
+            onChange={updatePassphrase}
             autoComplete="current-password"
             labelledBy="recover-passphrase-label"
             describedBy="recover-passphrase-hint"

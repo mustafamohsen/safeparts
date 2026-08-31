@@ -136,6 +136,16 @@ export function SplitForm({ strings }: SplitFormProps) {
     setBusy(false);
   }
 
+  function updatePassphraseConfirmation(value: string) {
+    if (value === passphraseConfirmation) return;
+
+    splitOperationRef.current += 1;
+    setPassphraseConfirmation(value);
+    setShares([]);
+    setError(null);
+    setBusy(false);
+  }
+
   async function onSplit() {
     if (!passphrasesMatch) {
       setError(strings.passphraseMismatch);
@@ -383,7 +393,7 @@ export function SplitForm({ strings }: SplitFormProps) {
             <PassphraseInput
               id="split-passphrase-confirmation"
               value={passphraseConfirmation}
-              onChange={setPassphraseConfirmation}
+              onChange={updatePassphraseConfirmation}
               autoComplete="new-password"
               labelledBy="split-passphrase-confirmation-label"
               describedBy={
