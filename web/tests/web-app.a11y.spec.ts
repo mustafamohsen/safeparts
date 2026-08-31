@@ -21,6 +21,13 @@ test.describe('Web App Accessibility @smoke', () => {
     await expectNoA11yViolations(page)
   })
 
+  test('Split passphrase confirmation has no accessibility violations', async ({ page }) => {
+    await page.getByLabel('Passphrase (optional)').fill('synthetic-accessibility-passphrase')
+    await expect(page.getByLabel('Confirm passphrase')).toBeVisible()
+
+    await expectNoA11yViolations(page)
+  })
+
   test('Language toggle is accessible', async ({ page }) => {
     // Test both language toggle buttons
     const enButton = page.getByRole('button', { name: 'English' })

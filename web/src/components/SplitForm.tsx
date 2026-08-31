@@ -13,6 +13,7 @@ import { ensureWasm } from "../wasm";
 import { ClearButton } from "./ClearButton";
 import { CopyButton } from "./CopyButton";
 import { PasteButton } from "./PasteButton";
+import { PassphraseInput } from "./PassphraseInput";
 import {
   EncodingSelector,
   type Encoding,
@@ -100,6 +101,7 @@ export function SplitForm({ strings }: SplitFormProps) {
   }
   const [encoding, setEncoding] = useState<Encoding>("mnemo-words");
   const [passphrase, setPassphrase] = useState("");
+  const [passphraseConfirmation, setPassphraseConfirmation] = useState("");
   const [shares, setShares] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -117,9 +119,24 @@ export function SplitForm({ strings }: SplitFormProps) {
     },
   ];
 
-  const canSplit = secret.length > 0 && k >= 2 && n >= 2 && n <= 255;
+  const passphrasesMatch =
+    passphrase.length === 0 || passphrase === passphraseConfirmation;
+  const canSplit =
+    secret.length > 0 && k >= 2 && n >= 2 && n <= 255 && passphrasesMatch;
+
+  function updatePassphrase(value: string) {
+    setPassphrase(value);
+    if (value.length === 0) setPassphraseConfirmation("");
+    setShares([]);
+    setError(null);
+  }
 
   async function onSplit() {
+    if (!passphrasesMatch) {
+      setError(strings.passphraseMismatch);
+      return;
+    }
+
     setBusy(true);
     setError(null);
     setShares([]);
@@ -320,31 +337,64 @@ export function SplitForm({ strings }: SplitFormProps) {
           </div>
         </div>
 
-        <label className="block">
-          <span className="field-label" id="passphrase-label">{strings.passphraseLabel}</span>
-          <div className="relative mt-2">
-            <input
-              value={passphrase}
-              onChange={(e) => setPassphrase(e.target.value)}
-              className="input input-with-clear-compact"
+        <div className="block">
+          <label className="field-label" id="split-passphrase-label" htmlFor="split-passphrase">
+            {strings.passphraseLabel}
+          </label>
+          <p className="field-hint mt-1" id="split-passphrase-hint">
+            {strings.passphraseHint}
+          </p>
+          <PassphraseInput
+            id="split-passphrase"
+            value={passphrase}
+            onChange={updatePassphrase}
+            autoComplete="new-password"
+            labelledBy="split-passphrase-label"
+            describedBy="split-passphrase-hint"
+            showLabel={strings.showPassphrase}
+            hideLabel={strings.hidePassphrase}
+            pasteLabel={strings.pastePassphrase}
+            clearLabel={strings.clearPassphrase}
+          />
+        </div>
+
+        {passphrase.length > 0 ? (
+          <div className="block">
+            <label
+              className="field-label"
+              id="split-passphrase-confirmation-label"
+              htmlFor="split-passphrase-confirmation"
+            >
+              {strings.confirmPassphraseLabel}
+            </label>
+            <PassphraseInput
+              id="split-passphrase-confirmation"
+              value={passphraseConfirmation}
+              onChange={setPassphraseConfirmation}
               autoComplete="new-password"
-              aria-labelledby="passphrase-label"
+              labelledBy="split-passphrase-confirmation-label"
+              describedBy={
+                passphrasesMatch
+                  ? "split-passphrase-hint"
+                  : "split-passphrase-mismatch"
+              }
+              showLabel={strings.showPassphraseConfirmation}
+              hideLabel={strings.hidePassphraseConfirmation}
+              pasteLabel={strings.pastePassphraseConfirmation}
+              clearLabel={strings.clearPassphraseConfirmation}
+              invalid={!passphrasesMatch}
             />
-            {passphrase.length === 0 ? (
-              <PasteButton
-                label={strings.pastePassphrase}
-                onPaste={setPassphrase}
-                className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
-              />
-            ) : (
-              <ClearButton
-                label={strings.clearPassphrase}
-                onClick={() => setPassphrase("")}
-                className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
-              />
-            )}
+            {!passphrasesMatch ? (
+              <p
+                className="mt-1 text-xs text-rose-400"
+                id="split-passphrase-mismatch"
+                role="alert"
+              >
+                {strings.passphraseMismatch}
+              </p>
+            ) : null}
           </div>
-        </label>
+        ) : null}
 
         <div className="dir-row flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
