@@ -180,9 +180,7 @@ def fetch(base_url: str, path: str) -> bytes:
     try:
         response = urllib.request.urlopen(request, timeout=30)
     except urllib.error.HTTPError as error:
-        if error.code >= 500:
-            raise ArtifactError(f"remote verification failed for {url}: HTTP {error.code}") from error
-        response = error
+        raise ArtifactError(f"remote verification failed for {url}: HTTP {error.code}") from error
     except urllib.error.URLError as error:
         raise ArtifactError(f"remote verification failed for {url}: {error.reason}") from error
     with response:

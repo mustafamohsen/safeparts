@@ -150,6 +150,60 @@ class DeployArtifactTests(unittest.TestCase):
             self.assertTrue(encodings)
             self.assertEqual({"identity"}, set(encodings))
 
+    def test_remote_verification_rejects_expected_bytes_served_as_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            site = root / "site"
+            evidence = root / "evidence"
+            site.mkdir()
+            (site / "index.html").write_text("<h1>Safeparts</h1>\n", encoding="utf-8")
+            self.run_tool(
+                "prepare",
+                "--site",
+                str(site),
+                "--evidence",
+                str(evidence),
+                "--source-commit",
+                SOURCE_COMMIT,
+                "--rust-version",
+                "1.93.0",
+                "--bun-version",
+                "1.3.11",
+                "--node-version",
+                "22.12.0",
+                "--wasm-pack-version",
+                "0.15.0",
+                "--wasm-bindgen-version",
+                "0.2.108",
+            )
+
+            class ErrorStatusHandler(http.server.SimpleHTTPRequestHandler):
+                def send_response(self, code: int, message: str | None = None) -> None:
+                    super().send_response(404, message)
+
+                def log_message(self, format: str, *args: object) -> None:
+                    pass
+
+            handler = functools.partial(ErrorStatusHandler, directory=str(site))
+            server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                failure = self.run_tool(
+                    "verify-remote",
+                    "--base-url",
+                    f"http://127.0.0.1:{server.server_port}",
+                    "--evidence",
+                    str(evidence),
+                    expected=1,
+                )
+            finally:
+                server.shutdown()
+                thread.join()
+                server.server_close()
+
+            self.assertIn("HTTP 404", failure.stdout)
+
     def test_prepare_rejects_a_non_commit_identifier(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -185,6 +239,17 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertFalse(CLOUDFLARE_WORKFLOW.exists(), "duplicate provider build workflow remains")
         self.assertNotRegex(workflow, r"curl\s+https?://.*(?:rustup|bun)")
         self.assertNotIn("BUILD_HOOK", workflow)
+
+        for material_input in (
+            "Cargo.toml",
+            "Cargo.lock",
+            ".github/workflows/cloudflare-workers.yml",
+        ):
+            self.assertEqual(
+                2,
+                workflow.count(f"- '{material_input}'"),
+                f"push and pull-request filters must cover {material_input}",
+            )
 
         action_refs = re.findall(r"^\s*-?\s*uses:\s*([^\s#]+)", workflow, re.MULTILINE)
         self.assertGreaterEqual(len(action_refs), 5)
