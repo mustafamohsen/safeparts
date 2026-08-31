@@ -17,6 +17,7 @@ on:
       - 'mise.toml'
       - 'netlify.toml'
       - 'wrangler.jsonc'
+      - '.github/workflows/cloudflare-workers.yml'
       - '.github/workflows/web-ci.yml'
   pull_request:
     paths:
@@ -34,6 +35,7 @@ on:
       - 'mise.toml'
       - 'netlify.toml'
       - 'wrangler.jsonc'
+      - '.github/workflows/cloudflare-workers.yml'
       - '.github/workflows/web-ci.yml'
   schedule:
     - cron: '0 3 * * *'
