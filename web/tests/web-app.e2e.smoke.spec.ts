@@ -165,7 +165,9 @@ test.describe('Web App E2E Smoke @smoke', () => {
   test('removes recovered output and copy source when recovery inputs change', async ({ page }) => {
     const shares = await splitAndCollectShares(page, 'stale-recovery-output')
     const recoveredHeading = page.getByRole('heading', { name: /recovered secret/i })
-    const copyButton = page.locator('#combine-panel').getByRole('button', { name: /^Copy$/ })
+    const copyButton = page
+      .locator('#combine-panel')
+      .getByRole('button', { name: /^Copy recovered Secret$/ })
 
     await recoverShares(page, shares)
     await expect(recoveredHeading).toBeVisible()
@@ -232,7 +234,9 @@ test.describe('Web App E2E Smoke @smoke', () => {
       await expect(page.getByRole('button', { name: /^Combine$/i })).toBeEnabled()
       await expect(page.getByRole('heading', { name: /recovered secret/i })).toHaveCount(0)
       await expect(
-        page.locator('#combine-panel').getByRole('button', { name: /^Copy$/ }),
+        page
+          .locator('#combine-panel')
+          .getByRole('button', { name: /^Copy recovered Secret$/ }),
       ).toHaveCount(0)
     } finally {
       releaseWasm?.()
@@ -252,7 +256,9 @@ test.describe('Web App E2E Smoke @smoke', () => {
     )
     await expect(page.getByRole('heading', { name: /recovered secret/i })).toHaveCount(0)
     await expect(
-      page.locator('#combine-panel').getByRole('button', { name: /^Copy$/ }),
+      page
+        .locator('#combine-panel')
+        .getByRole('button', { name: /^Copy recovered Secret$/ }),
     ).toHaveCount(0)
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(
       'clipboard-sentinel',
