@@ -6,7 +6,7 @@ Owns operational documentation for supported production deployments.
 
 ## Ownership
 
-- `cloudflare-workers.md`: Cloudflare Workers deployment, credentials, and validation steps.
+- `web-artifact.md`: tested Web artifact, Netlify and Cloudflare credentials, and byte-level validation.
 - `docker.md`: unprivileged Docker self-hosting, health checks, and local smoke verification.
 
 ## Local Contracts

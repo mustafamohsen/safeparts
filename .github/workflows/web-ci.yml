@@ -1,4 +1,4 @@
-name: web ci
+name: web artifact
 
 on:
   push:
@@ -7,13 +7,16 @@ on:
       - 'desktop/src/**'
       - 'desktop/package.json'
       - 'desktop/bun.lock'
-      - 'scripts/dev/check_desktop_parity.py'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_wasm/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.dockerignore'
+      - 'scripts/dev/check_desktop_parity.py'
+      - 'scripts/dev/test_web_deploy.py'
+      - 'mise.toml'
       - 'netlify.toml'
+      - 'wrangler.jsonc'
       - '.github/workflows/web-ci.yml'
   pull_request:
     paths:
@@ -21,17 +24,35 @@ on:
       - 'desktop/src/**'
       - 'desktop/package.json'
       - 'desktop/bun.lock'
-      - 'scripts/dev/check_desktop_parity.py'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_wasm/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.dockerignore'
+      - 'scripts/dev/check_desktop_parity.py'
+      - 'scripts/dev/test_web_deploy.py'
+      - 'mise.toml'
       - 'netlify.toml'
+      - 'wrangler.jsonc'
       - '.github/workflows/web-ci.yml'
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-artifact-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUN_VERSION: '1.3.11'
+  NODE_VERSION: '22.12.0'
+  RUST_VERSION: '1.93.0'
+  WASM_PACK_VERSION: '0.15.0'
+  WASM_BINDGEN_VERSION: '0.2.108'
+  WRANGLER_SEND_METRICS: 'false'
 
 jobs:
   container_smoke:
@@ -39,242 +60,275 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Build and smoke-test unprivileged image
         run: bash web/tests/container-smoke.sh
 
-  web_smoke:
-    name: web smoke
-    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+  build_test_package:
+    name: build, test, and package Web artifact
     runs-on: ubuntu-latest
+    outputs:
+      artifact-digest: ${{ steps.upload.outputs.artifact-digest }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
         with:
           bun-version: '1.3.11'
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
+          node-version: '22.12.0'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c
+        with:
+          toolchain: '1.93.0'
           targets: wasm32-unknown-unknown
 
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-targets: false
-
-      - name: Install web deps
+      - name: Install Web dependencies from the lockfile
         run: bun install --frozen-lockfile
         working-directory: web
 
-      - name: Build WASM
+      - name: Install help dependencies from the lockfile
+        run: bun install --frozen-lockfile
+        working-directory: web/help
+
+      - name: Install desktop dependencies from the lockfile
+        run: bun install --frozen-lockfile
+        working-directory: desktop
+
+      - name: Test deployment artifact behavior and workflow policy
+        run: python3 scripts/dev/test_web_deploy.py
+
+      - name: Build application WASM
         run: bun run build:wasm
         working-directory: web
 
-      - name: Type-check web app
+      - name: Verify reviewed tool versions
+        run: |
+          test "$(bun --version)" = "$BUN_VERSION"
+          test "$(node --version)" = "v$NODE_VERSION"
+          test "$(rustc --version | awk '{print $2}')" = "$RUST_VERSION"
+          test "$(wasm-pack --version | awk '{print $2}')" = "$WASM_PACK_VERSION"
+          test "$(wasm-bindgen --version | awk '{print $2}')" = "$WASM_BINDGEN_VERSION"
+
+      - name: Test WASM browser bindings
+        run: bun run test:wasm
+        working-directory: web
+
+      - name: Type-check Web application
         run: bun run typecheck
         working-directory: web
 
-      - name: Build web app
+      - name: Build Web application
         run: bun run build
         working-directory: web
-
-      - name: Install desktop deps
-        run: bun install --frozen-lockfile
-        working-directory: desktop
 
       - name: Build desktop frontend
         run: bun run build
         working-directory: desktop
 
-      - name: Install docs deps
-        run: bun install --frozen-lockfile
-        working-directory: web/help
+      - name: Verify desktop and Web UI parity
+        run: python3 scripts/dev/check_desktop_parity.py
 
-      - name: Build docs
+      - name: Build English and Arabic help
         run: bun run build
         working-directory: web/help
 
-      - name: Install Playwright browsers
+      - name: Install Chromium
         run: bun run test:a11y:install
         working-directory: web
 
-      - name: Start development servers
+      - name: Test the built Web, help, and rendered desktop output
         run: |
-          # Start Vite dev server (web app on port 5173)
-          bun run dev &
-
-          # Start Starlight dev server (docs on port 4321)
-          cd help && bun run dev &
-
-          # Start the Tauri frontend for rendered command-boundary tests (port 1420)
-          cd ../desktop && bun run dev &
-
-          # Wait for all servers to be ready
-          echo "Waiting for Vite server..."
-          for i in {1..30}; do
-            if curl -s http://localhost:5173 > /dev/null 2>&1; then
-              echo "Vite server ready"
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory dist > "$RUNNER_TEMP/safeparts-preview.log" 2>&1 &
+          preview_pid=$!
+          (cd ../desktop && bun run dev) > "$RUNNER_TEMP/safeparts-desktop.log" 2>&1 &
+          desktop_pid=$!
+          trap 'kill "$preview_pid" "$desktop_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/help/ > /dev/null \
+              && curl --fail --silent http://127.0.0.1:1420/ > /dev/null; then
               break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              cat "$RUNNER_TEMP/safeparts-preview.log"
+              cat "$RUNNER_TEMP/safeparts-desktop.log"
+              exit 1
             fi
             sleep 1
           done
-
-          echo "Waiting for Starlight server..."
-          for i in {1..30}; do
-            if curl -s http://localhost:4321/help > /dev/null 2>&1; then
-              echo "Starlight server ready"
-              break
-            fi
-            sleep 1
-          done
-
-          echo "Waiting for desktop frontend..."
-          for i in {1..30}; do
-            if curl -s http://127.0.0.1:1420 > /dev/null 2>&1; then
-              echo "Desktop frontend ready"
-              break
-            fi
-            sleep 1
-          done
-
-          # Verify all are accessible
-          curl --fail --silent --output /dev/null http://localhost:5173
-          curl --fail --silent --output /dev/null http://localhost:4321/help
-          curl --fail --silent --output /dev/null http://127.0.0.1:1420
+          PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173 bun run test:e2e:full
         working-directory: web
 
-      - name: Run smoke web tests
-        run: bun run test:e2e:smoke
-        working-directory: web
-        env:
-          PLAYWRIGHT_BASE_URL: http://localhost:5173
-
-  web_full:
-    name: web full
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.11'
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-targets: false
-
-      - name: Install web deps
-        run: bun install --frozen-lockfile
-        working-directory: web
-
-      - name: Build WASM
-        run: bun run build:wasm
-        working-directory: web
-
-      - name: Type-check web app
-        run: bun run typecheck
-        working-directory: web
-
-      - name: Build web app
-        run: bun run build
-        working-directory: web
-
-      - name: Install desktop deps
-        run: bun install --frozen-lockfile
-        working-directory: desktop
-
-      - name: Build desktop frontend
-        run: bun run build
-        working-directory: desktop
-
-      - name: Install docs deps
-        run: bun install --frozen-lockfile
-        working-directory: web/help
-
-      - name: Build docs
-        run: bun run build
-        working-directory: web/help
-
-      - name: Install Playwright browsers
-        run: bun run test:a11y:install
-        working-directory: web
-
-      - name: Start development servers
+      - name: Prepare commit-identified deployment artifact
         run: |
-          # Start Vite dev server (web app on port 5173)
-          bun run dev &
+          rm -rf target/web-deploy
+          python3 web/scripts/deploy-artifact.py prepare \
+            --site web/dist \
+            --evidence target/web-deploy/evidence \
+            --source-commit "$GITHUB_SHA" \
+            --rust-version "$RUST_VERSION" \
+            --bun-version "$BUN_VERSION" \
+            --node-version "$NODE_VERSION" \
+            --wasm-pack-version "$WASM_PACK_VERSION" \
+            --wasm-bindgen-version "$WASM_BINDGEN_VERSION"
+          mkdir -p target/web-deploy/site
+          cp -a web/dist/. target/web-deploy/site/
+          python3 web/scripts/deploy-artifact.py verify \
+            --site target/web-deploy/site \
+            --evidence target/web-deploy/evidence
 
-          # Start Starlight dev server (docs on port 4321)
-          cd help && bun run dev &
+      - name: Validate Cloudflare package without publishing
+        run: web/node_modules/.bin/wrangler deploy --dry-run --config wrangler.jsonc
 
-          # Start the Tauri frontend for rendered command-boundary tests (port 1420)
-          cd ../desktop && bun run dev &
+      - name: Upload tested deployment artifact
+        id: upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: web-deploy-${{ github.sha }}
+          path: target/web-deploy
+          if-no-files-found: error
+          retention-days: 30
 
-          # Wait for all servers to be ready
-          echo "Waiting for Vite server..."
-          for i in {1..30}; do
-            if curl -s http://localhost:5173 > /dev/null 2>&1; then
-              echo "Vite server ready"
-              break
-            fi
-            sleep 1
-          done
+      - name: Retain GitHub artifact digest
+        run: |
+          echo "GitHub artifact digest: ${{ steps.upload.outputs.artifact-digest }}"
+          echo "${{ steps.upload.outputs.artifact-digest }}  web-deploy-${GITHUB_SHA}" \
+            >> "$GITHUB_STEP_SUMMARY"
 
-          echo "Waiting for Starlight server..."
-          for i in {1..30}; do
-            if curl -s http://localhost:4321/help > /dev/null 2>&1; then
-              echo "Starlight server ready"
-              break
-            fi
-            sleep 1
-          done
-
-          echo "Waiting for desktop frontend..."
-          for i in {1..30}; do
-            if curl -s http://127.0.0.1:1420 > /dev/null 2>&1; then
-              echo "Desktop frontend ready"
-              break
-            fi
-            sleep 1
-          done
-
-          # Verify all are accessible
-          curl --fail --silent --output /dev/null http://localhost:5173
-          curl --fail --silent --output /dev/null http://localhost:4321/help
-          curl --fail --silent --output /dev/null http://127.0.0.1:1420
-        working-directory: web
-
-      - name: Run full web tests
-        run: bun run test:e2e:full
-        working-directory: web
-        env:
-          PLAYWRIGHT_BASE_URL: http://localhost:5173
-
-  netlify_build:
-    name: netlify build hook
-    runs-on: ubuntu-latest
-    needs: web_full
+  deploy_netlify:
+    name: deploy tested artifact to Netlify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build_test_package, container_smoke]
+    runs-on: ubuntu-latest
     steps:
-      - name: Trigger Netlify build
+      - name: Check out deployment tooling
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.12.0'
+
+      - name: Install pinned deployment tooling
+        run: bun install --frozen-lockfile
+        working-directory: web
+
+      - name: Download tested deployment artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: web-deploy-${{ github.sha }}
+          path: .web-deploy
+
+      - name: Verify downloaded artifact
+        run: python3 web/scripts/deploy-artifact.py verify --site .web-deploy/site --evidence .web-deploy/evidence
+
+      - name: Check Netlify credentials
+        id: credentials
         env:
-          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_SITE_URL: ${{ vars.NETLIFY_SITE_URL }}
         run: |
-          if [ -z "$NETLIFY_BUILD_HOOK_URL" ]; then
-            echo "NETLIFY_BUILD_HOOK_URL not set; skipping Netlify build trigger."
-            exit 0
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Netlify credentials are not set; skipping Netlify deployment."
+          elif [ -z "$NETLIFY_SITE_URL" ]; then
+            echo "::error::NETLIFY_SITE_URL must be configured when Netlify credentials are present."
+            exit 1
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
-          curl --fail --silent --show-error -X POST "$NETLIFY_BUILD_HOOK_URL"
+      - name: Deploy artifact without a provider build
+        if: steps.credentials.outputs.ready == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: web/node_modules/.bin/netlify deploy --no-build --prod --dir .web-deploy/site --site "$NETLIFY_SITE_ID" --message "$GITHUB_SHA"
+
+      - name: Verify Netlify serves the artifact bytes
+        if: steps.credentials.outputs.ready == 'true'
+        env:
+          NETLIFY_SITE_URL: ${{ vars.NETLIFY_SITE_URL }}
+        run: python3 web/scripts/deploy-artifact.py verify-remote --base-url "$NETLIFY_SITE_URL" --evidence .web-deploy/evidence
+
+  deploy_cloudflare:
+    name: deploy tested artifact to Cloudflare Workers
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build_test_package, container_smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out deployment tooling
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.12.0'
+
+      - name: Install pinned deployment tooling
+        run: bun install --frozen-lockfile
+        working-directory: web
+
+      - name: Download tested deployment artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: web-deploy-${{ github.sha }}
+          path: .web-deploy
+
+      - name: Verify downloaded artifact
+        run: python3 web/scripts/deploy-artifact.py verify --site .web-deploy/site --evidence .web-deploy/evidence
+
+      - name: Check Cloudflare credentials
+        id: credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_SITE_URL: ${{ vars.CLOUDFLARE_SITE_URL }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Cloudflare credentials are not set; skipping Cloudflare deployment."
+          elif [ -z "$CLOUDFLARE_SITE_URL" ]; then
+            echo "::error::CLOUDFLARE_SITE_URL must be configured when Cloudflare credentials are present."
+            exit 1
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Put artifact in the configured asset directory
+        if: steps.credentials.outputs.ready == 'true'
+        run: |
+          rm -rf web/dist
+          mkdir -p web/dist
+          cp -a .web-deploy/site/. web/dist/
+          python3 web/scripts/deploy-artifact.py verify --site web/dist --evidence .web-deploy/evidence
+
+      - name: Deploy artifact without rebuilding source
+        if: steps.credentials.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: web/node_modules/.bin/wrangler deploy --config wrangler.jsonc --message "$GITHUB_SHA"
+
+      - name: Verify Cloudflare serves the artifact bytes
+        if: steps.credentials.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_SITE_URL: ${{ vars.CLOUDFLARE_SITE_URL }}
+        run: python3 web/scripts/deploy-artifact.py verify-remote --base-url "$CLOUDFLARE_SITE_URL" --evidence .web-deploy/evidence

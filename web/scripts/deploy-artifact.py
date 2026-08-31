@@ -1,0 +1,254 @@
+#!/usr/bin/env python3
+"""Prepare and verify the static Web artifact deployed by every provider."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import shutil
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
+
+METADATA_DIRECTORY = "safeparts-build"
+METADATA_FILE = "metadata.json"
+MANIFEST_FILE = "content-manifest.sha256"
+COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
+
+
+class ArtifactError(RuntimeError):
+    """An invalid or mismatched deployment artifact."""
+
+
+def sha256_bytes(content: bytes) -> str:
+    return hashlib.sha256(content).hexdigest()
+
+
+def checked_site(site: Path) -> Path:
+    site = site.resolve()
+    if not site.is_dir():
+        raise ArtifactError(f"site directory does not exist: {site}")
+    return site
+
+
+def content_files(site: Path) -> list[Path]:
+    files: list[Path] = []
+    for path in site.rglob("*"):
+        relative = path.relative_to(site)
+        if relative.parts and relative.parts[0] == METADATA_DIRECTORY:
+            continue
+        if path.is_symlink():
+            raise ArtifactError(f"deployment content must not contain symlinks: {relative.as_posix()}")
+        if path.is_file():
+            files.append(path)
+    if not files:
+        raise ArtifactError("site directory contains no deployable files")
+    return sorted(files, key=lambda path: path.relative_to(site).as_posix())
+
+
+def make_manifest(site: Path) -> bytes:
+    lines = [
+        f"{sha256_bytes(path.read_bytes())}  {path.relative_to(site).as_posix()}\n"
+        for path in content_files(site)
+    ]
+    return "".join(lines).encode("utf-8")
+
+
+def parse_manifest(content: bytes) -> list[tuple[str, str]]:
+    entries: list[tuple[str, str]] = []
+    try:
+        lines = content.decode("utf-8").splitlines()
+    except UnicodeDecodeError as error:
+        raise ArtifactError("content manifest is not UTF-8") from error
+    for line in lines:
+        match = re.fullmatch(r"([0-9a-f]{64})  ([^\r\n]+)", line)
+        if not match:
+            raise ArtifactError(f"invalid content manifest line: {line!r}")
+        digest, relative = match.groups()
+        parts = Path(relative).parts
+        if not parts or relative.startswith("/") or ".." in parts:
+            raise ArtifactError(f"unsafe content manifest path: {relative!r}")
+        entries.append((digest, relative))
+    if not entries:
+        raise ArtifactError("content manifest is empty")
+    if [relative for _, relative in entries] != sorted(relative for _, relative in entries):
+        raise ArtifactError("content manifest paths are not sorted")
+    return entries
+
+
+def prepare(args: argparse.Namespace) -> None:
+    if not COMMIT_PATTERN.fullmatch(args.source_commit):
+        raise ArtifactError("source commit must be a 40-character lowercase hexadecimal SHA")
+
+    site = checked_site(args.site)
+    metadata_directory = site / METADATA_DIRECTORY
+    if metadata_directory.exists():
+        shutil.rmtree(metadata_directory)
+
+    manifest = make_manifest(site)
+    content_digest = sha256_bytes(manifest)
+    metadata = {
+        "schemaVersion": 1,
+        "sourceCommit": args.source_commit,
+        "artifactDigest": f"sha256:{content_digest}",
+        "contentDigest": content_digest,
+        "contentManifest": f"/{METADATA_DIRECTORY}/{MANIFEST_FILE}",
+        "tools": {
+            "bun": args.bun_version,
+            "node": args.node_version,
+            "rust": args.rust_version,
+            "wasmBindgen": args.wasm_bindgen_version,
+            "wasmPack": args.wasm_pack_version,
+        },
+    }
+    metadata_content = (json.dumps(metadata, indent=2, sort_keys=True) + "\n").encode("utf-8")
+
+    metadata_directory.mkdir(parents=True)
+    (metadata_directory / MANIFEST_FILE).write_bytes(manifest)
+    (metadata_directory / METADATA_FILE).write_bytes(metadata_content)
+
+    evidence = args.evidence.resolve()
+    if evidence.exists():
+        shutil.rmtree(evidence)
+    evidence.mkdir(parents=True)
+    (evidence / MANIFEST_FILE).write_bytes(manifest)
+    (evidence / METADATA_FILE).write_bytes(metadata_content)
+    (evidence / "artifact-digest.sha256").write_text(
+        f"{content_digest}  {args.source_commit}\n", encoding="utf-8"
+    )
+    print(f"prepared Web artifact for {args.source_commit} ({content_digest})")
+
+
+def evidence_files(evidence: Path) -> tuple[bytes, bytes]:
+    evidence = evidence.resolve()
+    try:
+        manifest = (evidence / MANIFEST_FILE).read_bytes()
+        metadata = (evidence / METADATA_FILE).read_bytes()
+        digest_record = (evidence / "artifact-digest.sha256").read_text(encoding="utf-8")
+    except FileNotFoundError as error:
+        raise ArtifactError(f"deployment evidence is incomplete: {error.filename}") from error
+    parse_manifest(manifest)
+    try:
+        metadata_value = json.loads(metadata)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ArtifactError("artifact metadata is not valid JSON") from error
+    expected_digest = sha256_bytes(manifest)
+    if metadata_value.get("contentDigest") != expected_digest:
+        raise ArtifactError("artifact metadata digest does not match the content manifest")
+    if metadata_value.get("artifactDigest") != f"sha256:{expected_digest}":
+        raise ArtifactError("artifact metadata does not record the expected SHA-256 digest")
+    source_commit = str(metadata_value.get("sourceCommit", ""))
+    if not COMMIT_PATTERN.fullmatch(source_commit):
+        raise ArtifactError("artifact metadata does not contain a full source commit")
+    if digest_record != f"{expected_digest}  {source_commit}\n":
+        raise ArtifactError("retained artifact digest does not match the metadata and manifest")
+    return manifest, metadata
+
+
+def verify(args: argparse.Namespace) -> None:
+    site = checked_site(args.site)
+    manifest, metadata = evidence_files(args.evidence)
+    if make_manifest(site) != manifest:
+        raise ArtifactError("content manifest does not match the deployment directory")
+    metadata_directory = site / METADATA_DIRECTORY
+    if (metadata_directory / MANIFEST_FILE).read_bytes() != manifest:
+        raise ArtifactError("deployed content manifest differs from retained evidence")
+    if (metadata_directory / METADATA_FILE).read_bytes() != metadata:
+        raise ArtifactError("deployed metadata differs from retained evidence")
+    print(f"verified Web artifact ({sha256_bytes(manifest)})")
+
+
+def deployed_path(relative: str) -> str:
+    if relative == "index.html":
+        return "/"
+    if relative.endswith("/index.html"):
+        return f"/{relative[:-len('index.html')]}"
+    return f"/{relative}"
+
+
+def fetch(base_url: str, path: str) -> bytes:
+    quoted_path = "/".join(urllib.parse.quote(segment) for segment in path.split("/"))
+    url = f"{base_url.rstrip('/')}{quoted_path}"
+    request = urllib.request.Request(
+        url,
+        headers={"Accept-Encoding": "identity", "User-Agent": "safeparts-artifact-verifier/1"},
+    )
+    try:
+        response = urllib.request.urlopen(request, timeout=30)
+    except urllib.error.HTTPError as error:
+        if error.code >= 500:
+            raise ArtifactError(f"remote verification failed for {url}: HTTP {error.code}") from error
+        response = error
+    except urllib.error.URLError as error:
+        raise ArtifactError(f"remote verification failed for {url}: {error.reason}") from error
+    with response:
+        encoding = response.headers.get("Content-Encoding", "identity").lower()
+        if encoding not in {"", "identity"}:
+            raise ArtifactError(
+                f"remote verification requested identity bytes but {url} returned {encoding} encoding"
+            )
+        return response.read()
+
+
+def verify_remote(args: argparse.Namespace) -> None:
+    manifest, metadata = evidence_files(args.evidence)
+    remote_metadata = fetch(args.base_url, f"/{METADATA_DIRECTORY}/{METADATA_FILE}")
+    remote_manifest = fetch(args.base_url, f"/{METADATA_DIRECTORY}/{MANIFEST_FILE}")
+    if remote_metadata != metadata:
+        raise ArtifactError("served artifact metadata does not match the retained artifact")
+    if remote_manifest != manifest:
+        raise ArtifactError("served content manifest does not match the retained artifact")
+    for digest, relative in parse_manifest(manifest):
+        served = fetch(args.base_url, deployed_path(relative))
+        if sha256_bytes(served) != digest:
+            raise ArtifactError(f"served content digest does not match: {relative}")
+    metadata_value = json.loads(metadata)
+    print(
+        f"verified {len(parse_manifest(manifest))} served files for "
+        f"{metadata_value['sourceCommit']} at {args.base_url}"
+    )
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    prepare_parser = subparsers.add_parser("prepare", help="add metadata and retain evidence")
+    prepare_parser.add_argument("--site", type=Path, required=True)
+    prepare_parser.add_argument("--evidence", type=Path, required=True)
+    prepare_parser.add_argument("--source-commit", required=True)
+    prepare_parser.add_argument("--rust-version", required=True)
+    prepare_parser.add_argument("--bun-version", required=True)
+    prepare_parser.add_argument("--node-version", required=True)
+    prepare_parser.add_argument("--wasm-pack-version", required=True)
+    prepare_parser.add_argument("--wasm-bindgen-version", required=True)
+    prepare_parser.set_defaults(handler=prepare)
+
+    verify_parser = subparsers.add_parser("verify", help="verify a local deployment directory")
+    verify_parser.add_argument("--site", type=Path, required=True)
+    verify_parser.add_argument("--evidence", type=Path, required=True)
+    verify_parser.set_defaults(handler=verify)
+
+    remote_parser = subparsers.add_parser("verify-remote", help="verify bytes served by a provider")
+    remote_parser.add_argument("--base-url", required=True)
+    remote_parser.add_argument("--evidence", type=Path, required=True)
+    remote_parser.set_defaults(handler=verify_remote)
+    return parser
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    try:
+        args.handler(args)
+    except (ArtifactError, FileNotFoundError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

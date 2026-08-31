@@ -84,8 +84,12 @@ bun install --frozen-lockfile
 bun run build:wasm
 bun run typecheck
 bun run build
-bun run test:e2e:smoke
+bun run test:wasm
+bun run test:e2e:full
+python3 ../scripts/dev/test_web_deploy.py
 ```
+
+CI serves `web/dist` after the help build and runs the complete browser and accessibility suite against those built files. Use the [Web artifact deployment guide](../deployment/web-artifact.md) to prepare and dry-run the same credential-free provider package.
 
 Use local browser automation through the project browser skill or `browse` CLI for manual web smoke checks. Playwright remains the CI test runner and should not be the default manual browser tool unless a task asks for it.
 
@@ -186,6 +190,7 @@ Release CI owns Tauri installers for Linux and Windows, the unsigned universal n
 - Bun package lock policy is not mixed with npm lockfiles.
 - Generated artifact policy catches common drift.
 - Desktop/web copied UI files have visible parity status.
+- The Web release artifact and workflow follow the tested, immutable deployment policy.
 
 ## When to skip a check
 

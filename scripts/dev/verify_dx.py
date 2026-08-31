@@ -224,6 +224,18 @@ def check_generated_status(result: CheckResult) -> None:
             result.warn(f"generated artifact present in working tree: {line}")
 
 
+def check_web_deploy_policy(result: CheckResult) -> None:
+    code, out = run([sys.executable, "scripts/dev/test_web_deploy.py"])
+    if code == 0:
+        result.ok("Web deployment artifact and workflow policy checked")
+        return
+    if out:
+        for line in out.splitlines():
+            result.error(f"Web deployment policy: {line}")
+    else:
+        result.error("Web deployment artifact and workflow policy check failed")
+
+
 def check_desktop_parity(result: CheckResult) -> None:
     code, out = run([sys.executable, "scripts/dev/check_desktop_parity.py"])
     if out:
@@ -248,6 +260,7 @@ def main() -> int:
     check_developer_manuals(result)
     check_lockfiles(result)
     check_generated_status(result)
+    check_web_deploy_policy(result)
     check_desktop_parity(result)
 
     print()

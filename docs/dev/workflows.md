@@ -58,6 +58,17 @@ Use these checklists to keep future changes predictable.
 5. If the change should also exist in desktop, update desktop or record why not.
 6. Run web build, typecheck, and the relevant browser checks.
 
+## Change Web deployment
+
+1. Keep Rust, Bun, WASM tools, deployment CLIs, and GitHub actions pinned.
+2. Install Web and help dependencies with `--frozen-lockfile`.
+3. Build WASM, the application, and both help locales once.
+4. Run the full checks against that output before preparing the artifact.
+5. Run `python3 scripts/dev/test_web_deploy.py` and the credential-free package dry run in the [deployment guide](../deployment/web-artifact.md).
+6. Keep Netlify and Cloudflare jobs independent, but make both download the same commit-named artifact.
+7. Do not add provider build hooks, source rebuilds, or live installer commands.
+8. Verify every configured provider serves the retained commit and content digests.
+
 ## Change desktop behavior
 
 1. Read `desktop/AGENTS.md`, `desktop/src/AGENTS.md`, and `desktop/src-tauri/AGENTS.md`.

@@ -25,6 +25,7 @@ It owns:
 - Keep generated modules and application boundaries typed instead of using file-wide type-check suppressions or `any` casts.
 - Use local browser automation through the project browser tooling for manual checks. Playwright remains the CI runner.
 - If a product UI change should exist in desktop, update desktop parity or record why not.
+- Treat the tested `web/dist` plus help output as one release unit. Netlify and Cloudflare must consume the retained artifact instead of rebuilding source.
 
 ## Useful checks
 
@@ -34,8 +35,12 @@ bun install --frozen-lockfile
 bun run build:wasm
 bun run typecheck
 bun run build
-bun run test:e2e:smoke
+bun run test:wasm
+bun run test:e2e:full
+python3 ../scripts/dev/test_web_deploy.py
 ```
+
+Use the credential-free package and dry-run commands in the [Web artifact deployment guide](../../deployment/web-artifact.md) before changing provider configuration.
 
 ## When web changes
 
