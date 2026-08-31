@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 const desktopUrl = 'http://localhost:1420'
 const splitPanel = (page: Page) => page.locator('#split-panel')
 const recoverySharesHeading = (page: Page) =>
-  splitPanel(page).getByRole('heading', { name: /^(shares|الحصص)$/i })
+  splitPanel(page).getByRole('heading', { name: /^(recovery shares|حصص الاسترداد)$/i })
 
 async function installTauriSplitMock(page: Page, delayed: boolean) {
   await page.addInitScript(({ shouldDelay }) => {
@@ -49,7 +49,9 @@ async function generateRecoveryShares(page: Page) {
 
 async function expectRecoverySharesInvalidated(page: Page) {
   await expect(recoverySharesHeading(page)).toHaveCount(0)
-  await expect(splitPanel(page).getByRole('button', { name: /^copy$/i })).toHaveCount(0)
+  await expect(
+    splitPanel(page).getByRole('button', { name: /^copy recovery share \d+$/i }),
+  ).toHaveCount(0)
   await expect(splitPanel(page).getByRole('status')).toHaveCount(0)
 }
 
@@ -77,8 +79,7 @@ test.describe('Tauri Split result lifetime @smoke', () => {
       },
       {
         name: 'Passphrase protection',
-        change: () =>
-          splitPanel(page).locator('input[aria-labelledby="passphrase-label"]').fill('synthetic-passphrase'),
+        change: () => splitPanel(page).locator('#split-passphrase').fill('synthetic-passphrase'),
       },
     ]
 

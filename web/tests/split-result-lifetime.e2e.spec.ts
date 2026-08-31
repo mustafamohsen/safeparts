@@ -4,7 +4,7 @@ import { waitForWasmReady } from './a11y-utils'
 
 const splitPanel = (page: Page) => page.locator('#split-panel')
 const recoverySharesHeading = (page: Page) =>
-  splitPanel(page).getByRole('heading', { name: /^(shares|الحصص)$/i })
+  splitPanel(page).getByRole('heading', { name: /^(recovery shares|حصص الاسترداد)$/i })
 
 async function generateRecoveryShares(page: Page, secret = 'synthetic-split-lifetime-secret') {
   await splitPanel(page).locator('textarea').fill(secret)
@@ -14,7 +14,11 @@ async function generateRecoveryShares(page: Page, secret = 'synthetic-split-life
 
 async function expectRecoverySharesInvalidated(page: Page) {
   await expect(recoverySharesHeading(page)).toHaveCount(0)
-  await expect(splitPanel(page).getByRole('button', { name: /^(copy|نسخ)$/i })).toHaveCount(0)
+  await expect(
+    splitPanel(page).getByRole('button', {
+      name: /^(copy recovery share|نسخ حصة الاسترداد) \d+$/i,
+    }),
+  ).toHaveCount(0)
   await expect(splitPanel(page).getByRole('status')).toHaveCount(0)
 }
 
@@ -55,8 +59,7 @@ test.describe('Split result lifetime @smoke', () => {
       },
       {
         name: 'Passphrase protection',
-        change: () =>
-          splitPanel(page).locator('input[aria-labelledby="passphrase-label"]').fill('synthetic-passphrase'),
+        change: () => splitPanel(page).locator('#split-passphrase').fill('synthetic-passphrase'),
       },
     ]
 
