@@ -16,7 +16,7 @@ Use the desktop app when you want:
 - all four Share encodings and Auto recovery on native Windows and macOS;
 - local operation without a browser deployment.
 
-Use the CLI or TUI when you need file-oriented binary workflows, all four encodings, or terminal-only operation.
+Use the CLI or TUI when you need an exact-byte file workflow, all four Share encodings, or terminal-only operation.
 
 ## Tauri scope
 
@@ -25,7 +25,7 @@ The Linux and Windows Tauri UI exposes the same primary formats as the web app:
 - <span class="token">base64url</span>, shown as <span class="token">Letters</span>;
 - <span class="token">mnemo-words</span>, shown as <span class="token">Words</span>.
 
-The underlying core supports <span class="token">base58check</span> and <span class="token">mnemo-bip39</span>, but those are not exposed in the Tauri UI yet. The native Windows preview exposes all four Share encodings, exact file workflows, and Auto recovery. It has a separate identity and does not replace an installed Tauri app.
+The underlying core supports <span class="token">base58check</span> and <span class="token">mnemo-bip39</span>, but those are not exposed in the Tauri UI yet. Tauri displays and copies a recovered Secret only when it is valid UTF-8 text. For other bytes, use the CLI, TUI, or a native file workflow. The native Windows preview exposes all four Share encodings, exact file workflows, and Auto encoding recovery. It has a separate identity and does not replace an installed Tauri app.
 
 ## Split
 
@@ -43,8 +43,10 @@ The underlying core supports <span class="token">base58check</span> and <span cl
 1. Choose <span class="token">Combine</span>.
 2. Paste the required shares.
 3. Enter the passphrase if the split used one.
-4. Combine and move the recovered secret only to its intended destination.
+4. Combine and move the recovered Secret only to its intended destination.
 </Steps>
+
+Changing a Recovery share, the Share encoding, or Passphrase protection clears the previous result. If Tauri reports that the recovered Secret is not valid UTF-8, it will not display or copy the bytes. Continue in an exact-byte CLI, TUI, or native file workflow instead.
 
 ## Build locally
 

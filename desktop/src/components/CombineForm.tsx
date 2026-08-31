@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useAnnouncement } from "../context/LiveRegionContext";
 import type { Lang, Strings } from "../i18n";
-import { ensureWasm } from "../wasm";
+import { ensureWasm, recoveredSecretText } from "../wasm";
 
 import { ClearButton } from "./ClearButton";
 import { CopyButton } from "./CopyButton";
@@ -86,6 +87,7 @@ function createShareBox(): ShareBox {
 }
 
 export function CombineForm({ lang, strings }: CombineFormProps) {
+  const { announce } = useAnnouncement();
   const [encoding, setEncoding] = useState<Encoding>("mnemo-words");
   const [passphrase, setPassphrase] = useState("");
   const [shareBoxes, setShareBoxes] = useState<ShareBox[]>(() => [
@@ -104,8 +106,15 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
   const flashTimeoutRef = useRef<number | null>(null);
   const shareBoxFlashTimeoutRef = useRef<number | null>(null);
   const shareTextareasRef = useRef<Record<string, HTMLTextAreaElement>>({});
+  const recoveryInputVersionRef = useRef(0);
 
   const shareBoxCount = shareBoxes.length;
+
+  const invalidateRecoveryResult = useCallback(() => {
+    recoveryInputVersionRef.current += 1;
+    setSecret("");
+    setError(null);
+  }, []);
 
   const encodingOptions: EncodingOption[] = [
     {
@@ -194,6 +203,8 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
     const firstShare = parseSharesFromBox(firstNonEmpty.value)[0];
     if (!firstShare) return;
 
+    const inspectionVersion = recoveryInputVersionRef.current;
+
     (async () => {
       try {
         const wasm = await ensureWasm();
@@ -206,6 +217,8 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
               : typeof wasm.share_threshold === "function"
                 ? { k: await wasm.share_threshold(firstShare, encoding), encoding }
                 : null;
+
+        if (inspectionVersion !== recoveryInputVersionRef.current) return;
 
         const detected = info?.encoding;
         if (isSupportedEncoding(detected) && detected !== encoding) {
@@ -237,6 +250,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
     .join("\n\n");
 
   function setShareBoxValue(id: string, value: string) {
+    invalidateRecoveryResult();
     setShareBoxes((prev) =>
       prev.map((b) => (b.id === id ? { ...b, value } : b)),
     );
@@ -247,24 +261,27 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
   }
 
   function addShareBox() {
+    invalidateRecoveryResult();
     setShareBoxes((prev) => [...prev, createShareBox()]);
   }
 
   function removeShareBox(id: string) {
-    setShareBoxes((prev) => {
-      if (prev.length <= 2) return prev;
-      return prev.filter((b) => b.id !== id);
-    });
+    if (shareBoxes.length <= 2) return;
+    invalidateRecoveryResult();
+    setShareBoxes((prev) => prev.filter((b) => b.id !== id));
     setInvalidShareBoxIds((prev) => prev.filter((v) => v !== id));
   }
 
   async function onCombine() {
+    const recoveryVersion = recoveryInputVersionRef.current;
     setBusy(true);
     setError(null);
     setSecret("");
 
     try {
       const wasm = await ensureWasm();
+      if (recoveryVersion !== recoveryInputVersionRef.current) return;
+
       const out =
         typeof wasm.combine_share_input === "function"
           ? await wasm.combine_share_input(
@@ -277,10 +294,20 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
               encoding,
               passphrase ? passphrase : undefined,
             );
-      const bytes = new Uint8Array(out);
-      setSecret(new TextDecoder().decode(bytes));
+      if (recoveryVersion !== recoveryInputVersionRef.current) return;
+
+      const recoveredText = recoveredSecretText(out);
       setInvalidShareBoxIds([]);
+      if (recoveredText === null) {
+        setError(strings.errorRecoveredSecretNotText);
+        return;
+      }
+
+      setSecret(recoveredText);
+      announce(strings.recoverySuccess, "polite");
     } catch (e) {
+      if (recoveryVersion !== recoveryInputVersionRef.current) return;
+
       const rawMessage = rawErrorMessage(e);
       const message = toErrorMessage(e, strings);
       setError(message);
@@ -321,7 +348,10 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
           <span className="field-label" id="encoding-label">{strings.encodingLabel}</span>
           <EncodingSelector
             value={encoding}
-            onChange={setEncoding}
+            onChange={(value) => {
+              invalidateRecoveryResult();
+              setEncoding(value);
+            }}
             options={encodingOptions}
             flash={encodingFlash}
           />
@@ -332,7 +362,10 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
           <div className="relative mt-2">
             <input
               value={passphrase}
-              onChange={(e) => setPassphrase(e.target.value)}
+              onChange={(e) => {
+                invalidateRecoveryResult();
+                setPassphrase(e.target.value);
+              }}
               className="input input-with-clear-compact"
               autoComplete="new-password"
               aria-labelledby="passphrase-label"
@@ -340,13 +373,19 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
             {passphrase.length === 0 ? (
               <PasteButton
                 label={strings.pastePassphrase}
-                onPaste={setPassphrase}
+                onPaste={(value) => {
+                  invalidateRecoveryResult();
+                  setPassphrase(value);
+                }}
                 className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
               />
             ) : (
               <ClearButton
                 label={strings.clearPassphrase}
-                onClick={() => setPassphrase("")}
+                onClick={() => {
+                  invalidateRecoveryResult();
+                  setPassphrase("");
+                }}
                 className="absolute inset-y-1 end-1 h-auto w-8 hover:bg-transparent"
               />
             )}

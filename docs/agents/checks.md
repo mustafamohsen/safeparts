@@ -82,6 +82,7 @@ Source of truth:
 - Dev app: `bun run tauri:dev`
 - Frontend type check: `bun run typecheck`
 - Frontend build: `bun run build`
+- Tauri adapter tests: `bun run test:adapter`
 - Desktop/web UI parity: `mise run desktop:parity`
 - Native release compile without bundling/signing: `bun run tauri:build -- --no-bundle`
 - Native bundle for the host platform: `bun run tauri:build`

@@ -9,7 +9,8 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:adapter": "bun test tests"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.5.0",

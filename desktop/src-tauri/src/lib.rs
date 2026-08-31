@@ -287,6 +287,44 @@ mod tests {
     }
 
     #[test]
+    fn combine_response_preserves_valid_unicode_and_embedded_nul_text() {
+        let expected = "Safeparts العربية עברית 🌍\0after-nul";
+        let split = split_secret_command(
+            expected.as_bytes().to_vec(),
+            2,
+            3,
+            "base64url".to_string(),
+            None,
+        )
+        .unwrap();
+
+        let combined =
+            combine_shares_command(split.shares[..2].join("\n"), "base64url".to_string(), None)
+                .unwrap();
+
+        assert!(combined.is_utf8);
+        assert_eq!(combined.text.as_deref(), Some(expected));
+        assert_eq!(combined.secret, expected.as_bytes());
+        assert_eq!(combined.byte_count, expected.len());
+    }
+
+    #[test]
+    fn combine_response_marks_invalid_utf8_without_lossy_text() {
+        let expected = [0xff, 0xfe, b'A', 0x00];
+        let split =
+            split_secret_command(expected.to_vec(), 2, 3, "base64url".to_string(), None).unwrap();
+
+        let combined =
+            combine_shares_command(split.shares[..2].join("\n"), "base64url".to_string(), None)
+                .unwrap();
+
+        assert!(!combined.is_utf8);
+        assert_eq!(combined.text, None);
+        assert_eq!(combined.secret, expected);
+        assert_eq!(combined.byte_count, expected.len());
+    }
+
+    #[test]
     fn auto_encoding_combines_round_trip() {
         let split = split_secret_command(
             b"auto encoding desktop secret".to_vec(),

@@ -63,6 +63,7 @@ export const STRINGS = {
 
     recoveredTitle: "Recovered secret",
     recoveredHint: "Handle carefully — this is sensitive.",
+    recoverySuccess: "Secret recovered.",
 
     copy: "Copy",
     copied: "Copied",
@@ -77,6 +78,8 @@ export const STRINGS = {
 
     errorWasmMissing: "WASM module not found. Run bun run build:wasm.",
     errorInvalidShare: "Invalid share",
+    errorRecoveredSecretNotText:
+      "This recovered Secret is not valid UTF-8 text. Use the CLI, TUI, or a native file workflow to recover the exact bytes.",
     errorNotEnoughSharesOne: "Add 1 more share to recover this secret.",
     errorNotEnoughSharesMany: "Add {missing} more shares to recover this secret.",
 
@@ -150,6 +153,7 @@ export const STRINGS = {
 
     recoveredTitle: "السر المستعاد",
     recoveredHint: "تعامل بحذر — هذه بيانات حساسة.",
+    recoverySuccess: "تمت استعادة السر.",
 
     copy: "نسخ",
     copied: "تم النسخ",
@@ -164,6 +168,8 @@ export const STRINGS = {
 
     errorWasmMissing: "لم يتم العثور على WASM. شغل bun run build:wasm.",
     errorInvalidShare: "حصة غير صالحة",
+    errorRecoveredSecretNotText:
+      "السر المستعاد ليس نصًا صالحًا بترميز UTF-8. استخدم CLI أو TUI أو سير عمل ملفات أصليًا لاستعادة البايتات بدقة.",
     errorNotEnoughSharesOne: "أضف حصة واحدة أخرى لاستعادة هذا السر.",
     errorNotEnoughSharesMany: "أضف {missing} حصص أخرى لاستعادة هذا السر.",
 

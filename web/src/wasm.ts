@@ -1,6 +1,22 @@
 type SafepartsWasm = typeof import('./wasm_pkg/safeparts_wasm')
+type RecoveredBytes = Uint8Array | ArrayBuffer | ArrayLike<number>
 
 let cached: SafepartsWasm | null = null
+
+export function recoveredSecretText(bytes: RecoveredBytes): string | null {
+  const recovered =
+    bytes instanceof Uint8Array
+      ? bytes
+      : bytes instanceof ArrayBuffer
+        ? new Uint8Array(bytes)
+        : new Uint8Array(Array.from(bytes))
+
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(recovered)
+  } catch {
+    return null
+  }
+}
 
 export async function ensureWasm(): Promise<SafepartsWasm> {
   if (cached) return cached
