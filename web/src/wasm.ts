@@ -12,7 +12,7 @@ export function recoveredSecretText(bytes: RecoveredBytes): string | null {
         : new Uint8Array(Array.from(bytes))
 
   try {
-    return new TextDecoder('utf-8', { fatal: true }).decode(recovered)
+    return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(recovered)
   } catch {
     return null
   }

@@ -75,7 +75,7 @@ function collectCombineResultText(): string | null {
   const recovered = panel.querySelector<HTMLDivElement>('div[dir="auto"].input');
   if (!recovered) return null;
 
-  return extractEncryptedTextPlaintext(recovered);
+  return recovered.querySelector<HTMLElement>("span.sr-only")?.textContent ?? null;
 }
 
 function clickSubmit(tab: Tab) {
