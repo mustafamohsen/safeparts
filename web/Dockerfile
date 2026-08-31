@@ -1,14 +1,11 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
 
-# Build a self-contained image that serves the Safeparts Web UI.
-#
-# Usage:
-#   docker build -t safeparts-webui -f web/Dockerfile .
-#   docker run --rm -p 8080:8080 safeparts-webui
+# Build a self-contained image that serves the Safeparts Web UI and help site.
+# Build from the repository root so Cargo.lock and the Rust crates are available.
 
-ARG RUST_IMAGE=rust:1-slim-bookworm
-ARG BUN_IMAGE=oven/bun:1-alpine
-ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.27-alpine
+ARG RUST_IMAGE=rust:1.93.0-slim-bookworm@sha256:776861219cd851131c1cec3bbd7cbeb16b99a794048097eb69ad9682a8ed0d57
+ARG BUN_IMAGE=oven/bun:1.3.11-alpine@sha256:7ed9f74c326d1c260abe247ac423ccbf5ac92af62bb442d515d1f92f21e8ea9b
+ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.29.5-alpine@sha256:42a7d7f2ee23e9f5a1dcdf3647ba5c585bbd18f79e79cd817e70e8cd61c55779
 
 ARG WASM_PACK_VERSION=0.15.0
 ARG WASM_BINDGEN_CLI_VERSION=0.2.108
@@ -42,33 +39,14 @@ FROM rust-tools AS wasm-builder
 
 WORKDIR /work
 
-# Copy only manifests first to maximize cache hits.
-COPY Cargo.toml Cargo.lock ./
-COPY crates/safeparts_core/Cargo.toml ./crates/safeparts_core/Cargo.toml
-COPY crates/safeparts/Cargo.toml ./crates/safeparts/Cargo.toml
-COPY crates/safeparts_wasm/Cargo.toml ./crates/safeparts_wasm/Cargo.toml
-COPY crates/safeparts_tui/Cargo.toml ./crates/safeparts_tui/Cargo.toml
+# The Web image needs only the core and WASM crates. This isolated workspace
+# keeps Cargo metadata complete without staging unrelated workspace members.
+COPY web/docker/wasm-workspace.toml ./Cargo.toml
+COPY Cargo.lock ./Cargo.lock
+COPY crates/safeparts_core ./crates/safeparts_core
+COPY crates/safeparts_wasm ./crates/safeparts_wasm
 
-# Create minimal sources so we can cache dependencies.
-RUN mkdir -p \
-      crates/safeparts_core/src \
-      crates/safeparts/src \
-      crates/safeparts_wasm/src \
-      crates/safeparts_tui/src \
-    && printf 'pub fn _docker_dummy() {}\n' > crates/safeparts_core/src/lib.rs \
-    && printf 'fn main() {}\n' > crates/safeparts/src/main.rs \
-    && printf 'use wasm_bindgen::prelude::*;\n#[wasm_bindgen]\npub fn _docker_dummy() {}\n' > crates/safeparts_wasm/src/lib.rs \
-    && printf 'fn main() {}\n' > crates/safeparts_tui/src/main.rs
-
-RUN --mount=type=cache,target=/work/target \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/usr/local/cargo/git \
-    # Warm the Cargo cache with stub sources. This is best-effort (it may fail
-    # before real sources are copied), but speeds up subsequent builds.
-    cargo build -p safeparts_wasm --release --target wasm32-unknown-unknown || true
-
-# Copy real sources and build the WASM package.
-COPY crates ./crates
+RUN cargo metadata --locked --format-version 1 --no-deps > /dev/null
 
 RUN --mount=type=cache,target=/work/target \
     --mount=type=cache,target=/usr/local/cargo/registry \
@@ -87,7 +65,6 @@ COPY web/package.json web/bun.lock ./
 RUN --mount=type=cache,target=/root/.bun \
     bun install --frozen-lockfile
 
-# Cache docs (help) dependencies separately.
 COPY web/help/package.json web/help/bun.lock ./help/
 RUN --mount=type=cache,target=/root/.bun \
     cd help && bun install --frozen-lockfile
@@ -106,6 +83,6 @@ COPY --from=web-builder /work/web/dist /usr/share/nginx/html
 USER 101
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/healthz || exit 1
 
 EXPOSE 8080

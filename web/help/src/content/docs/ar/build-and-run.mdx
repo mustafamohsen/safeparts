@@ -146,16 +146,40 @@ python windows/scripts/package-release.py 0.3.0 x64
 python windows/scripts/package-release.py 0.3.0 arm64
 ```
 
-## تطبيق الويب والوثائق عبر Docker
+## استضافة تطبيق الويب ذاتيًا عبر Docker
 
-يبني Dockerfile في المستودع WASM وتطبيق الويب وموقع المساعدة، ثم يخدم المخرجات الثابتة عبر Nginx.
+استخدم Docker عندما تريد تشغيل Safeparts على بنية تحتية تديرها أنت. هذا المسار منفصل عن النشر عبر مزوّد استضافة. يبني WASM وتطبيق الويب وموقع المساعدة باللغتين، ثم يخدم الملفات الثابتة فقط من صورة Nginx غير مميّزة الصلاحيات. لا توجد خدمة خلفية أو بيانات قياس عن بُعد، وتبقى الأسرار وحصص الاسترداد داخل المتصفح.
+
+من جذر المستودع، ابنِ الصورة وشغّلها:
 
 ```bash
-docker build -t safeparts-webui -f web/Dockerfile .
-docker run --rm -p 8080:8080 safeparts-webui
+docker build --pull --tag safeparts-webui --file web/Dockerfile .
+docker run --detach --name safeparts-web --publish 8080:8080 safeparts-webui
 ```
 
-افتح [http://localhost:8080](http://localhost:8080). الوثائق على [http://localhost:8080/help/](http://localhost:8080/help/).
+انتظر حتى يعرض Docker الحالة `healthy`، ثم تحقّق من التطبيق:
+
+```bash
+docker inspect --format '{{.State.Health.Status}}' safeparts-web
+curl --fail --silent --show-error http://localhost:8080/healthz >/dev/null
+curl --fail --silent --show-error http://localhost:8080/ >/dev/null
+curl --fail --silent --show-error http://localhost:8080/help/ >/dev/null
+curl --fail --silent --show-error http://localhost:8080/help/ar/ >/dev/null
+```
+
+افتح [http://localhost:8080](http://localhost:8080). المساعدة الإنجليزية على [http://localhost:8080/help/](http://localhost:8080/help/)، والعربية على [http://localhost:8080/help/ar/](http://localhost:8080/help/ar/).
+
+لتشغيل اختبارات المسارات والأصول والترويسات والصحة وبدء التشغيل دون اتصال، وهي نفسها المستخدمة في CI:
+
+```bash
+bash web/tests/container-smoke.sh
+```
+
+احذف الحاوية عند الانتهاء:
+
+```bash
+docker rm --force safeparts-web
+```
 
 ## موقع المساعدة
 

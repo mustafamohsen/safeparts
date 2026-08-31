@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/safeparts_core",
+  "crates/safeparts_wasm",
+]
+
+[workspace.package]
+edition = "2024"
+license = "MIT"
+repository = ""
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]

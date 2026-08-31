@@ -29,6 +29,7 @@ Status keys:
 | `mnemo-bip39` share encoding | Yes | Yes | Yes | Yes | Core | Core | Yes | Yes | Yes | Core frame-order and mutation properties, WASM-target, native bridges, Windows smoke, CLI e2e, desktop command tests | Feature exposure notes if web/desktop add it |
 | Auto encoding parse | Yes | Yes for combine | Yes for combine | Yes | Yes for combine | Yes for combine | Yes | Yes | Yes | Core whitespace cases, headless TUI recovery, WASM-target inspection, native bridges, Windows smoke, CLI e2e, web smoke, desktop command tests | Encoding parser docs and UI guidance |
 | Web local-only workflow | N/A | N/A | N/A | Yes | Yes | N/A | N/A | N/A | Yes | Web build and smoke tests | Web surface guide |
+| Docker Web self-hosting | N/A | N/A | N/A | Yes | Yes | N/A | N/A | N/A | Yes | Clean image build, offline HTTP routes, headers, runtime user, and health failure smoke | Dockerfile, Nginx, deployment guide, and Web CI |
 | Desktop local-only Tauri workflow | N/A | N/A | N/A | N/A | Mirrored UI source | Yes | N/A | N/A | Yes | Desktop build, Tauri command tests | Desktop surface guide |
 | Native macOS local-only workflow | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | N/A | Rust bridge and Swift model tests | Native macOS surface guide |
 | Native Windows C# interoperability | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Yes | N/A | Rust public-API tests and real-DLL C# smoke | Native Windows bridge and surface guide |

@@ -7,6 +7,7 @@ Owns operational documentation for supported production deployments.
 ## Ownership
 
 - `cloudflare-workers.md`: Cloudflare Workers deployment, credentials, and validation steps.
+- `docker.md`: unprivileged Docker self-hosting, health checks, and local smoke verification.
 
 ## Local Contracts
 
