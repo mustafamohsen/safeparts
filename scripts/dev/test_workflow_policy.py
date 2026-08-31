@@ -66,6 +66,7 @@ jobs:
         with:
           toolchain: '1.93.0'
   publish:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -160,6 +161,28 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertIn(
             "job test has unexpected write permission contents: write", result.stderr
         )
+
+    def test_publish_without_tag_only_condition_is_rejected(self) -> None:
+        workflow = valid_workflow().replace(
+            "    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')\n",
+            "",
+        )
+
+        result = self.run_policy(workflow)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("publish job must be restricted to tag pushes", result.stderr)
+
+    def test_publish_condition_cannot_be_weakened_to_any_push(self) -> None:
+        workflow = valid_workflow().replace(
+            "github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')",
+            "github.event_name == 'push'",
+        )
+
+        result = self.run_policy(workflow)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("publish job must be restricted to tag pushes", result.stderr)
 
     def test_action_pin_requires_a_maintenance_comment(self) -> None:
         workflow = valid_workflow().replace(" # v4.4.0", "", 1)
