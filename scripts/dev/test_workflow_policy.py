@@ -162,6 +162,32 @@ class WorkflowPolicyTests(unittest.TestCase):
             "job test has unexpected write permission contents: write", result.stderr
         )
 
+    def test_scalar_write_all_permission_outside_publish_is_rejected(self) -> None:
+        workflow = valid_workflow().replace(
+            "  test:\n    runs-on:",
+            "  test:\n    permissions: write-all\n    runs-on:",
+        )
+
+        result = self.run_policy(workflow)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn(
+            "job test has unexpected write permission write-all", result.stderr
+        )
+
+    def test_inline_write_permission_outside_publish_is_rejected(self) -> None:
+        workflow = valid_workflow().replace(
+            "  test:\n    runs-on:",
+            "  test:\n    permissions: {contents: write}\n    runs-on:",
+        )
+
+        result = self.run_policy(workflow)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn(
+            "job test has unexpected write permission contents: write", result.stderr
+        )
+
     def test_publish_without_tag_only_condition_is_rejected(self) -> None:
         workflow = valid_workflow().replace(
             "    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')\n",

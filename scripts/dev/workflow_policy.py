@@ -50,6 +50,26 @@ def _job_at_line(job_starts: list[tuple[int, str]], line_number: int) -> str | N
     return current
 
 
+def _inline_permissions(value: str) -> dict[str, str]:
+    value = _unquote(value)
+    if value == "write-all":
+        return {"*": "write"}
+    if value == "read-all":
+        return {"*": "read"}
+    if value.startswith("{") and value.endswith("}"):
+        permissions: dict[str, str] = {}
+        for entry in value[1:-1].split(","):
+            if not entry.strip():
+                continue
+            match = re.fullmatch(
+                r"\s*([A-Za-z0-9_-]+)\s*:\s*([A-Za-z]+)\s*", entry
+            )
+            if match:
+                permissions[match.group(1)] = match.group(2)
+        return permissions
+    return {}
+
+
 def _step_inputs(lines: list[str], action_index: int, action_indent: int) -> dict[str, str]:
     inputs: dict[str, str] = {}
     in_with = False
@@ -140,10 +160,18 @@ def parse_workflow(
         if current_job is not None and condition_match:
             job_conditions[current_job] = _unquote(condition_match.group(1))
         indent = len(line) - len(line.lstrip())
-        if line.strip() == "permissions:":
+        permission_match = re.match(
+            r"^\s*permissions:\s*([^#]*?)\s*(?:#.*)?$", line
+        )
+        if permission_match:
             permission_scope = current_job if indent == 4 else "workflow"
             permission_indent = indent
-            permissions.setdefault(permission_scope, {})
+            scalar = permission_match.group(1)
+            if scalar:
+                permissions[permission_scope] = _inline_permissions(scalar)
+                permission_scope = None
+            else:
+                permissions.setdefault(permission_scope, {})
             continue
         if permission_scope is None or not line.strip() or line.lstrip().startswith("#"):
             continue
@@ -245,9 +273,8 @@ def validate_workflow(text: str, repo_root: Path = REPO_ROOT) -> list[str]:
             continue
         for permission, access in grants.items():
             if access == "write":
-                errors.append(
-                    f"job {scope} has unexpected write permission {permission}: write"
-                )
+                grant = "write-all" if permission == "*" else f"{permission}: write"
+                errors.append(f"job {scope} has unexpected write permission {grant}")
 
     return errors
 
