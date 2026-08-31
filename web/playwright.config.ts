@@ -35,5 +35,11 @@ export default defineConfig({
           reuseExistingServer: !isCi,
           timeout: 120_000,
         },
+        {
+          command: 'cd ../desktop && bun run dev',
+          url: 'http://localhost:1420',
+          reuseExistingServer: !isCi,
+          timeout: 120_000,
+        },
       ],
 })
