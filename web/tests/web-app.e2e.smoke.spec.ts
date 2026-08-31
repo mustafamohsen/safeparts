@@ -185,10 +185,10 @@ test.describe('Web App E2E Smoke @smoke', () => {
 
     await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
     await expect(recoveredHeading).toBeVisible()
-    await page.locator('#combine-panel input[aria-labelledby="passphrase-label"]').fill('changed')
+    await page.locator('#recover-passphrase').fill('changed')
     await expect(recoveredHeading).toHaveCount(0)
 
-    await page.locator('#combine-panel input[aria-labelledby="passphrase-label"]').fill('')
+    await page.locator('#recover-passphrase').fill('')
     await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
     await expect(recoveredHeading).toBeVisible()
     await page
