@@ -8,9 +8,9 @@ Owns the Vite + React browser UI, web packaging, WASM build integration, and loc
 
 - `src/`: React application, components, hooks, i18n, styles, and generated WASM package boundary.
 - `scripts/`: web helper scripts for WASM package generation and browser-target binding tests.
-- `tests/`: Playwright/axe browser tests.
+- `tests/`: Playwright/axe browser tests and Docker runtime smoke coverage.
 - `help/`: Astro + Starlight documentation site; see its child AGENTS.md.
-- `Dockerfile`, `nginx.conf`, `public/`, `cloudflare-worker.ts`, and package config for static deployment.
+- `Dockerfile`, `docker/`, `nginx.conf`, `public/`, `cloudflare-worker.ts`, and package config for static deployment.
 
 ## Local Contracts
 
@@ -32,11 +32,11 @@ Owns the Vite + React browser UI, web packaging, WASM build integration, and loc
 - Type check: `bun run typecheck`
 - Build app: `bun run build`
 - Dev server: `bun run dev`
-- Existing test scripts: `bun run test:e2e:smoke`, `bun run test:e2e:full`
+- Existing test scripts: `bun run test:e2e:smoke`, `bun run test:e2e:full`, `bun run test:container`
 
 ## Child DOX Index
 
 - `src/`: React browser app source and generated WASM package boundary.
 - `scripts/`: web helper scripts, including WASM build and browser-test integration.
-- `tests/`: Playwright/axe browser and docs tests.
+- `tests/`: Playwright/axe browser and docs tests plus Docker runtime smoke coverage.
 - `help/`: Astro/Starlight help documentation site deployed under `/help/`.

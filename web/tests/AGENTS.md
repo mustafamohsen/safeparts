@@ -7,6 +7,7 @@ Owns browser smoke, end-to-end, docs route, and accessibility tests for the web 
 ## Ownership
 
 - `*.spec.ts`: Playwright and axe coverage used by CI.
+- `container-smoke.sh`: clean image build and offline runtime HTTP checks used by CI.
 - `a11y-utils.ts`: shared accessibility and WASM-ready helpers.
 - `tsconfig.json`: test TypeScript settings.
 
@@ -27,6 +28,7 @@ Owns browser smoke, end-to-end, docs route, and accessibility tests for the web 
 
 - `cd web && bun run test:e2e:smoke`
 - `cd web && bun run test:e2e:full`
+- `cd web && bun run test:container`
 - `cd web && bun run typecheck`
 
 ## Child DOX Index

@@ -89,6 +89,14 @@ bun run test:e2e:smoke
 
 Use local browser automation through the project browser skill or `browse` CLI for manual web smoke checks. Playwright remains the CI test runner and should not be the default manual browser tool unless a task asks for it.
 
+For Docker self-hosting, run the clean build and offline runtime smoke from the repository root:
+
+```bash
+bash web/tests/container-smoke.sh
+```
+
+This checks the root app, SPA fallback, English and Arabic help, help 404 behavior, a hashed asset, security and cache headers, the unprivileged runtime, and both healthy and unhealthy container states.
+
 ## Help docs
 
 From `web/help/`:

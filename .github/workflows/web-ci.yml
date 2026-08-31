@@ -6,6 +6,9 @@ on:
       - 'web/**'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_wasm/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.dockerignore'
       - 'netlify.toml'
       - '.github/workflows/web-ci.yml'
   pull_request:
@@ -13,6 +16,9 @@ on:
       - 'web/**'
       - 'crates/safeparts_core/**'
       - 'crates/safeparts_wasm/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.dockerignore'
       - 'netlify.toml'
       - '.github/workflows/web-ci.yml'
   schedule:
@@ -20,6 +26,16 @@ on:
   workflow_dispatch:
 
 jobs:
+  container_smoke:
+    name: container smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and smoke-test unprivileged image
+        run: bash web/tests/container-smoke.sh
+
   web_smoke:
     name: web smoke
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')

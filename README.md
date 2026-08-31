@@ -231,17 +231,20 @@ Open http://localhost:5173.
 
 ## Web UI + docs (Docker)
 
-This builds the static web UI and the docs site and serves them from a tiny Nginx container.
-There is no backend: your secrets stay in the browser.
+This self-hosting route builds the static Web app and bilingual help site into an unprivileged Nginx image. It is separate from hosted-provider deployment and does not add a backend: Secrets and Recovery shares stay in the browser.
+
+Run these commands from the repository root:
 
 ```bash
-docker build -t safeparts-webui -f web/Dockerfile .
-docker run --rm -p 8080:8080 safeparts-webui
+docker build --pull --tag safeparts-webui --file web/Dockerfile .
+docker run --detach --name safeparts-web --publish 8080:8080 safeparts-webui
+docker inspect --format '{{.State.Health.Status}}' safeparts-web
+curl --fail --silent --show-error http://localhost:8080/healthz >/dev/null
 ```
 
-Open http://localhost:8080.
+Open http://localhost:8080. English help is at http://localhost:8080/help/, and Arabic help is at http://localhost:8080/help/ar/.
 
-Docs: http://localhost:8080/help/
+Run `bash web/tests/container-smoke.sh` for the same local route and header checks used by CI. See [the Docker self-hosting guide](docs/deployment/docker.md) for verification and cleanup commands.
 
 Docs site (served under `/help/`):
 

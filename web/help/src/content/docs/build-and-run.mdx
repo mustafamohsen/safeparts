@@ -146,16 +146,40 @@ python windows/scripts/package-release.py 0.3.0 x64
 python windows/scripts/package-release.py 0.3.0 arm64
 ```
 
-## Web app and docs with Docker
+## Self-host the Web app with Docker
 
-The repository Dockerfile builds WASM, the web app, and the help site, then serves the static output through Nginx.
+Use Docker when you want to serve Safeparts on infrastructure you control. This route is separate from hosted-provider deployment. It builds WASM, the Web app, and the bilingual help site, then serves only the static output from an unprivileged Nginx image. There is no backend or telemetry, and Secrets and Recovery shares stay in the browser.
+
+From the repository root, build and start the image:
 
 ```bash
-docker build -t safeparts-webui -f web/Dockerfile .
-docker run --rm -p 8080:8080 safeparts-webui
+docker build --pull --tag safeparts-webui --file web/Dockerfile .
+docker run --detach --name safeparts-web --publish 8080:8080 safeparts-webui
 ```
 
-Open [http://localhost:8080](http://localhost:8080). Docs are at [http://localhost:8080/help/](http://localhost:8080/help/).
+Wait for Docker to report a healthy container, then check the application:
+
+```bash
+docker inspect --format '{{.State.Health.Status}}' safeparts-web
+curl --fail --silent --show-error http://localhost:8080/healthz >/dev/null
+curl --fail --silent --show-error http://localhost:8080/ >/dev/null
+curl --fail --silent --show-error http://localhost:8080/help/ >/dev/null
+curl --fail --silent --show-error http://localhost:8080/help/ar/ >/dev/null
+```
+
+Open [http://localhost:8080](http://localhost:8080). English help is at [http://localhost:8080/help/](http://localhost:8080/help/), and Arabic help is at [http://localhost:8080/help/ar/](http://localhost:8080/help/ar/).
+
+To run the same container route, asset, header, health, and offline-startup checks used by CI:
+
+```bash
+bash web/tests/container-smoke.sh
+```
+
+Remove the container when you are done:
+
+```bash
+docker rm --force safeparts-web
+```
 
 ## Help site
 
