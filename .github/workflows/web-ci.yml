@@ -123,7 +123,7 @@ jobs:
 
           echo "Waiting for Starlight server..."
           for i in {1..30}; do
-            if curl -s http://localhost:4321 > /dev/null 2>&1; then
+            if curl -s http://localhost:4321/help > /dev/null 2>&1; then
               echo "Starlight server ready"
               break
             fi
@@ -141,7 +141,7 @@ jobs:
 
           # Verify all are accessible
           curl --fail --silent --output /dev/null http://localhost:5173
-          curl --fail --silent --output /dev/null http://localhost:4321
+          curl --fail --silent --output /dev/null http://localhost:4321/help
           curl --fail --silent --output /dev/null http://127.0.0.1:1420
         working-directory: web
 
@@ -232,7 +232,7 @@ jobs:
 
           echo "Waiting for Starlight server..."
           for i in {1..30}; do
-            if curl -s http://localhost:4321 > /dev/null 2>&1; then
+            if curl -s http://localhost:4321/help > /dev/null 2>&1; then
               echo "Starlight server ready"
               break
             fi
@@ -250,7 +250,7 @@ jobs:
 
           # Verify all are accessible
           curl --fail --silent --output /dev/null http://localhost:5173
-          curl --fail --silent --output /dev/null http://localhost:4321
+          curl --fail --silent --output /dev/null http://localhost:4321/help
           curl --fail --silent --output /dev/null http://127.0.0.1:1420
         working-directory: web
 
