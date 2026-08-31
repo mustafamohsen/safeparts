@@ -8,8 +8,9 @@ Generated files should be easy to refresh and easy to review. Do not hand-edit g
 | --- | --- | --- | --- |
 | `target/` | Cargo | No | Build output. Never edit or commit. |
 | `dist/` | release scripts | No | Local release output. Never edit or commit. |
+| `target/web-deploy/` | `web/scripts/deploy-artifact.py` | No | Local Web deployment package and retained evidence. Never commit. |
 | `web/node_modules/` | Bun | No | Dependency install output. Never commit. |
-| `web/dist/` | Vite and docs build | No | Static build output. Never commit. |
+| `web/dist/` | Vite, docs build, and `deploy-artifact.py` | No | Static build output. CI packages it as the commit-identified Web release unit after testing. Never commit. |
 | `web/src/wasm_pkg/` | `web/scripts/build-wasm.sh` | No | Regenerate with `bun run build:wasm`. Do not hand-edit. |
 | `web/help/node_modules/` | Bun | No | Dependency install output. Never commit. |
 | `web/help/dist/` and `web/help/.astro/` | Astro | No | Build/cache output. Never commit. |
@@ -39,6 +40,8 @@ Web build output:
 cd web
 bun run build
 ```
+
+Web deployment evidence is prepared only after WASM, application, help, and browser checks pass. See [`../deployment/web-artifact.md`](../deployment/web-artifact.md) for the credential-free package command. Netlify and Cloudflare consume this package without rebuilding source.
 
 Help docs build output:
 
