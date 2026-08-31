@@ -84,12 +84,6 @@ export function SplitForm({ strings }: SplitFormProps) {
     return Math.min(255, Math.max(2, Math.floor(nextN)));
   }
 
-  function setNClamped(nextN: number) {
-    const safeN = clampN(nextN);
-    setN(safeN);
-    setK((prevK) => clampK(prevK, safeN));
-  }
-
   function selectAllOnFocus(e: FocusEvent<HTMLInputElement>) {
     if (!isCoarsePointer) return;
     // Makes it easy to replace the value on mobile.
@@ -125,25 +119,51 @@ export function SplitForm({ strings }: SplitFormProps) {
   const canSplit =
     secret.length > 0 && k >= 2 && n >= 2 && n <= 255 && passphrasesMatch;
 
-  function updatePassphrase(value: string) {
-    if (value === passphrase) return;
-
+  function invalidateGeneratedShares() {
     splitOperationRef.current += 1;
-    setPassphrase(value);
-    if (value.length === 0) setPassphraseConfirmation("");
     setShares([]);
     setError(null);
     setBusy(false);
   }
 
+  function updateSecret(value: string) {
+    if (value === secret) return;
+    invalidateGeneratedShares();
+    setSecret(value);
+  }
+
+  function updateK(value: number) {
+    const safeK = clampK(value, n);
+    if (safeK === k) return;
+    invalidateGeneratedShares();
+    setK(safeK);
+  }
+
+  function updateN(value: number) {
+    const safeN = clampN(value);
+    if (safeN === n) return;
+    invalidateGeneratedShares();
+    setN(safeN);
+    setK((previousK) => clampK(previousK, safeN));
+  }
+
+  function updateEncoding(value: Encoding) {
+    if (value === encoding) return;
+    invalidateGeneratedShares();
+    setEncoding(value);
+  }
+
+  function updatePassphrase(value: string) {
+    if (value === passphrase) return;
+    invalidateGeneratedShares();
+    setPassphrase(value);
+    if (value.length === 0) setPassphraseConfirmation("");
+  }
+
   function updatePassphraseConfirmation(value: string) {
     if (value === passphraseConfirmation) return;
-
-    splitOperationRef.current += 1;
+    invalidateGeneratedShares();
     setPassphraseConfirmation(value);
-    setShares([]);
-    setError(null);
-    setBusy(false);
   }
 
   async function onSplit() {
@@ -161,7 +181,7 @@ export function SplitForm({ strings }: SplitFormProps) {
     try {
       const wasm = await ensureWasm();
       const bytes = new TextEncoder().encode(secret);
-      const out = wasm.split_secret(
+      const out = await wasm.split_secret(
         bytes,
         k,
         n,
@@ -201,7 +221,7 @@ export function SplitForm({ strings }: SplitFormProps) {
               ref={setSecretTextareaRef}
               value={secret}
               onChange={(e) => {
-                setSecret(e.target.value);
+                updateSecret(e.target.value);
                 resizeTextarea(e.currentTarget);
               }}
               rows={4}
@@ -213,7 +233,7 @@ export function SplitForm({ strings }: SplitFormProps) {
               <PasteButton
                 label={strings.pasteSecret}
                 onPaste={(text) => {
-                  setSecret(text);
+                  updateSecret(text);
                   requestAnimationFrame(() => {
                     if (secretTextareaRef.current) {
                       resizeTextarea(secretTextareaRef.current);
@@ -226,7 +246,7 @@ export function SplitForm({ strings }: SplitFormProps) {
               <ClearButton
                 label={strings.clearSecret}
                 onClick={() => {
-                  setSecret("");
+                  updateSecret("");
                   requestAnimationFrame(() => {
                     if (secretTextareaRef.current) {
                       resizeTextarea(secretTextareaRef.current);
@@ -253,7 +273,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   min={2}
                   max={Math.min(255, n)}
                   value={k}
-                  onChange={(e) => setK(clampK(Number(e.target.value), n))}
+                  onChange={(e) => updateK(Number(e.target.value))}
                   onFocus={selectAllOnFocus}
                   onClick={selectAllOnClick}
                   className="input-stepper-field"
@@ -263,7 +283,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   <button
                     type="button"
                     className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => setK((prev) => clampK(prev - 1, n))}
+                    onClick={() => updateK(k - 1)}
                     disabled={k <= 2}
                     aria-label={strings.decrement}
                     title={strings.decrement}
@@ -273,7 +293,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   <button
                     type="button"
                     className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => setK((prev) => clampK(prev + 1, n))}
+                    onClick={() => updateK(k + 1)}
                     disabled={k >= Math.min(255, n)}
                     aria-label={strings.increment}
                     title={strings.increment}
@@ -289,7 +309,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                 min={2}
                 max={Math.min(255, n)}
                 value={k}
-                onChange={(e) => setK(clampK(Number(e.target.value), n))}
+                onChange={(e) => updateK(Number(e.target.value))}
                 className="input mt-2"
                 aria-labelledby="k-label"
               />
@@ -309,7 +329,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   min={2}
                   max={255}
                   value={n}
-                  onChange={(e) => setNClamped(Number(e.target.value))}
+                  onChange={(e) => updateN(Number(e.target.value))}
                   onFocus={selectAllOnFocus}
                   onClick={selectAllOnClick}
                   className="input-stepper-field"
@@ -319,7 +339,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   <button
                     type="button"
                     className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => setNClamped(n - 1)}
+                    onClick={() => updateN(n - 1)}
                     disabled={n <= 2}
                     aria-label={strings.decrement}
                     title={strings.decrement}
@@ -329,7 +349,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                   <button
                     type="button"
                     className="grid h-10 w-10 place-items-center rounded-lg border border-emerald-500/15 bg-black/35 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => setNClamped(n + 1)}
+                    onClick={() => updateN(n + 1)}
                     disabled={n >= 255}
                     aria-label={strings.increment}
                     title={strings.increment}
@@ -345,7 +365,7 @@ export function SplitForm({ strings }: SplitFormProps) {
                 min={2}
                 max={255}
                 value={n}
-                onChange={(e) => setNClamped(Number(e.target.value))}
+                onChange={(e) => updateN(Number(e.target.value))}
                 className="input mt-2"
                 aria-labelledby="n-label"
               />
@@ -356,7 +376,7 @@ export function SplitForm({ strings }: SplitFormProps) {
             <span className="field-label block" id="encoding-label">
               {strings.encodingLabel}
             </span>
-            <EncodingSelector value={encoding} onChange={setEncoding} options={encodingOptions} />
+            <EncodingSelector value={encoding} onChange={updateEncoding} options={encodingOptions} />
           </div>
         </div>
 
@@ -441,6 +461,9 @@ export function SplitForm({ strings }: SplitFormProps) {
 
       {shares.length > 0 ? (
         <div className="mt-6">
+          <div role="status" className="sr-only">
+            {strings.recoverySharesReady.replace("{count}", String(shares.length))}
+          </div>
           <div className="dir-row items-start justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-slate-200">

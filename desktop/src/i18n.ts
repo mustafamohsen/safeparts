@@ -63,6 +63,7 @@ export const STRINGS = {
     sharesHint:
       "Keep fewer Recovery shares than the Threshold in every account, device, location, administrator domain, and transport channel.",
     shareNumber: "Recovery share",
+    recoverySharesReady: "{count} Recovery shares ready.",
 
     sharesInputLabel: "Shares",
     sharesInputHint: "One share per box. You can add more as needed.",
@@ -163,6 +164,7 @@ export const STRINGS = {
     sharesHint:
       "احتفظ بعدد من حصص الاسترداد أقل من العتبة في كل حساب وجهاز وموقع ونطاق إدارة وقناة نقل.",
     shareNumber: "حصة استرداد",
+    recoverySharesReady: "{count} حصص استرداد جاهزة.",
 
     sharesInputLabel: "الحصص",
     sharesInputHint: "حصة واحدة في كل مربع. أضف المزيد عند الحاجة.",

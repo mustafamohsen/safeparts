@@ -30,6 +30,7 @@ Owns the standalone Tauri desktop application that runs the existing Safeparts w
 
 - Frontend type check: `bun run typecheck`
 - Frontend build: `bun run build`
+- Rendered Split workflow from `web/`: `bunx playwright test tests/desktop-split-result-lifetime.e2e.spec.ts`
 - Rust formatting from repo root: `cargo fmt --all -- --check`
 - Rust tests from repo root: `cargo test --all-features`
 

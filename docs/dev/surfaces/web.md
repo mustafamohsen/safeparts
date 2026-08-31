@@ -18,8 +18,9 @@ It owns:
 ## Change rules
 
 - Run `bun run build:wasm` before expecting split/combine to work locally.
-- Keep share and secret handling in memory. Do not add server calls for split/combine.
-- Preserve keyboard access, live-region feedback, and labels when changing forms.
+- Keep Recovery share and Secret handling in memory. Do not add server calls for Split or Combine.
+- Remove generated Recovery shares as soon as the Secret, Threshold, Share count, Share encoding, or Passphrase protection changes. A pending Split must not restore an invalid result.
+- Preserve keyboard access, live-region feedback, and labels when changing forms. Split success announcements may report the Recovery share count, but must not include Secret or Recovery share text.
 - Derive cheap values during render. Use memoization only when computation cost or reference identity requires it.
 - Keep generated modules and application boundaries typed instead of using file-wide type-check suppressions or `any` casts.
 - Use local browser automation through the project browser tooling for manual checks. Playwright remains the CI runner.

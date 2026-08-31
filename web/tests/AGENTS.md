@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Owns browser smoke, end-to-end, docs route, and accessibility tests for the web app and help site.
+Owns browser smoke, end-to-end, docs route, accessibility, and mirrored Tauri UI tests for the web app, desktop app, and help site.
 
 ## Ownership
 
-- `*.spec.ts`: Playwright and axe coverage used by CI.
+- `*.spec.ts`: Playwright and axe coverage used by CI, including rendered desktop tests backed by a synthetic Tauri command boundary.
 - `container-smoke.sh`: clean image build and offline runtime HTTP checks used by CI.
 - `a11y-utils.ts`: shared accessibility and WASM-ready helpers.
 - `tsconfig.json`: test TypeScript settings.

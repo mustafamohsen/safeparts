@@ -21,6 +21,7 @@ STRICT_FILES = [
     "components/LiveRegion.tsx",
     "components/PassphraseInput.tsx",
     "components/PasteButton.tsx",
+    "components/SplitForm.tsx",
     "components/ui/encoding-selector.tsx",
     "components/ui/encrypted-text.tsx",
     "components/ui/evervault-card.tsx",
@@ -36,7 +37,6 @@ STRICT_FILES = [
 ]
 
 REVIEW_FILES = {
-    "components/SplitForm.tsx": "desktop awaits the async Tauri adapter",
     "components/CombineForm.tsx": "desktop awaits the async Tauri adapter",
     "wasm.ts": "desktop replaces wasm-pack loading with a Tauri command adapter",
 }
