@@ -6,8 +6,9 @@ Use the smallest check that proves your change, then run the broader gate before
 
 ```bash
 mise run doctor      # local environment diagnostics
-mise run dx:verify   # docs, AGENTS, lockfile, and generated-artifact checks
-mise run verify      # full local gate
+mise run dx:verify       # docs, AGENTS, lockfile, and generated-artifact checks
+mise run workflow:check  # release policy tests and actionlint
+mise run verify          # full local gate
 ```
 
 ## Rust
@@ -172,13 +173,16 @@ Windows CI also builds the WinUI project for `win-x64`, launches the self-contai
 From the repo root:
 
 ```bash
+mise run workflow:check
 cargo test --all-features
 cargo build --release -p safeparts -p safeparts_tui
 python3 scripts/release/package.py --version 0.3.0
 RELEASE_VERSION=v0.3.0 mise run macos:package
 ```
 
-Release CI owns Tauri installers for Linux and Windows, the unsigned universal native DMG for macOS, and unsigned self-contained native Windows preview archives for x64 and ARM64. The assembly job generates one checksum manifest that lists only published assets by their release-page filenames. On `workflow_dispatch`, it uploads the complete result as a short-lived dry-run artifact instead of creating a GitHub Release.
+Release CI owns Tauri installers for Linux and Windows, the unsigned universal native DMG for macOS, and unsigned self-contained native Windows preview archives for x64 and ARM64. The assembly job generates one checksum manifest that lists only published assets by their release-page filenames. On `workflow_dispatch`, it uploads the complete result as a short-lived dry-run artifact instead of creating a GitHub Release. Run the full platform matrix with `gh workflow run release.yml --ref <branch> -f version=v0.3.0`.
+
+The release workflow pins every third-party action to a reviewed commit SHA and records the action version in a comment. Rust and Bun follow `mise.toml`, .NET follows `windows/global.json`, and Xcode and hosted runners use fixed versions. Repository permissions default to `contents: read`; only the tag-only `publish` job has `contents: write`. Follow the pin-review procedure in [`surfaces/release.md`](surfaces/release.md) before updating these inputs.
 
 ## DX checks
 

@@ -39,6 +39,7 @@ Status keys:
 | Native batch-export filename prefix | N/A | N/A | N/A | N/A | N/A | N/A | Yes | Yes | N/A | Swift and Windows filename tests | Native app models and UI |
 | English + Arabic user docs | N/A | N/A | N/A | N/A | Links to help | N/A | N/A | N/A | Yes | Docs build, docs a11y route parity | Help docs guide |
 | Release CLI/TUI archives | N/A | Yes | Yes | N/A | N/A | N/A | N/A | N/A | Yes | Release workflow, package script | Release guide |
+| Release input and permission policy | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Workflow policy unit and repository tests, actionlint | Release workflow, version sources, and release guide |
 | Tauri desktop installers | N/A | N/A | N/A | N/A | N/A | Yes, Linux and Windows | N/A | N/A | Yes | Release workflow | Release guide and desktop guide |
 | Native macOS universal DMG | N/A | N/A | N/A | N/A | N/A | N/A | Yes, unsigned | N/A | Yes | macOS CI, package validator | Release guide and native macOS guide |
 | Native Windows preview packages | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Yes, unsigned x64 and ARM64 | Yes | Windows CI, exact-package launch, and package validator | Release guide and native Windows guide |

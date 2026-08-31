@@ -14,6 +14,8 @@ Owns local developer-experience diagnostics and verification helpers.
 - `rustsec_audit.py`: Cargo audit runner and exact policy-exception gate.
 - `test_rustsec_audit.py`: unit tests for RustSec finding classification.
 - `test_web_deploy.py`: behavioral artifact and immutable Web workflow policy tests.
+- `workflow_policy.py`: release workflow input and permission policy gate.
+- `test_workflow_policy.py`: public-behavior tests for the release workflow policy.
 - `README.md`: local script usage notes.
 
 ## Local Contracts
@@ -34,6 +36,7 @@ Owns local developer-experience diagnostics and verification helpers.
 - Coverage automation: `python3 scripts/dev/test_rust_coverage.py` and `mise run coverage`.
 - RustSec automation: `python3 scripts/dev/test_rustsec_audit.py` and `mise run audit`.
 - Web deployment policy: `python3 scripts/dev/test_web_deploy.py`.
+- Release workflow policy: `mise run workflow:check`.
 - Run `mise run dx:verify` when changing DX checks.
 
 ## Child DOX Index
