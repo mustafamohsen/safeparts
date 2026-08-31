@@ -107,6 +107,7 @@ From `desktop/`:
 ```bash
 bun install --frozen-lockfile
 bun run typecheck
+bun run test:adapter
 bun run build
 bun run tauri:build -- --no-bundle
 ```

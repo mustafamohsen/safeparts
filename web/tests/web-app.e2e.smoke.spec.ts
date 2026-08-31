@@ -27,6 +27,36 @@ async function clipboardWrites(page: Page): Promise<string[]> {
   })
 }
 
+type BrowserWasmModule = {
+  default?: () => Promise<unknown>
+  split_secret: (
+    secret: Uint8Array,
+    threshold: number,
+    shareCount: number,
+    encoding: string,
+  ) => Iterable<string>
+}
+
+async function splitSyntheticBytes(
+  page: Page,
+  secret: number[],
+  encoding = 'base64url',
+): Promise<string[]> {
+  return page.evaluate(
+    async ({ bytes, shareEncoding }) => {
+      const dynamicImport = new Function('path', 'return import(path)') as (
+        path: string,
+      ) => Promise<BrowserWasmModule>
+      const wasm = await dynamicImport('/src/wasm_pkg/safeparts_wasm.js')
+      if (typeof wasm.default === 'function') await wasm.default()
+      return Array.from(
+        wasm.split_secret(new Uint8Array(bytes), 2, 3, shareEncoding),
+      )
+    },
+    { bytes: secret, shareEncoding: encoding },
+  )
+}
+
 async function splitAndCollectShares(
   page: Page,
   secret: string,
@@ -46,6 +76,29 @@ async function splitAndCollectShares(
 
   const shareValues = await page.locator('#split-panel div[dir="ltr"].input .sr-only').allTextContents()
   return shareValues.map((share) => share.trim()).filter(Boolean)
+}
+
+async function recoverShares(
+  page: Page,
+  shares: string[],
+  encoding: 'base64url' | 'mnemo-words' = 'mnemo-words',
+): Promise<void> {
+  await page.getByRole('tab', { name: /combine|استعادة/i }).click()
+  await page
+    .locator('#combine-panel label')
+    .filter({
+      hasText: encoding === 'base64url' ? /Letters|أحرف/i : /Words|كلمات/i,
+    })
+    .click()
+
+  const shareFields = page.locator('#combine-panel textarea')
+  await shareFields.nth(0).fill(shares[0] ?? '')
+  await shareFields.nth(1).fill(shares[1] ?? '')
+  await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
+}
+
+function recoveredSecret(page: Page) {
+  return page.locator('#combine-panel div[dir="auto"].input .sr-only')
 }
 
 test.describe('Web App E2E Smoke @smoke', () => {
@@ -70,6 +123,124 @@ test.describe('Web App E2E Smoke @smoke', () => {
 
     const recovered = await page.locator('#combine-panel div[dir="auto"].input .sr-only').textContent()
     expect(recovered?.trim() ?? '').toBe(secret)
+  })
+
+  test('preserves valid Unicode and embedded NUL text exactly', async ({ page }) => {
+    const secret = 'Safeparts العربية עברית 🌍\u0000after-nul'
+    const shares = await splitAndCollectShares(page, secret)
+
+    await recoverShares(page, shares)
+
+    await expect(page.getByRole('heading', { name: /recovered secret/i })).toBeVisible()
+    await expect(recoveredSecret(page)).toHaveText(secret)
+
+    const liveStatus = page.locator('[aria-live="polite"]')
+    await expect(liveStatus).toContainText('Secret recovered.')
+    await expect(liveStatus).not.toContainText(secret)
+  })
+
+  test('removes recovered output and copy source when recovery inputs change', async ({ page }) => {
+    const shares = await splitAndCollectShares(page, 'stale-recovery-output')
+    const recoveredHeading = page.getByRole('heading', { name: /recovered secret/i })
+    const copyButton = page.locator('#combine-panel').getByRole('button', { name: /^Copy$/ })
+
+    await recoverShares(page, shares)
+    await expect(recoveredHeading).toBeVisible()
+    await expect(copyButton).toBeVisible()
+
+    const shareFields = page.locator('#combine-panel textarea')
+    await shareFields.nth(0).fill(`${shares[0]} changed`)
+    await expect(recoveredHeading).toHaveCount(0)
+    await expect(copyButton).toHaveCount(0)
+
+    await shareFields.nth(0).fill(shares[0] ?? '')
+    await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
+    await expect(recoveredHeading).toBeVisible()
+    await page.getByRole('button', { name: /add share/i }).click()
+    await expect(recoveredHeading).toHaveCount(0)
+
+    await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
+    await expect(recoveredHeading).toBeVisible()
+    await page.locator('#combine-panel input[aria-labelledby="passphrase-label"]').fill('changed')
+    await expect(recoveredHeading).toHaveCount(0)
+
+    await page.locator('#combine-panel input[aria-labelledby="passphrase-label"]').fill('')
+    await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
+    await expect(recoveredHeading).toBeVisible()
+    await page
+      .locator('#combine-panel label')
+      .filter({ hasText: /Letters/i })
+      .click()
+    await expect(recoveredHeading).toHaveCount(0)
+    await expect(copyButton).toHaveCount(0)
+  })
+
+  test('discards recovery that finishes after a Recovery share changes', async ({ page }) => {
+    const shares = await splitSyntheticBytes(
+      page,
+      Array.from(new TextEncoder().encode('pending-recovery-result')),
+    )
+    let releaseWasm: (() => void) | undefined
+    const wasmGate = new Promise<void>((resolve) => {
+      releaseWasm = resolve
+    })
+
+    await page.route('**/safeparts_wasm_bg.wasm*', async (route) => {
+      await wasmGate
+      await route.continue()
+    })
+
+    await page.reload()
+    await page.getByRole('tab', { name: /combine|استعادة/i }).click()
+    await page
+      .locator('#combine-panel label')
+      .filter({ hasText: /Letters/i })
+      .click()
+    const shareFields = page.locator('#combine-panel textarea')
+    await shareFields.nth(0).fill(shares[0] ?? '')
+    await shareFields.nth(1).fill(shares[1] ?? '')
+    await page.getByRole('button', { name: /^(combine|استعادة)$/i }).click()
+    await expect(page.getByRole('button', { name: /Working/i })).toBeVisible()
+
+    await shareFields.nth(0).fill(`${shares[0]} changed`)
+    releaseWasm?.()
+
+    await expect(page.getByRole('button', { name: /^Combine$/i })).toBeEnabled()
+    await expect(page.getByRole('heading', { name: /recovered secret/i })).toHaveCount(0)
+    await expect(
+      page.locator('#combine-panel').getByRole('button', { name: /^Copy$/ }),
+    ).toHaveCount(0)
+  })
+
+  test('refuses invalid UTF-8 without changing the clipboard', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.evaluate(() => navigator.clipboard.writeText('clipboard-sentinel'))
+    const shares = await splitSyntheticBytes(page, [0xff, 0xfe, 0x41])
+
+    await recoverShares(page, shares, 'base64url')
+
+    await expect(page.locator('#combine-panel .alert-error')).toContainText(
+      'This recovered Secret is not valid UTF-8 text. Use the CLI, TUI, or a native file workflow to recover the exact bytes.',
+    )
+    await expect(page.getByRole('heading', { name: /recovered secret/i })).toHaveCount(0)
+    await expect(
+      page.locator('#combine-panel').getByRole('button', { name: /^Copy$/ }),
+    ).toHaveCount(0)
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(
+      'clipboard-sentinel',
+    )
+  })
+
+  test('localizes invalid UTF-8 guidance in Arabic', async ({ page }) => {
+    const shares = await splitSyntheticBytes(page, [0x80, 0x41])
+    await page.getByRole('button', { name: 'العربية' }).click()
+
+    await recoverShares(page, shares, 'base64url')
+
+    await expect(page.locator('#combine-panel .alert-error')).toContainText(
+      'السر المستعاد ليس نصًا صالحًا بترميز UTF-8. استخدم CLI أو TUI أو سير عمل ملفات أصليًا لاستعادة البايتات بدقة.',
+    )
+    await expect(page.getByRole('heading', { name: /السر المستعاد/i })).toHaveCount(0)
   })
 
   test('shows useful validation when shares are insufficient', async ({ page }) => {

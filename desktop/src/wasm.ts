@@ -1,4 +1,9 @@
-import { combineShares, inspectShares, splitSecret } from "./commands";
+import {
+  combineShares,
+  inspectShares,
+  splitSecret,
+  type CombineResponse,
+} from "./commands";
 
 type Encoding = "base64url" | "mnemo-words" | "auto";
 
@@ -7,7 +12,14 @@ type ShareInspectionAdapter = {
   encoding?: string;
 };
 
+type RecoveredSecret = Pick<CombineResponse, "isUtf8" | "text">;
+
 let cached: DesktopSafepartsAdapter | null = null;
+
+export function recoveredSecretText(recovered: RecoveredSecret): string | null {
+  if (!recovered.isUtf8 || recovered.text === null) return null;
+  return recovered.text;
+}
 
 function toBytes(value: Uint8Array | ArrayBuffer | ArrayLike<number>): Uint8Array {
   if (value instanceof Uint8Array) return value;
@@ -44,20 +56,19 @@ class DesktopSafepartsAdapter {
     input: string,
     encoding: Encoding,
     passphrase?: string,
-  ): Promise<Uint8Array> {
-    const response = await combineShares({
+  ): Promise<CombineResponse> {
+    return combineShares({
       input,
       encoding,
       passphrase,
     });
-    return new Uint8Array(response.secret);
   }
 
   async combine_shares(
     shares: ArrayLike<string>,
     encoding: Encoding,
     passphrase?: string,
-  ): Promise<Uint8Array> {
+  ): Promise<CombineResponse> {
     return this.combine_share_input(joinShares(shares), encoding, passphrase);
   }
 

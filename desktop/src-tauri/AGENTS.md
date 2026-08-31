@@ -18,6 +18,7 @@ Owns the Tauri Rust crate, command layer, permissions, generated schemas, and pa
 - Do not add a backend, telemetry, CLI sidecar, node sidecar, or external service requirement.
 - Do not persist secrets, recovery shares, reconstructed bytes, or passphrases.
 - Sanitize parse errors so share input is not echoed back to the UI.
+- Return recovered bytes with explicit valid-UTF-8 metadata and lossless optional text so the frontend can fail closed for binary output.
 
 ## Work Guidance
 

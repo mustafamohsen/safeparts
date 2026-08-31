@@ -39,6 +39,12 @@ Most combine failures come from one of these causes:
 | <samp>passphrase required</samp> | The shares were created with passphrase protection. | Provide the passphrase through the approved channel. |
 | <samp>decryption failed</samp> | The passphrase is wrong or encrypted data was tampered with. | Verify the passphrase and do not retry in a loop. |
 
+## Web or Tauri says the recovered Secret is not valid UTF-8
+
+The Web and Tauri interfaces are text-only at recovery output. They refuse to display or copy arbitrary bytes because converting invalid UTF-8 would change the recovered Secret.
+
+Use the CLI or TUI with a file output, or use a native app's file workflow. These paths preserve the exact recovered bytes. Do not paste the Recovery shares or recovered bytes into an online converter.
+
 ## Web app says <samp>WASM module not found</samp>
 
 The web app needs generated WASM bindings.
