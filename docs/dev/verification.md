@@ -48,6 +48,7 @@ Targeted examples:
 
 ```bash
 cargo test -p safeparts_core encoding::
+cargo test -p safeparts_core --test share_compatibility
 cargo test -p safeparts --test e2e explicit_dash_paths_use_stdin_and_stdout
 cargo test -p safeparts_tui app::tests
 cargo test -p safeparts_wasm
@@ -55,6 +56,24 @@ cargo test -p safeparts_wasm
 cargo test -p safeparts_desktop --lib
 cargo test -p safeparts_uniffi
 ```
+
+### Released Share packet fixtures
+
+The compatibility test decodes immutable synthetic V1 and V2 Recovery share sets and reconstructs exact Secret bytes. Its [fixture README](../../crates/safeparts_core/tests/fixtures/share_compatibility/README.md) records provenance and the extension checklist.
+
+When reviewing a new packet version, require a new fixture directory for every released concrete Share encoding. Compare the literals against the tagged release source, check `SHA256SUMS`, and confirm the test uses public decode and combine APIs. Do not approve regenerated or reformatted fixtures for an older version unless an explicit migration decision requires that change.
+
+Run:
+
+```bash
+cargo test -p safeparts_core --test share_compatibility
+(
+  cd crates/safeparts_core/tests/fixtures/share_compatibility
+  shasum -a 256 -c SHA256SUMS
+)
+```
+
+Then run the core security properties and the full Rust gate.
 
 ## Web app
 
