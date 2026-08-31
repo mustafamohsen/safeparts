@@ -385,13 +385,15 @@ test.describe('Web App E2E Smoke @smoke', () => {
     const splitButton = splitPanel.getByRole('button', { name: /^(split|قسم)$/i })
     const confirmation = splitPanel.getByLabel('Confirm passphrase')
     const passphrase = 'synthetic-confirmation-passphrase'
+    const sharesHeading = splitPanel.getByRole('heading', { name: /^recovery shares$/i })
+    const shareCopyButtons = splitPanel.getByRole('button', { name: /^copy recovery share \d+$/i })
     const expectNoShares = async () => {
-      await expect(splitPanel.getByRole('heading', { name: /^shares$/i })).toHaveCount(0)
-      await expect(splitPanel.getByRole('button', { name: /^copy$/i })).toHaveCount(0)
+      await expect(sharesHeading).toHaveCount(0)
+      await expect(shareCopyButtons).toHaveCount(0)
     }
     const generateShares = async () => {
       await splitButton.click()
-      await expect(splitPanel.getByRole('heading', { name: /^shares$/i })).toBeVisible()
+      await expect(sharesHeading).toBeVisible()
     }
 
     await splitPanel.locator('textarea').fill('synthetic-confirmation-invalidation-secret')
