@@ -17,7 +17,7 @@ For another repository, use a Git dependency until a published crate is availabl
 
 ```toml
 [dependencies]
-safeparts_core = { git = "https://github.com/mustafamohsen/safeparts", package = "safeparts_core" }
+safeparts_core = { git = "https://github.com/connectedloops/safeparts", package = "safeparts_core" }
 ```
 
 If you want zeroizing wrappers in your application code, add `zeroize` too:

@@ -201,7 +201,7 @@ export function App() {
                   {strings.help}
                 </a>
                 <a
-                  href="https://github.com/mustafamohsen/safeparts"
+                  href="https://github.com/connectedloops/safeparts"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="grid h-11 w-11 place-items-center rounded-xl border border-emerald-500/15 bg-black/35 text-slate-200 transition hover:bg-white/5"
@@ -359,7 +359,7 @@ export function App() {
               © Mustafa Mohsen ·{' '}
               <a
                 className="underline decoration-slate-400/30 underline-offset-4 hover:decoration-slate-400/60"
-                href="https://github.com/mustafamohsen/safeparts/blob/main/LICENSE"
+                href="https://github.com/connectedloops/safeparts/blob/main/LICENSE"
                 target="_blank"
                 rel="noreferrer"
               >

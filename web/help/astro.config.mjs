@@ -35,7 +35,7 @@ export default defineConfig({
 				{
 					icon: 'github',
 					label: 'GitHub',
-					href: 'https://github.com/mustafamohsen/safeparts',
+					href: 'https://github.com/connectedloops/safeparts',
 				},
 				{
 					icon: 'discord',

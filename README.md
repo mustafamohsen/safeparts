@@ -9,7 +9,7 @@ You split one secret into *n* recovery shares, then later recover it from any *k
 
 - Web app: https://safeparts.netlify.app
 - Docs: https://safeparts.netlify.app/help/ (English) and https://safeparts.netlify.app/help/ar/ (Arabic)
-- Releases: https://github.com/mustafamohsen/safeparts/releases
+- Releases: https://github.com/connectedloops/safeparts/releases
 
 ## What it's for
 
@@ -287,6 +287,10 @@ bun run test:a11y
 - `desktop/`: Tauri + React desktop app
 - `macos/`: native SwiftUI macOS app
 - `windows/`: native WinUI 3 Windows app, model, generated binding, and tests
+
+## Stewardship
+
+Safeparts was created by [Mustafa Mohsen](https://github.com/mustafamohsen) and is maintained under the [Connected Loops](https://github.com/connectedloops) GitHub organization.
 
 ## Contributing
 
