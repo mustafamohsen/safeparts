@@ -92,6 +92,23 @@ test.describe('Web App E2E Smoke @smoke', () => {
     await waitForWasmReady(page)
   })
 
+  test('keeps the background gradient fixed to the viewport as shares grow the page', async ({ page }) => {
+    const gradient = page.getByTestId('background-gradient')
+    const viewport = page.viewportSize()
+    expect(viewport).not.toBeNull()
+
+    const initialBounds = await gradient.boundingBox()
+    expect(initialBounds).toEqual({ x: 0, y: 0, width: viewport?.width, height: viewport?.height })
+
+    await page.locator('#split-panel textarea').first().fill('synthetic-background-layout-secret')
+    await page.locator('#split-n').fill('20')
+    await page.getByRole('button', { name: /^(split|قسم)$/i }).click()
+    await expect(page.getByRole('heading', { name: /shares|الحصص/i })).toBeVisible()
+
+    const expandedBounds = await gradient.boundingBox()
+    expect(expandedBounds).toEqual(initialBounds)
+  })
+
   test('round-trip flow works in the browser', async ({ page }) => {
     const secret = 'smoke-roundtrip-secret-123'
     const shares = await splitAndCollectShares(page, secret)
