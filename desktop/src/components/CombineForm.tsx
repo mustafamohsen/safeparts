@@ -454,7 +454,7 @@ export function CombineForm({ lang, strings }: CombineFormProps) {
                       <span
                         aria-hidden="true"
                         dir={lang === "ar" ? "rtl" : "ltr"}
-                        className={`pointer-events-none absolute inset-x-3 top-2 overflow-hidden pe-12 text-sm text-slate-500 ${
+                        className={`pointer-events-none absolute inset-x-3 top-2 overflow-hidden pe-12 text-sm text-slate-400 ${
                           lang === "ar" ? "text-right" : "text-left"
                         }`}
                       >
