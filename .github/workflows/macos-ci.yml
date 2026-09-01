@@ -30,7 +30,7 @@ on:
 jobs:
   native-macos:
     name: native macOS build and package
-    runs-on: macos-14
+    runs-on: blacksmith-6vcpu-macos-15
     steps:
       - uses: actions/checkout@v4
 

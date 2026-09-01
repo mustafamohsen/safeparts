@@ -20,7 +20,7 @@ env:
 jobs:
   test:
     name: test
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
@@ -60,15 +60,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-24.04
+          - os: blacksmith-4vcpu-ubuntu-2404
             id: linux
-          - os: windows-2025
+          - os: blacksmith-4vcpu-windows-2025
             id: windows
-          - os: macos-14
+          - os: blacksmith-6vcpu-macos-15
             id: macos-x86_64
             target: x86_64-apple-darwin
             arch: x86_64
-          - os: macos-14
+          - os: blacksmith-6vcpu-macos-15
             id: macos-aarch64
             target: aarch64-apple-darwin
             arch: aarch64
@@ -122,7 +122,7 @@ jobs:
       matrix:
         include:
           - id: linux-desktop
-            os: ubuntu-24.04
+            os: blacksmith-4vcpu-ubuntu-2404
             bundles: appimage,deb,rpm
             artifact_name: safeparts-desktop-linux
             artifact_paths: |
@@ -130,7 +130,7 @@ jobs:
               target/release/bundle/deb/*.deb
               target/release/bundle/rpm/*.rpm
           - id: windows-desktop
-            os: windows-2025
+            os: blacksmith-4vcpu-windows-2025
             bundles: nsis,msi
             artifact_name: safeparts-desktop-windows
             artifact_paths: |
@@ -193,9 +193,9 @@ jobs:
       matrix:
         include:
           - arch: x64
-            os: windows-2025
+            os: blacksmith-4vcpu-windows-2025
           - arch: arm64
-            os: windows-11-arm
+            os: blacksmith-4vcpu-windows-2025
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
@@ -252,7 +252,7 @@ jobs:
 
   native-macos:
     name: native macOS
-    runs-on: macos-14
+    runs-on: blacksmith-6vcpu-macos-15
     needs: test
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -293,7 +293,7 @@ jobs:
 
   assemble:
     name: assemble
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs:
       - build
       - desktop
@@ -351,7 +351,7 @@ jobs:
   publish:
     name: publish
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: assemble
     permissions:
       contents: write

@@ -59,7 +59,7 @@ env:
 jobs:
   container_smoke:
     name: container smoke
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 25
     steps:
       - name: Check out source
@@ -70,7 +70,7 @@ jobs:
 
   build_test_package:
     name: build, test, and package Web artifact
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     outputs:
       artifact-digest: ${{ steps.upload.outputs.artifact-digest }}
     steps:
@@ -209,7 +209,7 @@ jobs:
     name: deploy tested artifact to Netlify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [build_test_package, container_smoke]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Check out deployment tooling
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -271,7 +271,7 @@ jobs:
     name: deploy tested artifact to Cloudflare Workers
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [build_test_package, container_smoke]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Check out deployment tooling
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
