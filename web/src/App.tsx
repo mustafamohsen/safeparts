@@ -47,13 +47,17 @@ function getInitialLang(): Lang {
 
 function Background() {
   return (
-    <>
-      <div className="pointer-events-none absolute inset-0 bg-black" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_55%),radial-gradient(circle_at_bottom,rgba(34,197,94,0.10),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:linear-gradient(to_right,rgba(16,185,129,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.18)_1px,transparent_1px)] [background-size:36px_36px]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:repeating-linear-gradient(to_bottom,rgba(16,185,129,0.28)_0px,rgba(0,0,0,0)_2px,rgba(0,0,0,0)_6px)]" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
-    </>
+    <div
+      data-testid="background-gradient"
+      className="pointer-events-none fixed inset-0"
+      aria-hidden="true"
+    >
+      <div className="absolute inset-0 bg-black" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_55%),radial-gradient(circle_at_bottom,rgba(34,197,94,0.10),transparent_55%)]" />
+      <div className="absolute inset-0 opacity-[0.14] [background-image:linear-gradient(to_right,rgba(16,185,129,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.18)_1px,transparent_1px)] [background-size:36px_36px]" />
+      <div className="absolute inset-0 opacity-[0.06] [background-image:repeating-linear-gradient(to_bottom,rgba(16,185,129,0.28)_0px,rgba(0,0,0,0)_2px,rgba(0,0,0,0)_6px)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
+    </div>
   );
 }
 
