@@ -79,15 +79,15 @@ jobs:
           dotnet run --project Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
 
       - name: Package self-contained x64 preview
-        run: python windows/scripts/package-release.py 0.3.0 x64
+        run: python windows/scripts/package-release.py 0.3.1 x64
 
       - name: Generate x64 archive checksum
-        run: python windows/scripts/write-checksum.py dist/release/safeparts-native-windows-x64-0.3.0.zip
+        run: python windows/scripts/write-checksum.py dist/release/safeparts-native-windows-x64-0.3.1.zip
 
       - name: Test exact x64 package
         shell: pwsh
         run: |
-          $package = (Resolve-Path target/native-windows-release/x64/extract/safeparts-native-windows-x64-0.3.0).Path
+          $package = (Resolve-Path target/native-windows-release/x64/extract/safeparts-native-windows-x64-0.3.1).Path
           windows/scripts/launch-package-smoke.ps1 -PackageRoot $package
           $env:SAFEPARTS_NATIVE_DIR = $package
           dotnet run --project windows/Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
@@ -95,7 +95,7 @@ jobs:
       - name: Test keyboard and UI Automation workflow
         shell: pwsh
         run: |
-          $env:SAFEPARTS_APP_EXE = (Resolve-Path target/native-windows-release/x64/extract/safeparts-native-windows-x64-0.3.0/Safeparts.exe).Path
+          $env:SAFEPARTS_APP_EXE = (Resolve-Path target/native-windows-release/x64/extract/safeparts-native-windows-x64-0.3.1/Safeparts.exe).Path
           dotnet test windows/Safeparts.UiAutomation.Tests/Safeparts.UiAutomation.Tests.csproj --configuration Release
 
       - name: Upload x64 package smoke
@@ -103,8 +103,8 @@ jobs:
         with:
           name: safeparts-native-windows-x64-package-smoke
           path: |
-            dist/release/safeparts-native-windows-x64-0.3.0.zip
-            dist/release/safeparts-native-windows-x64-0.3.0.zip.sha256
+            dist/release/safeparts-native-windows-x64-0.3.1.zip
+            dist/release/safeparts-native-windows-x64-0.3.1.zip.sha256
           if-no-files-found: error
 
   arm64-package-smoke:
@@ -143,15 +143,15 @@ jobs:
         run: dotnet build Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release
 
       - name: Package self-contained ARM64 preview
-        run: python windows/scripts/package-release.py 0.3.0 arm64
+        run: python windows/scripts/package-release.py 0.3.1 arm64
 
       - name: Generate ARM64 archive checksum
-        run: python windows/scripts/write-checksum.py dist/release/safeparts-native-windows-arm64-0.3.0.zip
+        run: python windows/scripts/write-checksum.py dist/release/safeparts-native-windows-arm64-0.3.1.zip
 
       - name: Test exact ARM64 package
         shell: pwsh
         run: |
-          $package = (Resolve-Path target/native-windows-release/arm64/extract/safeparts-native-windows-arm64-0.3.0).Path
+          $package = (Resolve-Path target/native-windows-release/arm64/extract/safeparts-native-windows-arm64-0.3.1).Path
           windows/scripts/launch-package-smoke.ps1 -PackageRoot $package
           $env:SAFEPARTS_NATIVE_DIR = $package
           dotnet run --project windows/Safeparts.InteropSmoke/Safeparts.InteropSmoke.csproj --configuration Release --no-build
@@ -161,6 +161,6 @@ jobs:
         with:
           name: safeparts-native-windows-arm64-package-smoke
           path: |
-            dist/release/safeparts-native-windows-arm64-0.3.0.zip
-            dist/release/safeparts-native-windows-arm64-0.3.0.zip.sha256
+            dist/release/safeparts-native-windows-arm64-0.3.1.zip
+            dist/release/safeparts-native-windows-arm64-0.3.1.zip.sha256
           if-no-files-found: error

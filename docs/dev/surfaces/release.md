@@ -56,13 +56,13 @@ Do not replace a SHA with a major tag, `stable`, `latest`, an `x` version, or a 
 mise run workflow:check
 cargo test --all-features
 cargo build --release -p safeparts -p safeparts_tui
-python3 scripts/release/package.py --version 0.3.0
-RELEASE_VERSION=v0.3.0 mise run macos:package
+python3 scripts/release/package.py --version 0.3.1
+RELEASE_VERSION=v0.3.1 mise run macos:package
 # On Windows:
-python windows/scripts/package-release.py 0.3.0 x64
+python windows/scripts/package-release.py 0.3.1 x64
 
 # Full remote dry run; this assembles artifacts but does not publish a release.
-gh workflow run release.yml --ref <branch> -f version=v0.3.0
+gh workflow run release.yml --ref <branch> -f version=v0.3.1
 gh run watch
 ```
 

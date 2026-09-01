@@ -3866,7 +3866,7 @@ checksum = "a50f4cf475b65d88e057964e0e9bb1f0aa9bbb2036dc65c64596b42932536984"
 
 [[package]]
 name = "safeparts"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -3879,7 +3879,7 @@ dependencies = [
 
 [[package]]
 name = "safeparts_core"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argon2",
  "base64 0.22.1",
@@ -3895,7 +3895,7 @@ dependencies = [
 
 [[package]]
 name = "safeparts_desktop"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "safeparts_core",
  "serde",
@@ -3906,7 +3906,7 @@ dependencies = [
 
 [[package]]
 name = "safeparts_tui"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "arboard",
@@ -3921,7 +3921,7 @@ dependencies = [
 
 [[package]]
 name = "safeparts_uniffi"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "safeparts_core",
  "uniffi",
@@ -3930,7 +3930,7 @@ dependencies = [
 
 [[package]]
 name = "safeparts_wasm"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "getrandom 0.2.17",
  "js-sys",
