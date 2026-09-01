@@ -358,6 +358,10 @@ class WorkflowPolicyTests(unittest.TestCase):
         netlify = (REPO_ROOT / "netlify.toml").read_text(encoding="utf-8")
         self.assertNotRegex(netlify, r"(?m)^\s*command\s*=")
         self.assertIn('publish = "web/dist"', netlify)
+        self.assertFalse(
+            (REPO_ROOT / "web" / "public" / "_redirects").exists(),
+            "Netlify-only redirects must not enter the shared Cloudflare artifact",
+        )
 
         wrangler = (REPO_ROOT / "wrangler.jsonc").read_text(encoding="utf-8")
         self.assertIn('"directory": "web/dist"', wrangler)
