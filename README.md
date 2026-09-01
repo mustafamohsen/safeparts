@@ -196,7 +196,7 @@ swift run --package-path macos SafepartsMac
 Build the same unsigned universal DMG used by release CI:
 
 ```bash
-RELEASE_VERSION=v0.3.0 mise run macos:package
+RELEASE_VERSION=v0.3.1 mise run macos:package
 ```
 
 The DMG supports Intel and Apple Silicon Macs. It is not signed or notarized, so downloaded copies may trigger a Gatekeeper warning.

@@ -25,20 +25,20 @@ mise run workflow:check
 To exercise the complete multi-platform path without publishing a GitHub Release, dispatch the workflow from the branch that contains the proposed pins:
 
 ```bash
-gh workflow run release.yml --ref <branch> -f version=v0.3.0
+gh workflow run release.yml --ref <branch> -f version=v0.3.1
 ```
 
-The dispatch uploads a seven-day `safeparts-release-dry-run-v0.3.0` artifact after all platform artifacts are downloaded and checksummed.
+The dispatch uploads a seven-day `safeparts-release-dry-run-v0.3.1` artifact after all platform artifacts are downloaded and checksummed.
 
 ## CLI and TUI archives
 
 From the repository root:
 
 ```bash
-python3 scripts/release/check-version.py v0.3.0
+python3 scripts/release/check-version.py v0.3.1
 cargo test --all-features
 cargo build --release -p safeparts -p safeparts_tui
-python3 scripts/release/package.py --version 0.3.0
+python3 scripts/release/package.py --version 0.3.1
 ```
 
 On Windows, run the packaging command with `py -3` instead of `python3`.
@@ -50,13 +50,13 @@ On Windows, run the packaging command with `py -3` instead of `python3`.
 On macOS with Xcode, Swift 6, Rust, and both Apple Rust targets available:
 
 ```bash
-RELEASE_VERSION=v0.3.0 mise run macos:package
+RELEASE_VERSION=v0.3.1 mise run macos:package
 ```
 
 The command builds the Rust UniFFI bridge and Swift executable for arm64 and x86_64, assembles `Safeparts.app`, validates both slices, and writes:
 
 ```text
-dist/release/safeparts-native-macos-universal-0.3.0.dmg
+dist/release/safeparts-native-macos-universal-0.3.1.dmg
 ```
 
 The validator checks the macOS 14.0 deployment target, static Rust linkage, bundle metadata, resource layout, and both architectures. It mounts the completed DMG and validates the packaged copy again.
@@ -68,10 +68,10 @@ The DMG is unsigned and unnotarized. Downloaded copies may require an explicit G
 On a matching native Windows runner with .NET 10 and Rust:
 
 ```powershell
-python windows/scripts/package-release.py 0.3.0 x64
-python windows/scripts/package-release.py 0.3.0 arm64
+python windows/scripts/package-release.py 0.3.1 x64
+python windows/scripts/package-release.py 0.3.1 arm64
 ```
 
 Each command publishes an architecture-specific, self-contained WinUI app, adds the matching Rust DLL, validates the staged directory, creates a deterministic zip, extracts it into a clean directory, and validates the exact packaged copy. CI launches that extracted app and runs the Rust/C# interoperability smoke against its bundled bridge.
 
-The artifacts are `safeparts-native-windows-x64-0.3.0.zip` and `safeparts-native-windows-arm64-0.3.0.zip`. They are unsigned and may trigger SmartScreen. The central `SHA256SUMS.txt` covers both archives. During the preview, release CI also publishes the established Tauri Windows MSI and NSIS installers. The native archives have a separate identity and are not an in-place upgrade for the Tauri app.
+The artifacts are `safeparts-native-windows-x64-0.3.1.zip` and `safeparts-native-windows-arm64-0.3.1.zip`. They are unsigned and may trigger SmartScreen. The central `SHA256SUMS.txt` covers both archives. During the preview, release CI also publishes the established Tauri Windows MSI and NSIS installers. The native archives have a separate identity and are not an in-place upgrade for the Tauri app.
