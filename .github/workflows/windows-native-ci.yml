@@ -26,7 +26,7 @@ env:
 jobs:
   interop-smoke:
     name: C# and Rust DLL smoke
-    runs-on: windows-latest
+    runs-on: blacksmith-4vcpu-windows-2025
     steps:
       - uses: actions/checkout@v4
 
@@ -109,7 +109,7 @@ jobs:
 
   arm64-package-smoke:
     name: native ARM64 package smoke
-    runs-on: windows-11-arm
+    runs-on: blacksmith-4vcpu-windows-2025
     steps:
       - uses: actions/checkout@v4
 
