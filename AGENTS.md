@@ -134,6 +134,7 @@ Use the single-context domain model in `CONTEXT.md` and relevant records under `
 - Local dev commands + repo layout: `README.md`
 - Contributor onboarding and DX workflow: `CONTRIBUTING.md`, `docs/dev/README.md`
 - Local dev toolchain/env/task shortcuts: `mise.toml`
+- Repository stewardship and creator attribution: `README.md#stewardship`
 
 ## Research
 
