@@ -41,7 +41,7 @@ Owns the SwiftUI macOS 14+ app and generated UniFFI boundary artifacts.
 - `swift build`
 - `./scripts/verify-binary.sh`
 - `swift test`
-- `RELEASE_VERSION=v0.2.0 mise run macos:package`
+- `RELEASE_VERSION=v0.3.1 mise run macos:package`
 
 ## Child DOX Index
 
